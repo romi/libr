@@ -27,9 +27,10 @@ char *rprintf(char *buffer, int buflen, const char *format, ...)
         return buffer;
 }
 
-int r_random(void *buf, size_t buflen, unsigned int flags)
+int r_random(void *buf, size_t buflen)
 {
-    return (int)syscall(SYS_getrandom, buf, buflen, flags);
+        int flags = 0; 
+        return (int)syscall(SYS_getrandom, buf, buflen, flags);
 }
 
 char *r_uuid()

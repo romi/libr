@@ -1335,7 +1335,10 @@ int32 json_serialise_text(json_serialise_t* serialise,
 		if (r != 0) return r;
 		array_t* array = (array_t*) object->value.data;
 		for (int32 i = 0; i < array->length; i++) {
-			r = json_serialise_text(serialise, array->data[i], fun, userdata);
+                        if (array->data[i] == NULL)
+                                r = json_write(fun, userdata, "null");
+                        else
+                                r = json_serialise_text(serialise, array->data[i], fun, userdata);
 			if (r != 0) return r;
 			if (i < array->length - 1) {
 				r = json_write(fun, userdata, ", ");

@@ -84,6 +84,11 @@ int membuf_append_zero(membuf_t *b)
         return membuf_put(b, 0);
 }
 
+int membuf_append_str(membuf_t *b, const char *s)
+{
+        membuf_append(b, s, strlen(s));
+}
+
 void membuf_clear(membuf_t *b)
 {
         b->index = 0;

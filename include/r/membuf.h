@@ -15,6 +15,7 @@ void delete_membuf(membuf_t *b);
 int membuf_put(membuf_t *b, char c);
 int membuf_append(membuf_t *b, const char *data, int len);
 int membuf_append_zero(membuf_t *b);
+int membuf_append_str(membuf_t *b, const char *s);
 int membuf_printf(membuf_t *b, const char* format, ...);
 int membuf_vprintf(membuf_t *b, const char* format, va_list ap);
 

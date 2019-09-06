@@ -4,6 +4,8 @@ project(libr)
 set(libr_VERSION_MAJOR 0)
 set(libr_VERSION_MINOR 1)
 
+set(CMAKE_BUILD_TYPE DEBUG)
+
 set(SOURCES
   src/mem.c 
   src/thread_pthread.c 
@@ -21,7 +23,7 @@ include_directories(include)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 add_library(r SHARED ${SOURCES})
-target_link_libraries(r pthread uuid)
+target_link_libraries(r pthread uuid m)
 
 INSTALL(TARGETS r DESTINATION "lib")
 INSTALL (

@@ -8,6 +8,9 @@
 extern "C" {
 #endif
 
+int mem_init(int *argc);
+void mem_cleanup();
+
 void *safe_malloc(size_t size, int zero);
 void safe_free(void *ptr);
 void *safe_calloc(size_t nmemb, size_t size);

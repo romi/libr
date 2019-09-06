@@ -8,6 +8,9 @@
 extern "C" {
 #endif
 
+int path_exists(const char *path);
+int is_file(const char *path);
+int is_directory(const char *path);
 int is_absolute(const char *path);
 int make_absolute_path(const char *path, char *buffer, int len);
 

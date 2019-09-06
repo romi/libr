@@ -16,6 +16,8 @@ extern "C" {
 /* Call the developer */
 #define R_PANIC 4
 
+int r_log_init();
+void r_log_cleanup();
 
 void r_err(const char* format, ...);
 void r_warn(const char* format, ...);

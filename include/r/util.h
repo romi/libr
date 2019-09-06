@@ -9,7 +9,7 @@ extern "C" {
 
 #define rstreq(_s1, _s2) ((_s1) != NULL && (_s2) != NULL && strcmp(_s1,_s2)==0)
 char *rprintf(char *buffer, int len, const char *format, ...);
-int r_random(void *buf, size_t buflen, unsigned int flags);
+int r_random(void *buf, size_t buflen);
 char *r_uuid();
         
 #ifdef __cplusplus
