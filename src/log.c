@@ -50,8 +50,9 @@ int r_log_set_file(const char* path)
                 } else {
                         _log_file = fopen(_log_path, "a");
                         if (_log_file == NULL) {
-                                fprintf(stderr, "Failed to open logfile at '%s'",
+                                fprintf(stderr, "Failed to open logfile at '%s'\n",
                                         _log_path);
+                                _log_file = stdout;
                                 err = -1;
                         } else {
                                 err = 0;

@@ -188,3 +188,8 @@ int membuf_vprintf(membuf_t* m, const char* format, va_list ap)
 
 /*         return 0; */
 /* } */
+
+int membuf_print_obj(membuf_t *b, json_object_t obj)
+{
+        return json_serialise(obj, 0, (json_writer_t) membuf_append, b);
+}

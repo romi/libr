@@ -2,6 +2,7 @@
 #define _R_MEMBUF_H_
 
 #include <stdarg.h>
+#include "json.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,6 +19,7 @@ int membuf_append_zero(membuf_t *b);
 int membuf_append_str(membuf_t *b, const char *s);
 int membuf_printf(membuf_t *b, const char* format, ...);
 int membuf_vprintf(membuf_t *b, const char* format, va_list ap);
+int membuf_print_obj(membuf_t *b, json_object_t obj);
 
 int membuf_available(membuf_t *b);
 int membuf_assure(membuf_t *b, int size);
