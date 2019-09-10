@@ -23,7 +23,7 @@ char *safe_strdup(const char *s);
 #define r_calloc(_n,_size)   safe_calloc(_n,_size)
 #define r_realloc(_p,_size)  safe_realloc(_p,_size)
 #define r_free(_p)           safe_free(_p)
-#define r_array(_type,_len)  ((_type*)safe_malloc((_len) * sizeof(_type), 1)
+#define r_array(_type,_len)  ((_type*)safe_malloc((_len) * sizeof(_type), 1))
 #define r_strdup(_s)         safe_strdup(_s)
 
 #ifdef __cplusplus
