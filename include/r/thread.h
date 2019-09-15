@@ -21,6 +21,14 @@ void delete_mutex(mutex_t *mutex);
 void mutex_lock(mutex_t *mutex);
 void mutex_unlock(mutex_t *mutex);
 
+
+typedef struct _condition_t condition_t;
+
+condition_t *new_condition();
+void delete_condition(condition_t *condition);
+void condition_wait(condition_t *condition, mutex_t *mutex);
+void condition_signal(condition_t *condition);
+
 #ifdef __cplusplus
 }
 #endif

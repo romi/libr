@@ -66,6 +66,11 @@ void membuf_unlock(membuf_t *b)
         mutex_unlock(b->mutex);
 }
 
+mutex_t *membuf_mutex(membuf_t *b)
+{
+        return b->mutex;
+}
+
 int membuf_append(membuf_t *b, const char *data, int len)
 {
         int ret;

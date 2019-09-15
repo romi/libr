@@ -83,3 +83,37 @@ void mutex_unlock(mutex_t *mutex)
 {
         pthread_mutex_unlock(&mutex->mutex);
 }
+
+/************************************************************/
+
+struct _condition_t
+{
+        pthread_cond_t cond;
+};
+
+condition_t *new_condition()
+{
+        condition_t *condition = r_new(condition_t);
+        if (condition == NULL)
+                return NULL;
+        pthread_cond_init(&condition->cond, NULL);
+        return condition;
+}
+
+void delete_condition(condition_t *condition)
+{
+        if (condition) {
+                pthread_cond_destroy(&condition->cond);
+                r_delete(condition);
+        }
+}
+
+void condition_wait(condition_t *condition, mutex_t *mutex)
+{
+        pthread_cond_wait(&condition->cond, &mutex->mutex);
+}
+
+void condition_signal(condition_t *condition)
+{
+        pthread_cond_signal(&condition->cond);
+}

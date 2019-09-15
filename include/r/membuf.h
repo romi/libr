@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 #include "json.h"
+#include "thread.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +31,7 @@ int membuf_len(membuf_t *b);
 
 void membuf_lock(membuf_t *b);
 void membuf_unlock(membuf_t *b);
+mutex_t *membuf_mutex(membuf_t *b);
 
 int membuf_size(membuf_t *b);
 
