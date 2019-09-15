@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include "r.h"
 
@@ -266,4 +267,102 @@ int path_chown(const char *path, const char *user)
         }
                 
         return chown(path, uid, gid);
+}
+
+static int _file_lock(int fd)
+{
+        struct flock lock;
+        lock.l_type = F_WRLCK;
+        lock.l_start = 0;
+        lock.l_whence = SEEK_SET;
+        lock.l_len = 0;
+        lock.l_pid = 0;
+
+        while (fcntl(fd, F_SETLKW, &lock) == -1) {
+                if (errno != EINTR) {
+                        char msg[200];
+                        strerror_r(errno, msg, sizeof(msg));
+                        r_err("Failed to lock the file: %s", msg);
+                        return -1;
+                }
+        }
+        return 0;
+}
+
+int _file_backup(const char *path)
+{
+        char backup[1024];
+        rprintf(backup, sizeof(backup), "%s.backup", path);
+        if (rename(path, backup) != 0) {
+                if (errno != ENOENT) {
+                        r_warn("Failed to create a backup file");
+                        return -1;
+                }
+        }
+        return 0;
+}
+
+int _file_unlock(int fd)
+{
+        struct flock lock;
+        lock.l_type = F_UNLCK;
+        lock.l_start = 0;
+        lock.l_whence = SEEK_SET;
+        lock.l_len = 0;
+        lock.l_pid = 0;
+
+        if (fcntl(fd, F_SETLK, &lock) == -1) {
+                r_warn("Unlock failed");
+                return -1;
+        }
+        return 0;
+}
+
+int _file_store(const char *path, int fd, char *data, int32_t len)
+{
+        int32_t written = 0;
+        while (written < len) {
+                int32_t n = write(fd, data + written, len - written);
+                if (n == -1) {
+                        char msg[200];
+                        strerror_r(errno, msg, sizeof(msg));
+                        r_err("Failed to write the file %s: %s", path, msg);
+                        return -1;
+                }
+                written += n;
+        }
+        return 0;
+}
+
+int file_store(const char *path, char *data, int len, int flags)
+{
+        int err = -1;
+        int fd = -1;
+
+        fd = open(path, O_WRONLY | O_CREAT, 0666);
+        if (fd == -1) {
+                char msg[200];
+                strerror_r(errno, msg, sizeof(msg));
+                r_err("Failed to open %s: %s", path, msg);
+                return -1;
+        }
+
+        if ((flags & FS_LOCK) && _file_lock(fd) != 0)
+                goto close_and_exit;
+
+        if ((flags & FS_BACKUP) && _file_backup(path) != 0)
+                goto unlock_close_and_exit;
+        
+        err = _file_store(path, fd, data, len);
+        
+unlock_close_and_exit:
+        
+        if ((flags & FS_LOCK) && _file_unlock(fd) != 0)
+                err = -1;
+        
+close_and_exit:
+        
+        close(fd);
+
+        return err;
 }
