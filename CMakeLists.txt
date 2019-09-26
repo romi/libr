@@ -23,7 +23,7 @@ include_directories(include)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 add_library(r SHARED ${SOURCES})
-target_link_libraries(r pthread uuid m)
+target_link_libraries(r pthread m)
 
 INSTALL(TARGETS r DESTINATION "lib")
 INSTALL (
