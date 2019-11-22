@@ -38,6 +38,7 @@ list_t* new_list(void* data);
 void delete_list(list_t *list);
 void delete1_list(list_t *list);
 list_t* list_sort(list_t *list, compare_func_t compare_func);
+list_t* list_concat(list_t *list1, list_t *list2);
 list_t* list_append(list_t *list, void* data);
 list_t* list_prepend(list_t *list, void* data);
 list_t* list_remove(list_t *list, void* data);

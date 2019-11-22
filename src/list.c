@@ -56,6 +56,20 @@ void delete1_list(list_t *list)
         }
 }
 
+list_t* list_concat(list_t *list1, list_t *list2)
+{
+        list_t *last;
+
+        if (list1) {
+                last = list_last(list1);
+                /* g_assert (last != NULL); */
+                last->next = list2;
+                return list1;
+        } else {
+                return list2;
+        }
+}
+
 list_t* list_append(list_t *list, void*  data)
 {
         list_t *newlist;
@@ -72,9 +86,9 @@ list_t* list_append(list_t *list, void*  data)
                 last->next = newlist;
 
                 return list;
-        }
-        else
+        } else {
                 return newlist;
+        }
 }
 
 list_t* list_prepend(list_t *list, void* data)
@@ -89,9 +103,8 @@ list_t* list_prepend(list_t *list, void* data)
 
 list_t* list_nth(list_t *list, int n)
 {
-        while ((n-- > 0) && list) {
+        while ((n-- > 0) && list)
                 list = list->next;
-        }
 
         return list;
 }
@@ -106,12 +119,12 @@ list_t* list_remove(list_t *list, void* data)
 
         while (tmp) {
                 if (tmp->data == data) {
-                        if (prev) {
+                        if (prev)
                                 prev->next = tmp->next;
-                        }
-                        if (list == tmp) {
+
+                        if (list == tmp)
                                 list = list->next;
-                        }
+
                         tmp->next = NULL;
                         delete_list(tmp);
 
@@ -135,12 +148,12 @@ list_t* list_remove_link(list_t *list, list_t *link)
 
         while (tmp) {
                 if (tmp == link) {
-                        if (prev) {
+                        if (prev)
                                 prev->next = tmp->next;
-                        }
-                        if (list == tmp) {
+
+                        if (list == tmp)
                                 list = list->next;
-                        }
+
                         tmp->next = NULL;
                         break;
                 }
@@ -176,12 +189,11 @@ list_t* list_sort(list_t *list, compare_func_t compare_func)
 {
         list_t *l1, *l2;
 
-        if (!list) {
+        if (!list)
                 return NULL;
-        }
-        if (!list->next) {
+
+        if (!list->next)
                 return list;
-        }
 
         l1 = list;
         l2 = list->next;
@@ -248,9 +260,12 @@ list_t* list_insert_at(list_t *list, int n, void* data)
  * for use with list_sort(). */
 int list_str_compare_func (void *a, void *b)
 {
-        if (a && b) return strcmp((char *)a, (char *)b);
-        if (!a && !b) return 0;
-        if (a) return -1;
+        if (a && b)
+                return strcmp((char *)a, (char *)b);
+        if (!a && !b)
+                return 0;
+        if (a)
+                return -1;
         return 1;
 }
 
