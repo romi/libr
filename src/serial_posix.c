@@ -22,7 +22,7 @@ struct _serial_t
         int quit;
 };
 
-static int _open_serial(const char *device, int speed);
+static int open_serial(const char *device, int speed, int reset);
 
 // See also:
 //   http://www.delorie.com/gnu/docs/glibc/libc_364.html
@@ -30,7 +30,8 @@ static int _open_serial(const char *device, int speed);
 //   https://www.gnu.org/software/libc/manual/html_node/Canonical-or-Not.html
 //   https://stackoverflow.com/questions/6947413/how-to-open-read-and-write-from-serial-port-in-c
 //   https://stackoverflow.com/questions/41224496/working-with-linux-serial-port-in-c-not-able-to-get-full-data/41252962#41252962
-static int _open_serial(const char *device, int speed)
+//   https://forum.arduino.cc/index.php/topic,28167.0.html
+static int open_serial(const char *device, int speed, int reset)
 {
         struct termios tty;
         int fd;
@@ -55,8 +56,8 @@ static int _open_serial(const char *device, int speed)
                 return -1;
         }
 
-        memset (&tty, 0, sizeof tty);
-        if (tcgetattr (fd, &tty) != 0) {
+        memset(&tty, 0, sizeof(tty));
+        if (tcgetattr(fd, &tty) != 0) {
                 r_err("open_serial: error %d from tcgetattr", errno);
                 close(fd);
                 return -1;
@@ -68,6 +69,8 @@ static int _open_serial(const char *device, int speed)
         // CREAD: enable reading
         // CS8: 8-bit characters
         tty.c_cflag = CLOCAL | CREAD | CS8; 
+        if (!reset)
+                tty.c_cflag &= ~HUPCL;   // disable hang-up-on-close to avoid reset
 
         // lflag
         // no signaling chars; no echo; ...
@@ -91,7 +94,7 @@ static int _open_serial(const char *device, int speed)
         cfsetspeed(&tty, speed);
         tcflush(fd, TCIOFLUSH);
 
-        if (tcsetattr (fd, TCSANOW, &tty) != 0) {
+        if (tcsetattr(fd, TCSANOW, &tty) != 0) {
                 r_err("open_serial: error %d from tcsetattr", errno);
                 close(fd);
                 return -1;
@@ -99,12 +102,12 @@ static int _open_serial(const char *device, int speed)
         return fd;
 }
 
-serial_t *new_serial(const char *device, int speed)
+serial_t *new_serial(const char *device, int speed, int reset)
 {
         serial_t *s;
 
         // First check whether we can open the serial connection.
-        int fd = _open_serial(device, speed);
+        int fd = open_serial(device, speed, reset);
         if (fd == -1) return NULL;
         
         // Create the object

@@ -9,7 +9,7 @@ extern "C" {
 
 typedef struct _serial_t serial_t;
 
-serial_t *new_serial(const char *device, int speed);
+serial_t *new_serial(const char *device, int speed, int reset);
 void delete_serial(serial_t *s);
 
 int serial_get(serial_t *s);
@@ -24,10 +24,15 @@ int serial_print(serial_t *s, const char *line);
 int serial_println(serial_t *s, const char *line);
 int serial_printf(serial_t *s, const char *format, ...);
 
-// serial_send_command() is a combination of a println and a
-// readline. The sending and reading are performed as a single
-// operation protected by a mutex to avoid being interrupted by
-// another thread.
+/** serial_send_command() is a combination of a println and a
+ * readline. The sending and reading are performed as a single
+ * operation protected by a mutex to avoid being interrupted by
+ * another thread.
+ *
+ * s: The serial connection to the device.
+ * message: Upon return from this function, this membuf contains the reply of the device. 
+ * cmd: This null-terminted string contains the command to be sent.
+ */
 const char *serial_command_send(serial_t *s, membuf_t *message, const char *cmd);
 const char *serial_command_sendf(serial_t *s, membuf_t *message, const char *format, ...);
 
