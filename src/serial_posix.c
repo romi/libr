@@ -1,3 +1,27 @@
+/*
+  ROMI libr
+
+  Copyright (C) 2019 Sony Computer Science Laboratories
+  Author(s) Peter Hanappe
+
+  The libr library provides some hardware abstractions and low-level
+  utility functions.
+
+  libr is free software: you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see
+  <http://www.gnu.org/licenses/>.
+
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -215,6 +239,8 @@ const char *serial_readline(serial_t *s, membuf_t *buffer)
         
         while (!s->quit) {
                 int c = serial_get(s);
+
+                //printf("%c", c);
                 
                 if (c == -1) {
                         return NULL;
@@ -224,17 +250,34 @@ const char *serial_readline(serial_t *s, membuf_t *buffer)
                         if (serial_peek(s) == '\n')
                                 c = serial_get(s);
                         r = membuf_append_zero(buffer);
-                        if (r != 0) return NULL;
-                        return membuf_data(buffer);
+                        if (r != 0)
+                                return NULL;
+                        
+                        if (membuf_len(buffer) >= 3
+                            && strncmp(membuf_data(buffer), "#!", 2) == 0) {
+                                r_debug("serial_readline: %s", membuf_data(buffer));
+                                membuf_clear(buffer);
+                        } else {
+                                return membuf_data(buffer);
+                        }
 
                 } else if (c == '\n') {
                         r = membuf_append_zero(buffer);
-                        if (r != 0) return NULL;
-                        return membuf_data(buffer);
+                        if (r != 0)
+                                return NULL;
+                        
+                        if (membuf_len(buffer) >= 3
+                            && strncmp(membuf_data(buffer), "#!", 2) == 0) {
+                                r_debug("serial_readline: %s", membuf_data(buffer));
+                                membuf_clear(buffer);
+                        } else {
+                                return membuf_data(buffer);
+                        }
+                } else {
+                        r = membuf_put(buffer, (char) (c & 0xff));
+                        if (r != 0)
+                                return NULL;
                 }
-        
-                r = membuf_put(buffer, (char) (c & 0xff));
-                if (r != 0) return NULL;
         }
 
         return NULL;

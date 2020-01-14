@@ -1,24 +1,29 @@
 /*
-    json.c A small JSON parser.
+  ROMI libr
 
-    Copyright (C) 2013  Sony Computer Science Laboratory Paris
-    Author: Peter Hanappe
+  Copyright (C) 2019 Sony Computer Science Laboratories
+  Author(s) Peter Hanappe
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+  The libr library provides some hardware abstractions and low-level
+  utility functions.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+  libr is free software: you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-#ifndef _RCOM_JSON_H
-#define _RCOM_JSON_H
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see
+  <http://www.gnu.org/licenses/>.
+
+ */
+#ifndef _R_JSON_H
+#define _R_JSON_H
 
 #if !defined(JSON_EMBEDDED)
 #include <stdio.h>
@@ -225,4 +230,4 @@ void json_cleanup();
 }
 #endif
 
-#endif // _RCOM_JSON_H
+#endif // _R_JSON_H
