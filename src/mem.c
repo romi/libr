@@ -25,17 +25,16 @@
 #include <stdlib.h>
 #include "r.h"
 
-#define MEM_DIAGNOSTICS 0
-//#define MEM_DIAGNOSTICS 1
+//#define MEM_DIAGNOSTICS
 
-#if MEM_DIAGNOSTICS
+#if defined MEM_DIAGNOSTICS
 #define SGC_USE_THREADS 1
 #include <sgc.h>
 
 int mem_init(int *argc)
 {
 	if (sgc_init(argc, 0) != 0) {
-                rcom_err("Failed the initialise the SGC memory heap");
+                r_err("Failed the initialise the SGC memory heap");
                 return -1;
         }
         return 0;
@@ -53,7 +52,7 @@ static int print_memory_leak(int op, void* ptr,
 
 void mem_cleanup()
 {
-        rcom_info("Scanning for memory leaks");
+        r_info("Scanning for memory leaks");
         sgc_search_memory_leaks(print_memory_leak);
         sgc_cleanup();
 }
@@ -61,13 +60,13 @@ void mem_cleanup()
 void *safe_malloc(size_t size, int zero)
 {
         if (size == 0) {
-                rcom_warn("safe_malloc: size == 0");
+                r_warn("safe_malloc: size == 0");
                 return NULL;
         }
         void *ptr = sgc_new_object(size, SGC_ZERO, 0);
         if (ptr == NULL) {
                 // Return NULL. Maybe the app can handle it correctly.
-                rcom_err("safe_malloc: out of memory");
+                r_err("safe_malloc: out of memory");
                 return NULL;
         }
         return ptr;
@@ -76,7 +75,7 @@ void *safe_malloc(size_t size, int zero)
 void safe_free(void *ptr)
 {
         if (ptr == NULL)
-                rcom_warn("safe_free: ptr == NULL");
+                r_warn("safe_free: ptr == NULL");
         else
                 sgc_free_object(ptr);
 }
@@ -90,11 +89,11 @@ void *safe_realloc(void *ptr, size_t size)
 {
         if (size == 0)
                 // Not an error
-                rcom_warn("safe_realloc: size == 0"); 
+                r_warn("safe_realloc: size == 0"); 
 
         ptr = sgc_resize_object(ptr, size, 0, 0);
         if (size > 0 && ptr == NULL) {
-                rcom_err("safe_malloc: out of memory");
+                r_err("safe_malloc: out of memory");
                 // Return NULL. Maybe the app can handle it correctly.
                 return NULL;
         }

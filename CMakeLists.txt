@@ -6,7 +6,10 @@ set(libr_VERSION_MINOR 1)
 
 set(CMAKE_BUILD_TYPE DEBUG)
 
+option(WITH_SGC "Compile the SGC library for memory leak detection" OFF)
+
 set(SOURCES
+  src/r.c 
   src/mem.c 
   src/thread_pthread.c 
   src/fs_posix.c 
@@ -23,7 +26,13 @@ include_directories(include)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 add_library(r SHARED ${SOURCES})
-target_link_libraries(r pthread m)
+if(WITH_SGC)
+  target_link_libraries(r pthread m sgc)
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D MEM_DIAGNOSTICS")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_DEBUG} -D MEM_DIAGNOSTICS ")
+else(WITH_SGC)
+  target_link_libraries(r pthread m)
+endif(WITH_SGC)
 
 INSTALL(TARGETS r DESTINATION "lib")
 INSTALL (

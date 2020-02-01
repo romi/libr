@@ -29,6 +29,9 @@
 extern "C" {
 #endif
 
+int r_init(int *argc);
+void r_cleanup();
+
 #include <r/mem.h>
 #include <r/thread.h>
 #include <r/fs.h>
