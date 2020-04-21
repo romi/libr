@@ -22,10 +22,16 @@ set(SOURCES
   src/serial_posix.c
   )
 
-include_directories(include)
-include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
 add_library(r SHARED ${SOURCES})
+
+target_include_directories(r
+        PUBLIC
+          "${CMAKE_CURRENT_SOURCE_DIR}/include"
+          "${CMAKE_CURRENT_SOURCE_DIR}/include/r"
+        )
+
 if(WITH_SGC)
   target_link_libraries(r pthread m sgc)
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D MEM_DIAGNOSTICS")
