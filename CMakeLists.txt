@@ -11,8 +11,9 @@ set(CMAKE_BUILD_TYPE DEBUG)
 # I mean... why wouldn't you? :)
 option(BUILD_TESTS "Build all tests." ON)
 option(BUILD_COVERAGE "Build coverage." ON)
+option(LOCAL_LIBR_BUILD "Used when building libr locally. Set to off for server builds." ON)
 
-if(BUILD_TESTS)
+if(BUILD_TESTS AND LOCAL_LIBR_BUILD)
   set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
   set(CMAKE_DOWNLOAD_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/download)
 
