@@ -24,6 +24,8 @@ set(SOURCES
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
+# Ci_cd test change.
+
 add_library(r SHARED ${SOURCES})
 
 target_include_directories(r
