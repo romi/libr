@@ -107,6 +107,7 @@ else(WITH_SGC)
 endif(WITH_SGC)
 
 if(BUILD_TESTS)
+#  Comment to force a build.
   add_subdirectory(test)
 endif()
 
