@@ -6,11 +6,13 @@ set(libr_VERSION_MAJOR 0)
 set(libr_VERSION_MINOR 1)
 
 set(CMAKE_BUILD_TYPE DEBUG)
+
 ######################################
 # Options. Build tests by default. We want to test whether we are developing or building a release.
 # I mean... why wouldn't you? :)
 option(BUILD_TESTS "Build all tests." ON)
 option(BUILD_COVERAGE "Build coverage." ON)
+# This flag is used to avoid duplcation when this project is imported as part of a larger project which already has gtest and lcov.
 option(LOCAL_LIBR_BUILD "Used when building libr locally. Set to off for server builds." ON)
 
 if(BUILD_TESTS AND LOCAL_LIBR_BUILD)
@@ -67,18 +69,7 @@ if(BUILD_TESTS AND LOCAL_LIBR_BUILD)
 
 endif() # BUILD_TESTS
 
-
-
 ######################################
-
-
-
-
-
-
-
-
-
 
 option(WITH_SGC "Compile the SGC library for memory leak detection" OFF)
 
@@ -114,13 +105,9 @@ else(WITH_SGC)
   target_link_libraries(r pthread m)
 endif(WITH_SGC)
 
-
-
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
-
-
 
 INSTALL(TARGETS r DESTINATION "lib")
 INSTALL (
