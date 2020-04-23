@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.6)
 
 project(libr)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(libr_VERSION_MAJOR 0)
 set(libr_VERSION_MINOR 1)
 
