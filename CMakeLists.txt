@@ -20,19 +20,6 @@ if(BUILD_TESTS AND LOCAL_LIBR_BUILD)
   set(CMAKE_DOWNLOAD_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/download)
 
   include(CTest)
-
-  include(${CMAKE_MODULES_DIRECTORY}/CodeCoverage.cmake)
-
-  set( COVERAGE_EXCLUDES
-          "/usr/*"
-          "*/googletest/*"
-          "*/googlemock/*"
-          "*test/*")
-
-  if (BUILD_COVERAGE)
-    append_coverage_compiler_flags()
-  endif()
-
   enable_testing()
 
   if (CMAKE_VERSION VERSION_LESS 3.2)
@@ -55,19 +42,33 @@ if(BUILD_TESTS AND LOCAL_LIBR_BUILD)
 
   add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 
-  # lcov doesn't build with CMake so we download, set lcov as an external target, then call make.
-  # we then manually add the bin path so that we can call it later.
-  download_project(   PROJ              lcov
-          URL               https://github.com/linux-test-project/lcov/releases/download/v1.14/lcov-1.14.tar.gz
-          PREFIX            ${CMAKE_DOWNLOAD_DIRECTORY}/lcov
-          TIMEOUT           180
-          ${UPDATE_DISCONNECTED_IF_AVAILABLE}
-          )
-
-  set(LCOV_PATH "${lcov_SOURCE_DIR}/bin/lcov")
-  set(GENHTML_PATH "${lcov_SOURCE_DIR}/bin/genhtml")
-
 endif() # BUILD_TESTS
+
+# Can't build for coverage without the test.
+if (BUILD_COVERAGE AND BUILD_TESTS)
+    if (LOCAL_LIBR_BUILD)
+      # lcov doesn't build with CMake so we download, set lcov as an external target, then call make.
+      # we then manually add the bin path so that we can call it later.
+      download_project(   PROJ              lcov
+              URL               https://github.com/linux-test-project/lcov/releases/download/v1.14/lcov-1.14.tar.gz
+              PREFIX            ${CMAKE_DOWNLOAD_DIRECTORY}/lcov
+              TIMEOUT           180
+              ${UPDATE_DISCONNECTED_IF_AVAILABLE}
+              )
+
+      set(LCOV_PATH "${lcov_SOURCE_DIR}/bin/lcov")
+      set(GENHTML_PATH "${lcov_SOURCE_DIR}/bin/genhtml")
+    endif()
+
+    include(${CMAKE_MODULES_DIRECTORY}/CodeCoverage.cmake)
+
+    append_coverage_compiler_flags()
+    set( COVERAGE_EXCLUDES
+            "/usr/*"
+            "*/googletest/*"
+            "*/googlemock/*"
+            "*test/*")
+endif()
 
 ######################################
 
