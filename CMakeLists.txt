@@ -19,32 +19,33 @@ option(BUILD_COVERAGE "Build coverage." ON)
 # This flag is used to avoid duplcation when this project is imported as part of a larger project which already has gtest and lcov.
 option(LOCAL_LIBR_BUILD "Used when building libr locally. Set to off for server builds." ON)
 
-if(BUILD_TESTS AND LOCAL_LIBR_BUILD)
+if(BUILD_TESTS)
   set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
   set(CMAKE_DOWNLOAD_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/download)
 
   include(CTest)
   enable_testing()
 
-  if (CMAKE_VERSION VERSION_LESS 3.2)
-    set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
-  else()
-    set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
+  if (LOCAL_LIBR_BUILD)
+      if (CMAKE_VERSION VERSION_LESS 3.2)
+        set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
+      else()
+        set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
+      endif()
+
+      include(${CMAKE_MODULES_DIRECTORY}/DownloadProject.cmake)
+      download_project(   PROJ                googletest
+              GIT_REPOSITORY      https://github.com/google/googletest.git
+              GIT_TAG             master
+              PREFIX              ${CMAKE_DOWNLOAD_DIRECTORY}/googletest
+              ${UPDATE_DISCONNECTED_IF_AVAILABLE}
+              )
+
+      # Prevent GoogleTest from overriding our compiler/linker options
+      # when building with Visual Studio
+      set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+      add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
   endif()
-
-  include(${CMAKE_MODULES_DIRECTORY}/DownloadProject.cmake)
-  download_project(   PROJ                googletest
-          GIT_REPOSITORY      https://github.com/google/googletest.git
-          GIT_TAG             master
-          PREFIX              ${CMAKE_DOWNLOAD_DIRECTORY}/googletest
-          ${UPDATE_DISCONNECTED_IF_AVAILABLE}
-          )
-
-  # Prevent GoogleTest from overriding our compiler/linker options
-  # when building with Visual Studio
-  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 
 endif() # BUILD_TESTS
 
