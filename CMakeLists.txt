@@ -32,7 +32,8 @@ if(BUILD_TESTS)
   include(CTest)
   enable_testing()
 
-  if (NOT DEFINED ${googletest_SOURCE_DIR})
+  if (NOT DEFINED googletest_SOURCE_DIR)
+      MESSAGE("LIBR downloading google test.")
       if (CMAKE_VERSION VERSION_LESS 3.2)
         set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
       else()
@@ -57,7 +58,7 @@ endif() # BUILD_TESTS
 
 # Can't build for coverage without the test.
 if (BUILD_COVERAGE AND BUILD_TESTS)
-    if (NOT DEFINED ${lcov_SOURCE_DIR})
+    if (NOT DEFINED lcov_SOURCE_DIR)
       # lcov doesn't build with CMake so we download, set lcov as an external target, then call make.
       # we then manually add the bin path so that we can call it later.
       download_project(   PROJ              lcov
