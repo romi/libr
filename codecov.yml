@@ -21,6 +21,6 @@ comment:
   require_changes: no
   
 ignore:
-  - "test/*"
+  - "test/src" 
 
 
