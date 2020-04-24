@@ -11,13 +11,19 @@ set(libr_VERSION_MINOR 1)
 
 set(CMAKE_BUILD_TYPE DEBUG)
 
-######################################
-# Options. Build tests by default. We want to test whether we are developing or building a release.
-# I mean... why wouldn't you? :)
+############################################################
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+############################################################
+
+# Options.
+# Build tests by default. We want to run tests whether we are developing or building a release. I mean... why wouldn't you? :)
 option(BUILD_TESTS "Build all tests." ON)
 option(BUILD_COVERAGE "Build coverage." ON)
 # This flag is used to avoid duplcation when this project is imported as part of a larger project which already has gtest and lcov.
-option(LOCAL_LIBR_BUILD "Used when building libr locally. Set to off for server builds." ON)
+#option(LOCAL_LIBR_BUILD "Used when building libr locally. Set to off for server builds." ON)
 
 if(BUILD_TESTS)
   set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
@@ -26,7 +32,7 @@ if(BUILD_TESTS)
   include(CTest)
   enable_testing()
 
-  if (LOCAL_LIBR_BUILD)
+  if (NOT DEFINED ${googletest_SOURCE_DIR})
       if (CMAKE_VERSION VERSION_LESS 3.2)
         set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
       else()
@@ -51,7 +57,7 @@ endif() # BUILD_TESTS
 
 # Can't build for coverage without the test.
 if (BUILD_COVERAGE AND BUILD_TESTS)
-    if (LOCAL_LIBR_BUILD)
+    if (NOT DEFINED ${lcov_SOURCE_DIR})
       # lcov doesn't build with CMake so we download, set lcov as an external target, then call make.
       # we then manually add the bin path so that we can call it later.
       download_project(   PROJ              lcov
@@ -111,6 +117,7 @@ else(WITH_SGC)
   target_link_libraries(r pthread m)
 endif(WITH_SGC)
 
+#if(BUILD_TESTS AND LOCAL_LIBR_BUILD)
 if(BUILD_TESTS)
 #  Comment to force a build.
   add_subdirectory(test)
