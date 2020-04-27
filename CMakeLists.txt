@@ -16,6 +16,8 @@ set(CMAKE_BUILD_TYPE DEBUG)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+MESSAGE("LIBR Cmake Source = " ${CMAKE_SOURCE_DIR})
+
 ############################################################
 
 set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
@@ -24,9 +26,7 @@ set(CMAKE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 include(${CMAKE_MODULES_DIRECTORY}/CodeCoverage.cmake)
 set( COVERAGE_EXCLUDES
         "/usr/*"
-        "*/googletest/*"
-        "*/googlemock/*"
-        "*/thirdparty*"
+        "${CMAKE_SOURCE_DIR}/thirdparty/*"
         "*test/*")
 
 # Options.
