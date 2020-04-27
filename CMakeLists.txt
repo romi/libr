@@ -18,6 +18,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 ############################################################
 
+set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
+set(CMAKE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
+
 include(${CMAKE_MODULES_DIRECTORY}/CodeCoverage.cmake)
 set( COVERAGE_EXCLUDES
         "/usr/*"
@@ -34,9 +37,6 @@ option(BUILD_COVERAGE "Build coverage." ON)
 #option(LOCAL_LIBR_BUILD "Used when building libr locally. Set to off for server builds." ON)
 
 if(BUILD_TESTS)
-  set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
-  set(CMAKE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
-
   include(CTest)
   enable_testing()
 
