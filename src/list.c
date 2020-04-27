@@ -29,6 +29,9 @@
 
 list_t* new_list(void* data)
 {
+
+
+// Test push
         list_t* list = r_new(list_t);
         if (list == NULL) {
                 r_err("new_list: out of memory");
