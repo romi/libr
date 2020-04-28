@@ -206,6 +206,6 @@ TEST_F(list_tests, list_append_when_r_new_fails_logs_returns_NULL)
     //AssertNULL
     ASSERT_EQ(safe_malloc_fake.call_count, 1);
   //  ASSERT_EQ(r_err_fake.call_count, 1);
-    ASSERT_NE(plist, nullptr);
+    ASSERT_EQ(plist, nullptr);
 }
 
