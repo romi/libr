@@ -30,8 +30,6 @@
 list_t* new_list(void* data)
 {
 
-
-// Test push
         list_t* list = r_new(list_t);
         if (list == NULL) {
                 r_err("new_list: out of memory");
@@ -99,8 +97,9 @@ list_t* list_prepend(list_t *list, void* data)
         list_t *newlist;
 
         newlist = new_list(data);
+        if (newlist == NULL)
+            return NULL;
         newlist->next = list;
-
         return newlist;
 }
 
