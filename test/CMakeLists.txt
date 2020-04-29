@@ -21,5 +21,5 @@ add_test(
 
 SETUP_TARGET_FOR_COVERAGE_LCOV(
         NAME r_unit_tests_coverage
-        EXECUTABLE ctest -V ${n_cores} # Executable in PROJECT_BINARY_DIR
+        EXECUTABLE ctest -V ${n_cores}
         DEPENDENCIES r_unit_tests)
