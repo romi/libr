@@ -193,7 +193,7 @@ TEST_F(list_tests, list_concat_when_lists_valid_succeeds)
     ASSERT_EQ(list1_end.next, &list2);
 }
 
-TEST_F(list_tests, list_append_when_r_new_fails_logs_returns_NULL)
+TEST_F(list_tests, list_append_when_r_new_fails_returns_NULL)
 {
     // Arrange
 
@@ -201,11 +201,51 @@ TEST_F(list_tests, list_append_when_r_new_fails_logs_returns_NULL)
 
     // Act
     _list_t *plist = list_append(nullptr, nullptr);
-    //_list_t *plist = new_list(nullptr);
 
-    //AssertNULL
+    //Assert
     ASSERT_EQ(safe_malloc_fake.call_count, 1);
-  //  ASSERT_EQ(r_err_fake.call_count, 1);
     ASSERT_EQ(plist, nullptr);
 }
 
+TEST_F(list_tests, list_append_when_r_new_succeeds_list_parameter_null_returns_new_list_sets_data)
+{
+    // Arrange
+    _list_t list_new;
+    list_new.next = nullptr;
+    int data = 10;
+
+    safe_malloc_fake.return_val = &list_new;
+
+    // Act
+    _list_t *plist = list_append(nullptr, &data);
+
+    //Assert
+    ASSERT_EQ(safe_malloc_fake.call_count, 1);
+    ASSERT_EQ(plist, &list_new);
+    ASSERT_EQ(list_new.data, &data);
+}
+
+TEST_F(list_tests, list_append_when_r_new_succeeds_list_parameter_valid_returns_appended_list_sets_data)
+{
+    // Arrange
+    _list_t list_old;
+    _list_t list_old_end;
+    list_old.next = &list_old_end;
+    list_old_end.next = nullptr;
+
+    _list_t list_new;
+    list_new.next = nullptr;
+    int data = 10;
+
+    safe_malloc_fake.return_val = &list_new;
+
+    // Act
+    _list_t *plist = list_append(&list_old, &data);
+
+    //Assert
+    ASSERT_EQ(safe_malloc_fake.call_count, 1);
+    ASSERT_EQ(plist, &list_old);
+    ASSERT_EQ(list_old.next, &list_old_end);
+    ASSERT_EQ(list_old_end.next, &list_new);
+    ASSERT_EQ(list_new.data, &data);
+}
