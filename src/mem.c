@@ -102,6 +102,16 @@ void *safe_realloc(void *ptr, size_t size)
 
 #else
 
+void * malloc_w(size_t size)
+{
+    return malloc(size);
+}
+
+void free_w(void *data)
+{
+    free(data);
+}
+
 int mem_init(int *argc)
 {
         return 0;
@@ -117,7 +127,7 @@ void *safe_malloc(size_t size, int zero)
                 r_warn("safe_malloc: size == 0");
                 return NULL;
         }
-        void *ptr = malloc(size);
+        void *ptr = malloc_w(size);
         if (ptr == NULL) {
                 // Return NULL. Maybe the app can handle it correctly.
                 r_err("safe_malloc: out of memory");
@@ -133,7 +143,7 @@ void safe_free(void *ptr)
         if (ptr == NULL)
                 r_warn("safe_free: ptr == NULL");
         else
-                free(ptr);
+                free_w(ptr);
 }
 
 void *safe_calloc(size_t nmemb, size_t size)

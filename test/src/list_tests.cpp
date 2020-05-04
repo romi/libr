@@ -1,18 +1,15 @@
 #include <string>
 #include "gtest/gtest.h"
 
-extern "C" {
-#include "fff.h"
-}
 
-DEFINE_FFF_GLOBALS;
 
-#include "r.h"
 #include "list.h"
 
-FAKE_VALUE_FUNC(void *, safe_malloc, size_t, int);
-FAKE_VOID_FUNC(safe_free, void *);
-FAKE_VOID_FUNC_VARARG(r_err, const char*, ...);
+extern "C" {
+//#include "fff.h"
+#include "log.mock.h"
+#include "mem.mock.h"
+}
 
 class list_tests : public ::testing::Test
 {
@@ -193,7 +190,7 @@ TEST_F(list_tests, list_concat_when_lists_valid_succeeds)
     ASSERT_EQ(list1_end.next, &list2);
 }
 
-TEST_F(list_tests, list_append_when_r_new_fails_returns_NULL)
+TEST_F(list_tests, list_append_)
 {
     // Arrange
 
@@ -248,4 +245,87 @@ TEST_F(list_tests, list_append_when_r_new_succeeds_list_parameter_valid_returns_
     ASSERT_EQ(list_old.next, &list_old_end);
     ASSERT_EQ(list_old_end.next, &list_new);
     ASSERT_EQ(list_new.data, &data);
+}
+
+TEST_F(list_tests, list_prepend_when_when_r_new_fails_returns_NULL)
+{
+    // Arrange
+    _list_t list_old;
+    list_old.next = nullptr;
+
+    int data = 10;
+
+    safe_malloc_fake.return_val = NULL;
+
+    // Act
+    _list_t *plist = list_prepend(&list_old, &data);
+
+    //Assert
+    ASSERT_EQ(safe_malloc_fake.call_count, 1);
+    ASSERT_EQ(plist, nullptr);
+}
+
+TEST_F(list_tests, list_prepend_when_when_r_new_succeeds_new_list_is_prepended)
+{
+    // Arrange
+    _list_t list_old;
+    list_old.next = nullptr;
+
+    _list_t list_new;
+    list_new.next = nullptr;
+
+    int data = 10;
+
+    safe_malloc_fake.return_val = &list_new;
+
+    // Act
+    _list_t *plist = list_prepend(&list_old, &data);
+
+    //Assert
+    ASSERT_EQ(safe_malloc_fake.call_count, 1);
+    ASSERT_EQ(plist, &list_new);
+    ASSERT_EQ(list_new.next, &list_old);
+    ASSERT_EQ(list_new.data, &data);
+}
+
+TEST_F(list_tests, list_nth_when_n_0_returns_list)
+{
+    // Arrange
+    _list_t list_new;
+    list_new.next = nullptr;
+    int n = 0;
+
+    // Act
+    _list_t *plist = list_nth(&list_new, n);
+
+    //Assert
+    ASSERT_EQ(plist, &list_new);
+}
+
+TEST_F(list_tests, list_nth_when_n_larger_than_list_length_returns_null)
+{
+    // Arrange
+    _list_t list_new;
+    list_new.next = nullptr;
+    int n = 3;
+
+    // Act
+    _list_t *plist = list_nth(&list_new, n);
+
+    //Assert
+    ASSERT_EQ(plist, nullptr);
+}
+
+TEST_F(list_tests, list_nth_when_list_empty_returns_null)
+{
+    // Arrange
+    _list_t list_new;
+    list_new.next = nullptr;
+    int n = 3;
+
+    // Act
+    _list_t *plist = list_nth(nullptr, n);
+
+    //Assert
+    ASSERT_EQ(plist, nullptr);
 }

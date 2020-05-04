@@ -32,6 +32,10 @@
 extern "C" {
 #endif
 
+// Wrappers for os calls for mocking.
+void * malloc_w(size_t size);
+void free_w(void *data);
+
 int mem_init(int *argc);
 void mem_cleanup();
 

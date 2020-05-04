@@ -100,6 +100,7 @@ list_t* list_prepend(list_t *list, void* data)
         if (newlist == NULL)
             return NULL;
         newlist->next = list;
+        newlist->data = data;
         return newlist;
 }
 
