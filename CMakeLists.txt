@@ -124,7 +124,8 @@ endif(WITH_SGC)
 
 #if(BUILD_TESTS AND LOCAL_LIBR_BUILD)
 if(BUILD_TESTS)
-  add_subdirectory(test)
+    add_subdirectory(test/mocks)
+    add_subdirectory(test)
 endif()
 
 INSTALL(TARGETS r DESTINATION "lib")
