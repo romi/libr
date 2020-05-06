@@ -6,8 +6,8 @@ set(SOURCES
         log.mock.h
         mem.mock.h
         mem.mock.c
-        osw.mock.h
-        osw.mock.c
+        os_wrapper.mock.h
+        os_wrapper.mock.c
         )
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/../../include"

@@ -7,17 +7,20 @@ set(SRCS_MEM
         src/mem_tests.cpp
         mocks/log.mock.h
         mocks/log.mock.c
-        mocks/osw.mock.h
-        mocks/osw.mock.c)
+        mocks/os_wrapper.mock.h
+        mocks/os_wrapper.mock.c)
 
 
 set(SRCS_COMMON
         src/tests_main.cpp
         src/list_tests.cpp
+        src/clock_posix_tests.cpp
         mocks/log.mock.h
         mocks/log.mock.c
         mocks/mem.mock.h
-        mocks/mem.mock.c)
+        mocks/mem.mock.c
+        mocks/os_wrapper.mock.h
+        mocks/os_wrapper.mock.c)
 
 
 add_executable( r_unit_tests_common

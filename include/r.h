@@ -42,6 +42,7 @@ void r_cleanup();
 #include <r/util.h>
 #include <r/json.h>
 #include <r/serial.h>
+#include <r/os_wrapper.h>
 
 #ifdef __cplusplus
 }

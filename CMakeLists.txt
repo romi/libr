@@ -102,7 +102,7 @@ set(SOURCES
   src/util.c
   src/json.c
   src/serial_posix.c
-  )
+        src/os_wrapper.c include/r/os_wrapper.h)
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 

@@ -26,7 +26,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
-#include <sys/types.h>
+#include "os_wrapper.h"
 
 #include "r.h"
 
@@ -34,24 +34,25 @@ uint64_t clock_timestamp()
 {
         uint64_t t;
         struct timeval tv;
-        gettimeofday(&tv, NULL);
-        t = tv.tv_sec * 1000000 + tv.tv_usec;
+        gettimeofday_wrapper(&tv, NULL);
+        t = tv.tv_sec * (long)MICROSECONDS_IN_SECOND + tv.tv_usec;
         return t;
 }
 
 double clock_time()
 {
         struct timeval tv;
-        gettimeofday(&tv, NULL);
-        return (double) tv.tv_sec + (double) tv.tv_usec / 1000000.0;
+        gettimeofday_wrapper(&tv, NULL);
+        return (double) tv.tv_sec + (double) tv.tv_usec / MICROSECONDS_IN_SECOND;
 }
 
 char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3)
 {
         struct timeval tv;
         struct tm r;
-        gettimeofday(&tv, NULL);
-        localtime_r(&tv.tv_sec, &r);
+        gettimeofday_wrapper(&tv, NULL);
+        localtime_r_wrapper(&tv.tv_sec, &r);
+
         snprintf(buf, len, "%04d%c%02d%c%02d%c%02d%c%02d%c%02d",
                  1900 + r.tm_year, sep1, 1 + r.tm_mon, sep1, r.tm_mday,
                  sep2,
@@ -61,6 +62,6 @@ char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3)
 
 void clock_sleep(double seconds)
 {
-        useconds_t usec = (useconds_t) (1000000.0 * seconds);
-        usleep(usec);
+        useconds_t usec = (useconds_t) (MICROSECONDS_IN_SECOND * seconds);
+        usleep_wrapper(usec);
 }
