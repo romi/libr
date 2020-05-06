@@ -198,6 +198,9 @@ list_t* list_sort(list_t *list, compare_func_t compare_func)
         if (!list->next)
                 return list;
 
+        if (!compare_func)
+            return NULL;
+
         l1 = list;
         l2 = list->next;
 
@@ -280,6 +283,9 @@ list_t* list_insert_ordered(list_t *list, void* data, compare_func_t compare_fun
 
         if (list == NULL)
                 return newlist;
+
+        if (!compare_func)
+            return NULL;
   
         if (compare_func(data, list->data) < 0) {
                 newlist->next = list;
