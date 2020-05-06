@@ -12,8 +12,6 @@ class clock_posix_tests : public ::testing::Test
 {
 protected:
     clock_posix_tests() = default;
-    {
-    }
 
     ~clock_posix_tests() override = default;
 
