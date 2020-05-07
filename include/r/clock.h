@@ -31,6 +31,8 @@
 extern "C" {
 #endif
 
+#define MICROSECONDS_IN_SECOND  (double)1000000.0
+
 // Micro-seconds since UNIX epoch
 uint64_t clock_timestamp();
 
