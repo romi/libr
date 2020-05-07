@@ -1,0 +1,8 @@
+#ifndef ROMI_ROVER_BUILD_AND_TEST_LIST_MOCK_H
+#define ROMI_ROVER_BUILD_AND_TEST_LIST_MOCK_H
+#include "fff.h"
+#include "list.h"
+
+
+
+#endif //ROMI_ROVER_BUILD_AND_TEST_LIST_MOCK_H

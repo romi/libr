@@ -37,7 +37,7 @@
 int path_exists(const char *path)
 {
         struct stat sb;
-        if (stat(path, &sb) != 0)
+        if (stat_wrapper(path, &sb) != 0)
                 return 0;
         return 1;
 }
@@ -45,9 +45,10 @@ int path_exists(const char *path)
 int is_file(const char *path)
 {
         struct stat sb;
-        if (stat(path, &sb) != 0)
+        if (stat_wrapper(path, &sb) != 0)
                 return 0;
-        if ((sb.st_mode & S_IFMT) == S_IFREG)
+        if (S_ISREG(sb.st_mode))
+ //       if ((sb.st_mode & S_IFMT) == S_IFREG)
                 return 1;
         return 0;
 }
@@ -55,9 +56,10 @@ int is_file(const char *path)
 int is_directory(const char *path)
 {
         struct stat sb;
-        if (stat(path, &sb) != 0)
+        if (stat_wrapper(path, &sb) != 0)
                 return 0;
-        if ((sb.st_mode & S_IFMT) == S_IFDIR)
+        if(S_ISDIR(sb.st_mode))
+     //   if ((sb.st_mode & S_IFMT) == S_IFDIR)
                 return 1;
         return 0;
 }
@@ -74,7 +76,7 @@ int path_make_absolute(const char *path, char *buffer, int len)
         if (path_is_absolute(path)) {
                 r = snprintf(buffer, len, "%s", path);
         } else {
-                char *wd = getcwd(NULL, 0);
+                char *wd = getcwd_wrapper(NULL, 0);
                 if (wd == NULL) return -1;
                 r = snprintf(buffer, len, "%s/%s", wd, path);
                 free(wd);
