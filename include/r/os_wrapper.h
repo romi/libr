@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <time.h>
@@ -10,11 +11,16 @@
 
 // Wrappers for os calls. Used for mocking when testing.
 
-void        free_wrapper(void *data);
-int         gettimeofday_wrapper(struct timeval *__restrict __tv, __timezone_ptr_t __tz);
-char *      getcwd_wrapper(char *__buf, size_t __size);
-struct tm * localtime_r_wrapper(const time_t *__restrict __timer, struct tm *__restrict __tp);
-void *      malloc_wrapper(size_t size);
+void        free_wrapper (void *data);
+void *      malloc_wrapper (size_t size);
+void *      memcpy_wrapper (void *dest, const void *src, size_t n);
+void *      memset_wrapper (void *source, int value, size_t size);
+void *      realloc_wrapper (void *__ptr, size_t __size);
+
+int         gettimeofday_wrapper (struct timeval *__restrict __tv, __timezone_ptr_t __tz);
+struct tm * localtime_r_wrapper (const time_t *__restrict __timer, struct tm *__restrict __tp);
+
+char *      getcwd_wrapper (char *__buf, size_t __size);
 int         stat_wrapper (const char *__restrict __file, struct stat *__restrict __buf);
 int         usleep_wrapper (__useconds_t __useconds);
 
