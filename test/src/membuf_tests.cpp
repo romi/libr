@@ -613,17 +613,16 @@ TEST_F(membuf_tests, membuf_printf_buffer_fails_to_grow_returns_correct_value)
 {
     // Arrange
     std::string expected_string = "";
-    const int dest_buffer_size = 16;
+    const int dest_buffer_size = 4;
     char dest_buffer[dest_buffer_size];
     memset(&dest_buffer, 0, sizeof(dest_buffer));
 
     int index = 0;
     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, index);
-
     safe_realloc_fake.return_val = nullptr;
 
     // Act
-    int actual = membuf_printf(&membuffer, "%s %d", "integer", "test");
+    int actual = membuf_printf(&membuffer, "%s", "integer");
     std::string actual_string(dest_buffer);
 
     // Assert
