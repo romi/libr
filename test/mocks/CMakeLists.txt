@@ -8,7 +8,7 @@ set(SOURCES
         mem.mock.c
         os_wrapper.mock.h
         os_wrapper.mock.c
-        list.mock.c list.mock.h)
+        list.mock.c list.mock.h thread.mock.h thread.mock.c)
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/../../include"
                       "${CMAKE_CURRENT_SOURCE_DIR}/../../include/r")

@@ -25,13 +25,7 @@
 
 #include "r.h"
 
-struct _membuf_t
-{
-        char* buffer;
-        int length;
-        int index;
-        mutex_t *mutex;
-};
+#define KB_32 (1024 * 32)
 
 static int membuf_grow(membuf_t *b)
 {
@@ -45,6 +39,15 @@ static int membuf_grow(membuf_t *b)
         }
         b->length = len;
         return 0;
+}
+
+static int membuf_grow_to_fit(membuf_t *b, int len)
+{
+        int ret = 0;
+        while ((b->index + len > b->length) && (ret != -1)) {
+            ret = membuf_grow(b);
+        }
+        return ret;
 }
 
 membuf_t *new_membuf()
@@ -70,15 +73,13 @@ void delete_membuf(membuf_t *b)
 
 int membuf_put(membuf_t *b, char c)
 {
-        int ret;
-        if (b->index + 1 > b->length) {
-                ret = membuf_grow(b);
-                if (ret != 0)
-                        return -1;
+        int ret = membuf_grow_to_fit(b, 1);
+        if (ret == 0) {
+            b->buffer[b->index++] = c;
         }
-        b->buffer[b->index++] = c;
-        return 0;
+        return ret;
 }
+
 
 void membuf_lock(membuf_t *b)
 {
@@ -97,15 +98,12 @@ mutex_t *membuf_mutex(membuf_t *b)
 
 int membuf_append(membuf_t *b, const char *data, int len)
 {
-        int ret;
-        while (b->index + len > b->length) {
-                ret = membuf_grow(b);
-                if (ret != 0)
-                        return -1;
+        int ret = membuf_grow_to_fit(b, len);
+        if (ret == 0) {
+            memcpy(b->buffer + b->index, data, len);
+            b->index += len;
         }
-        memcpy(b->buffer + b->index, data, len);
-        b->index += len;
-        return 0;
+        return ret;
 }
 
 int membuf_append_zero(membuf_t *b)
@@ -115,11 +113,17 @@ int membuf_append_zero(membuf_t *b)
 
 int membuf_append_str(membuf_t *b, const char *s)
 {
-        membuf_append(b, s, strlen(s));
+        size_t lens = strlen(s);
+        if (lens > KB_32) {
+            r_err("membuf_append_str: string length > 32kb");
+            return  -1;
+        }
+        return membuf_append(b, s, lens);
 }
 
 void membuf_clear(membuf_t *b)
 {
+        memset(b->buffer, 0, b->length);
         b->index = 0;
 }
 
@@ -135,7 +139,10 @@ int membuf_len(membuf_t *b)
 
 void membuf_set_len(membuf_t *b, int len)
 {
-        b->index = len;
+        if (len <= b->length)
+        {
+            b->index = len;
+        }
 }
 
 int membuf_available(membuf_t *b)
@@ -150,73 +157,45 @@ int membuf_size(membuf_t *b)
 
 int membuf_assure(membuf_t *b, int size)
 {
-        int r;
-        while (b->index + size > b->length) {
-                r = membuf_grow(b);
-                if (r != 0) return -1;
-        }
-        return 0;
+        return membuf_grow_to_fit(b, size);
 }
 
 int membuf_printf(membuf_t *b, const char* format, ...)
 {
-        int len;
         va_list ap;
         int ret;
-        
-        va_start(ap, format);
-        len = vsnprintf(NULL, 0, format, ap);
-        va_end(ap);
-
-        if (len < 0)
-                return -1;
-
-        if (membuf_assure(b, len+1) != 0)
-                return -1;
-        
         va_start(ap, format);
         ret = membuf_vprintf(b, format, ap);
         va_end(ap);
 
-        return ret;        
+        return ret;
 }
 
-int membuf_vprintf(membuf_t* m, const char* format, va_list ap)
+int membuf_vprintf(membuf_t* b, const char* format, va_list ap)
 {
         int len;
-        int available = m->length - m->index;
-        len = vsnprintf(m->buffer + m->index, available, format, ap);
+        va_list ap_copy;
+        va_copy(ap_copy, ap);
+
+        len = vsnprintf(NULL, 0, format, ap);
+
+        if (len < 0)
+            return -1;
+
+        if (membuf_assure(b, len+1) != 0)
+            return -1;
+
+        int available = membuf_available(b);
+
+        len = vsnprintf(b->buffer + b->index, available, format, ap_copy);
+        va_end(ap_copy);
+
         if (len < available) {
-                m->index += len;
-                return 0;
-        } else {
-                return -1;
+            b->index += len;
+            return 0;
         }
+        return -1;
 }
-
-/* int membuf_vprintf(membuf_t* m, const char* format, va_list ap) */
-/* { */
-/*         int len; */
-
-/*         va_start(ap, format); */
-/*         len = vsnprintf(NULL, 0, format, ap); */
-/*         va_end(ap); */
-
-/*         if (len < 0) */
-/*                 return -1; */
-
-/*         if (membuf_assure(req, m->index + len + 1) != 0) */
-/*                 return -1; */
-        
-/*         va_start(ap, format); */
-/*         len = vsnprintf(m->buffer + m->index, len, format, ap); */
-/*         va_end(ap); */
-        
-/*         if (len < 0) */
-/*                 return -1; */
-
-/*         return 0; */
-/* } */
 
 int membuf_print_obj(membuf_t *b, json_object_t obj)
 {

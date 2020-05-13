@@ -1,5 +1,6 @@
 #include "os_wrapper.h"
 
+// Memory
 void free_wrapper(void *data)
 {
     free(data);
@@ -25,6 +26,7 @@ void * realloc_wrapper (void *ptr, size_t size)
     return realloc(ptr, size);
 }
 
+// Time
 int gettimeofday_wrapper(struct timeval *__restrict __tv, __timezone_ptr_t __tz)
 {
     return gettimeofday( __tv, __tz);
@@ -35,6 +37,7 @@ struct tm * localtime_r_wrapper(const time_t *__restrict __timer, struct tm *__r
     return localtime_r(__timer, __tp);
 }
 
+// Filesystem
 char *getcwd_wrapper(char *__buf, size_t __size)
 {
     return getcwd(__buf, __size);

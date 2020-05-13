@@ -35,6 +35,14 @@ extern "C" {
 
 typedef struct _membuf_t membuf_t;
 
+struct _membuf_t
+{
+    char* buffer;
+    int length;
+    int index;
+    mutex_t *mutex;
+};
+
 membuf_t *new_membuf();
 void delete_membuf(membuf_t *b);
 
