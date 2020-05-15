@@ -51,7 +51,6 @@ protected:
     }
 
     _membuf_t membuffer;
-
 };
 
 TEST_F(membuf_tests, new_membuf_when_new_fails_logs_error_returns_null)
@@ -381,7 +380,7 @@ TEST_F(membuf_tests, membuf_append_string_greater_32k_does_not_append_string_ret
     memset(&dest_buffer, 0, sizeof(dest_buffer));
     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, 0);
 
-    int large_string_size = (1024 * 32 + 2);
+    const int large_string_size = (1024 * 32 + 2);
     char large_string[large_string_size];
     memset(large_string, 1, large_string_size);
     large_string[large_string_size -1] = 0;

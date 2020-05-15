@@ -223,22 +223,19 @@ TEST_F(mem_tests, safe_strdup_when_string_over_1MB_returns_NULL)
 TEST_F(mem_tests, safe_strdup_when_string_not_over_1MB_allocates_correct_length)
 {
     // Arrange
-    const char *teststring = "teststring";
-    const ulong expected_size = strlen(teststring) + 1;
-    char buffer[expected_size];
-    memset(buffer, 0, expected_size);
+    std::string teststring("teststring");
+    const ulong expected_size = teststring.length() + 1;
+    std::vector<char> buffer(expected_size, 0);
 
-    malloc_wrapper_fake.return_val = &buffer;
+    malloc_wrapper_fake.return_val = &buffer[0];
 
     // Act
-    char *dup_str = safe_strdup(teststring);
-
-    std::string expected(teststring);
+    char *dup_str = safe_strdup(teststring.c_str());
     std::string actual(dup_str);
 
     // Assert
     ASSERT_EQ(malloc_wrapper_fake.call_count, 1);
     ASSERT_EQ(malloc_wrapper_fake.arg0_val, expected_size);
     ASSERT_EQ(dup_str, &buffer[0]);
-    ASSERT_EQ(actual, expected);
+    ASSERT_EQ(actual, teststring);
 }

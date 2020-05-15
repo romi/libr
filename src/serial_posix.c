@@ -115,7 +115,7 @@ static int open_serial(const char *device, int speed, int reset)
         /* tty.c_cc[VMIN]  = 0; */
         /* tty.c_cc[VTIME] = 5; */
         
-        cfsetspeed(&tty, speed);
+        cfsetspeed(&tty, speed_constant);
         tcflush(fd, TCIOFLUSH);
 
         if (tcsetattr(fd, TCSANOW, &tty) != 0) {

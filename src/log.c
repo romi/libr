@@ -186,7 +186,7 @@ static void r_log_write(const char* s)
         if (callback) callback(userdata, s);
 }
 
-static void r_log_writer(void *userdata, const char* s)
+__attribute__((unused)) static void r_log_writer(const char* s)
 {
         r_log_write(s);
 }
@@ -204,6 +204,7 @@ static void log_(int level, const char* s)
         case R_WARNING: type = "WW"; break;
         case R_ERROR: type = "EE"; break;
         case R_PANIC: type = "!!"; break;
+        //TODO: Add default.
         }
 
         rprintf(buffer, sizeof(buffer), "[%s] [%s] [%s] %s", time, type, name, s);

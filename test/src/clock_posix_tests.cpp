@@ -31,7 +31,7 @@ protected:
     {
     }
 
-    static int gettimeofday_wrapper_custom_fake(struct timeval *__restrict tv, __timezone_ptr_t tz)
+    static int gettimeofday_wrapper_custom_fake(struct timeval *__restrict tv, __timezone_ptr_t tz __attribute__((unused)) )
     {
         tv->tv_sec = fake_time.tv_sec;
         tv->tv_usec = fake_time.tv_usec;

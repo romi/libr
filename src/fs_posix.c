@@ -248,14 +248,14 @@ static int get_user_info(const char *user, uid_t *uid, gid_t *gid)
         struct passwd pwbuf;
         struct passwd *pwbufp = NULL;
         char *buf;
-        size_t bufsize;
+        long bufsize;
 
         // From man getpwnam_r
         bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
         if (bufsize == -1)
                 bufsize = 16384;
 
-        buf = malloc(bufsize);
+        buf = malloc((size_t)bufsize);
         if (buf == NULL) {
                 r_panic("out of memory");
                 return -1;
@@ -263,7 +263,7 @@ static int get_user_info(const char *user, uid_t *uid, gid_t *gid)
 
         int err = getpwnam_r(user, &pwbuf, buf, bufsize, &pwbufp);
         if (pwbufp == NULL) {
-                if (err = 0) {
+                if (err == 0) {
                         r_err("Failed to obtain the UID associated with '%s'", user);
                         free(buf);
                         return -1;

@@ -103,9 +103,8 @@ void *safe_realloc(void *ptr, size_t size)
 
 #else
 
-int mem_init(int *argc)
+int mem_init(int *argc __attribute__((unused)))
 {
-    (void *)argc;
     return 0;
 }
 

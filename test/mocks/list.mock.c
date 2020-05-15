@@ -1,4 +1,3 @@
-//
-// Created by dboari on 07/05/2020.
-//
+#include "list.mock.h"
 
+DEFINE_FAKE_VALUE_FUNC(list_t*, new_list, void*)

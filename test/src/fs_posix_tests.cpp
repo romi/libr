@@ -41,18 +41,18 @@ protected:
         mkdir(directory_name.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     }
 
-    static int stat_wrapper_custom_fake (const char * __file, struct stat * __buf)
-    {
-        memcpy(__buf, &stat_wrapper_stat_buffer, sizeof(struct stat));
-    }
-
-    static int stat_wrapper_return_value;
-    static struct stat stat_wrapper_stat_buffer;
+//    static int stat_wrapper_custom_fake (const char * __file __attribute__((unused)), struct stat * __buf)
+//    {
+//        memcpy(__buf, &stat_wrapper_stat_buffer, sizeof(struct stat));
+//    }
+//
+//    static int stat_wrapper_return_value;
+//    static struct stat stat_wrapper_stat_buffer;
 
 };
 
-int    fs_posix_tests::stat_wrapper_return_value;
-struct stat fs_posix_tests::stat_wrapper_stat_buffer;
+//int    fs_posix_tests::stat_wrapper_return_value;
+//struct stat fs_posix_tests::stat_wrapper_stat_buffer;
 
 
 TEST_F(fs_posix_tests, path_exists_when_null_path_returns_0)
@@ -211,21 +211,21 @@ TEST_F(fs_posix_tests, path_make_absolute_absolute_returns_input)
     ASSERT_EQ(actual, 0);
 }
 
-TEST_F(fs_posix_tests, path_make_absolute_not_absolute_returns_correct_path)
-{
-    // Arrange
-    std::string abspath("path");
-    stat_wrapper_fake.custom_fake = stat;
-
-    char buffer[PATH_MAX];;
-
-    char * dname = get_current_dir_name();
-    char * rpath = realpath(existing_file.c_str(), NULL);
-
-    // Act
-    int actual = path_make_absolute(abspath.c_str(), buffer, (int)PATH_MAX);
-
-    //Assert
-    ASSERT_EQ(actual, 0);
-    free(dname);
-}
+//TEST_F(fs_posix_tests, path_make_absolute_not_absolute_returns_correct_path)
+//{
+//    // Arrange
+//    std::string abspath("path");
+//    stat_wrapper_fake.custom_fake = stat;
+//
+//    char buffer[PATH_MAX];;
+//
+//    char * dname = get_current_dir_name();
+//    char * rpath = realpath(existing_file.c_str(), NULL);
+//
+//    // Act
+//    int actual = path_make_absolute(abspath.c_str(), buffer, (int)PATH_MAX);
+//
+//    //Assert
+//    ASSERT_EQ(actual, 0);
+//    free(dname);
+//}
