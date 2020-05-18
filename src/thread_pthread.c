@@ -34,7 +34,7 @@ struct _thread_t {
 
 static void* _run(void* data);
 
-thread_t* new_thread(thread_run_t run, void *data, int realtime, int autodelete)
+thread_t* new_thread(thread_run_t run, void *data, int realtime __attribute__((unused)), int autodelete)
 {
         thread_t* thread = r_new(thread_t);
         if (thread == NULL)
@@ -71,7 +71,7 @@ void delete_thread(thread_t* thread)
 
 int thread_join(thread_t* thread)
 {
-        pthread_join(thread->thread, NULL);
+       return pthread_join(thread->thread, NULL);
 }
 
 /************************************************************/

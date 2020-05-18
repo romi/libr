@@ -31,7 +31,6 @@ char *rprintf(char *buffer, int buflen, const char *format, ...)
 {
         int len;
         va_list ap;
-        int ret;
         
         va_start(ap, format);
         len = vsnprintf(NULL, 0, format, ap);

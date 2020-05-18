@@ -11,9 +11,9 @@ extern "C" {
 class list_tests : public ::testing::Test
 {
 protected:
-	list_tests() : a_valid("a_valid"), b_valid("b_valid"), c_valid("c_valid"),
-	               d_valid("d_valid"), e_valid("e_valid"), f_valid("f_valid"), g_valid("g_valid"),
-	               list_element0{}, list_element1{}, list_element2{}, list_element3{}, list_element4{}, list_element5{}
+	list_tests() : list_element0{}, list_element1{}, list_element2{}, list_element3{}, list_element4{}, list_element5{},
+	                a_valid("a_valid"), b_valid("b_valid"), c_valid("c_valid"),
+	               d_valid("d_valid"), e_valid("e_valid"), f_valid("f_valid"), g_valid("g_valid")
     {
 	}
 
@@ -95,7 +95,7 @@ TEST_F(list_tests, new_list_when_r_new_fails_logs_returns_nullptr)
 TEST_F(list_tests, new_list_when_r_new_succeeds_returns_valid_pointer)
 {
     // Arrange
-    _list_t list{.data = nullptr, .next = nullptr};;
+    _list_t list{nullptr, nullptr};
 
     safe_malloc_fake.return_val = &list;
 
@@ -111,7 +111,7 @@ TEST_F(list_tests, new_list_when_r_new_succeeds_returns_valid_pointer)
 TEST_F(list_tests, new_list_when_r_new_succeeds_sets_data_next_nullptr)
 {
     // Arrange
-    _list_t list{.data = nullptr, .next = nullptr};;
+    _list_t list{nullptr, nullptr};;
     int data = 10;
     int expected_data = 10;
 
@@ -140,7 +140,7 @@ TEST_F(list_tests, delete_list_when_nullptr_pointer_passed_does_not_delete)
 TEST_F(list_tests, delete_list_one_list_entry_deletes_correct_number)
 {
     // Arrange
-    _list_t list = {.data = nullptr, .next = nullptr};
+    _list_t list = {nullptr, nullptr};
 
     // Act
     delete_list(&list);
@@ -152,9 +152,9 @@ TEST_F(list_tests, delete_list_one_list_entry_deletes_correct_number)
 TEST_F(list_tests, delete_list_multiple_list_entry_deletes_correct_number)
 {
     // Arrange
-    _list_t list3 = {.data = nullptr, .next = nullptr};
-    _list_t list2 = {.data = nullptr, .next = &list3};
-    _list_t list1 = {.data = nullptr, .next = &list2};
+    _list_t list3 = {nullptr, nullptr};
+    _list_t list2 = {nullptr, &list3};
+    _list_t list1 = {nullptr, &list2};
 
     // Act
     delete_list(&list1);
@@ -166,7 +166,7 @@ TEST_F(list_tests, delete_list_multiple_list_entry_deletes_correct_number)
 TEST_F(list_tests, delete1_list_deletes_correct_number)
 {
     // Arrange
-    _list_t list1 = {.data = nullptr, .next = nullptr};
+    _list_t list1 = {nullptr, nullptr};
 
     // Act
     delete1_list(&list1);
@@ -188,7 +188,7 @@ TEST_F(list_tests, list_concat_when_lists_nullptr_returns_nullptr)
 TEST_F(list_tests, list_concat_when_list1_nullptr_returns_list2)
 {
     // Arrange
-    _list_t list2{.data = nullptr, .next = nullptr};;
+    _list_t list2{nullptr, nullptr};;
 
     // Act
     auto list = list_concat(nullptr, &list2);
@@ -200,7 +200,7 @@ TEST_F(list_tests, list_concat_when_list1_nullptr_returns_list2)
 TEST_F(list_tests, list_concat_when_list2_nullptr_returns_list1_next_nullptr)
 {
     // Arrange
-    _list_t list1{.data = nullptr, .next = nullptr};;
+    _list_t list1{nullptr, nullptr};;
 
     // Act
     auto list = list_concat(&list1, nullptr);
@@ -213,11 +213,11 @@ TEST_F(list_tests, list_concat_when_list2_nullptr_returns_list1_next_nullptr)
 TEST_F(list_tests, list_concat_when_lists_valid_succeeds)
 {
     // Arrange
-    _list_t list1_end{.data = nullptr, .next = nullptr};
-    _list_t list1{.data = nullptr, .next = &list1_end};
+    _list_t list1_end{nullptr, nullptr};
+    _list_t list1{nullptr, &list1_end};
 
-    _list_t list2_end{.data = nullptr, .next = nullptr};
-    _list_t list2{.data = nullptr, .next = &list2_end};
+    _list_t list2_end{nullptr, nullptr};
+    _list_t list2{nullptr, &list2_end};
 
     // Act
     auto list = list_concat(&list1, &list2);
@@ -244,7 +244,7 @@ TEST_F(list_tests, list_append_)
 TEST_F(list_tests, list_append_when_r_new_succeeds_list_parameter_nullptr_returns_new_list_sets_data)
 {
     // Arrange
-    _list_t list_new{.data = nullptr, .next = nullptr};;
+    _list_t list_new{nullptr, nullptr};;
     int data = 10;
 
     safe_malloc_fake.return_val = &list_new;
@@ -261,10 +261,10 @@ TEST_F(list_tests, list_append_when_r_new_succeeds_list_parameter_nullptr_return
 TEST_F(list_tests, list_append_when_r_new_succeeds_list_parameter_valid_returns_appended_list_sets_data)
 {
     // Arrange
-    _list_t list_old_end{.data = nullptr, .next = nullptr};
-    _list_t list_old {.data = nullptr, .next = &list_old_end};
+    _list_t list_old_end{nullptr, nullptr};
+    _list_t list_old {nullptr, &list_old_end};
 
-    _list_t list_new{.data = nullptr, .next = nullptr};
+    _list_t list_new{nullptr, nullptr};
     int data = 10;
 
     safe_malloc_fake.return_val = &list_new;
@@ -283,7 +283,7 @@ TEST_F(list_tests, list_append_when_r_new_succeeds_list_parameter_valid_returns_
 TEST_F(list_tests, list_prepend_when_when_r_new_fails_returns_nullptr)
 {
     // Arrange
-    _list_t list_old{.data = nullptr, .next = nullptr};
+    _list_t list_old{nullptr, nullptr};
 
     int data = 10;
 
@@ -300,9 +300,9 @@ TEST_F(list_tests, list_prepend_when_when_r_new_fails_returns_nullptr)
 TEST_F(list_tests, list_prepend_when_when_r_new_succeeds_new_list_is_prepended)
 {
     // Arrange
-    _list_t list_old{.data = nullptr, .next = nullptr};
+    _list_t list_old{nullptr, nullptr};
 
-    _list_t list_new{.data = nullptr, .next = nullptr};
+    _list_t list_new{nullptr, nullptr};
 
     int data = 10;
 
@@ -321,7 +321,7 @@ TEST_F(list_tests, list_prepend_when_when_r_new_succeeds_new_list_is_prepended)
 TEST_F(list_tests, list_nth_when_n_0_returns_list)
 {
     // Arrange
-    _list_t list_new{.data = nullptr, .next = nullptr};
+    _list_t list_new{nullptr, nullptr};
     int n = 0;
 
     // Act
@@ -334,7 +334,7 @@ TEST_F(list_tests, list_nth_when_n_0_returns_list)
 TEST_F(list_tests, list_nth_when_n_larger_than_list_length_returns_nullptr)
 {
     // Arrange
-    _list_t list_new{.data = nullptr, .next = nullptr};
+    _list_t list_new{nullptr, nullptr};
     int n = 3;
 
     // Act
@@ -362,8 +362,8 @@ TEST_F(list_tests, list_nth_returns_nth)
     int n = 1;
     int data = 10;
 
-    _list_t list_old_end{.data = &data, .next = nullptr};;
-    _list_t list_old{.data = nullptr, .next = &list_old_end};;
+    _list_t list_old_end{&data, nullptr};;
+    _list_t list_old{nullptr, &list_old_end};;
 
     // Act
     _list_t *plist = list_nth(&list_old, n);
@@ -458,7 +458,7 @@ TEST_F(list_tests, list_remove_link_when_data_doesnt_exist_not_deleted)
     int data1 = 1;
     int data2 = 2;
     int data3 = 3;
-    _list_t list_not_found{.data = nullptr, .next = nullptr};
+    _list_t list_not_found{nullptr, nullptr};
 
     _list_t *test_list = CreateList3(&data1, &data2, &data3);
     int expected_size = list_size(test_list);
@@ -614,7 +614,7 @@ TEST_F(list_tests, list_sort_list_nullptr_returns_nullptr)
 TEST_F(list_tests, list_sort_list_single_entry_returns_list)
 {
     // Arrange
-    _list_t list_element{.data = nullptr, .next = nullptr};
+    _list_t list_element{nullptr, nullptr};
 
     // Act
     _list_t *plist = list_sort(&list_element, nullptr);

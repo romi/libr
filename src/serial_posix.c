@@ -115,7 +115,7 @@ static int open_serial(const char *device, int speed, int reset)
         /* tty.c_cc[VMIN]  = 0; */
         /* tty.c_cc[VTIME] = 5; */
         
-        cfsetspeed(&tty, speed);
+        cfsetspeed(&tty, speed_constant);
         tcflush(fd, TCIOFLUSH);
 
         if (tcsetattr(fd, TCSANOW, &tty) != 0) {
@@ -333,29 +333,48 @@ int serial_println(serial_t *s, const char *line)
 
 int serial_printf(serial_t *s, const char *format, ...)
 {
-        va_list ap;
-        int len, r;
-        
-        va_start(ap, format);
-        len = vsnprintf(NULL, 0, format, ap);
-        va_end(ap);
+    va_list ap;
+    int r;
 
-        if (len < 0) {
-                r_err("serial_printf: vsnprintf returned an error");
-                return -1;
-        }
-        
-        membuf_clear(s->out);
-        r = membuf_assure(s->out, len+1);
-        if (r != 0)
-                return -1;
+    membuf_clear(s->out);
 
-        va_start(ap, format);
-        membuf_vprintf(s->out, format, ap);
-        va_end(ap);
+    va_start(ap, format);
+    r = membuf_vprintf(s->out, format, ap);
+    va_end(ap);
 
-        return serial_write(s, membuf_data(s->out), membuf_len(s->out));
+    if (r < 0) {
+        r_err("serial_printf: membuf_vprintf returned an error");
+        return -1;
+    }
+
+    return serial_write(s, membuf_data(s->out), membuf_len(s->out));
 }
+
+//int serial_printf(serial_t *s, const char *format, ...)
+//{
+//        va_list ap;
+//        int len, r;
+//
+//        va_start(ap, format);
+//        len = vsnprintf(NULL, 0, format, ap);
+//        va_end(ap);
+//
+//        if (len < 0) {
+//                r_err("serial_printf: vsnprintf returned an error");
+//                return -1;
+//        }
+//
+//        membuf_clear(s->out);
+//        r = membuf_assure(s->out, len+1);
+//        if (r != 0)
+//                return -1;
+//
+//        va_start(ap, format);
+//        membuf_vprintf(s->out, format, ap);
+//        va_end(ap);
+//
+//        return serial_write(s, membuf_data(s->out), membuf_len(s->out));
+//}
 
 void serial_lock(serial_t *s)
 {

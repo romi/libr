@@ -385,7 +385,7 @@ json_object_t json_number_create(double value)
 	return base;
 }
 
-static void delete_number(base_t* base)
+static void delete_number(base_t* base __attribute__((unused)))
 {
 }
 
@@ -398,7 +398,7 @@ real_t json_number_value(json_object_t obj)
 
 typedef struct _string_t {
 	int length;
-	char s[0];
+	char s[];
 } string_t;
 
 json_object_t json_string_create(const char* s)
@@ -462,7 +462,7 @@ int32 json_string_equals(json_object_t obj1, const char* s)
 typedef struct _array_t {
 	int length;
 	int datalen;
-	json_object_t data[0];
+    json_object_t data[];
 } array_t;
 
 json_object_t json_array_create()
@@ -1753,12 +1753,14 @@ static int32 json_parser_token(json_parser_t* parser, int32 token)
         case k_array_start:
                 r = push_value(parser, json_array_create());
                 if (r == k_continue)
-                        return push_state(parser, k_array_value_or_end); 
+                        return push_state(parser, k_array_value_or_end);
+                break;
 
         case k_object_start:
                 r = push_value(parser, json_object_create());
                 if (r == k_continue)
-                        return push_state(parser, k_object_key_or_end); 
+                        return push_state(parser, k_object_key_or_end);
+                break;
 
         case k_string:
                 r = push_value(parser, json_string_create(parser->buffer));
@@ -1773,33 +1775,38 @@ static int32 json_parser_token(json_parser_t* parser, int32 token)
                 r = push_value(parser, json_number_create(d));
                 if (r == k_continue)
                         return json_parser_token(parser, k_value);
+                break;
 
         case k_true:
                 r = push_value(parser, json_true());
                 if (r == k_continue)
                         return json_parser_token(parser, k_value);
+                break;
 
         case k_false:
                 r = push_value(parser, json_false());
                 if (r == k_continue)
                         return json_parser_token(parser, k_value);
+                break;
 
         case k_null:
                 r = push_value(parser, json_null());
                 if (r == k_continue)
                         return json_parser_token(parser, k_value);
+                break;
         }
 
+        if (r != k_continue)
+                return r;
         
-	switch (state) {
-                
-        case k_parse_value:
+	    switch (state) {
+	    case k_parse_value:
                 if (token == k_value)
                         set_state(parser, k_value_parsed);
                 break;
                 
-	case k_array_value_or_end:
-		switch (token) {
+	    case k_array_value_or_end:
+		    switch (token) {
                 case k_value:
                         v = pop_value(parser);
                         obj = peek_value(parser);
@@ -2574,9 +2581,10 @@ static int tokenizer_getc(tokenizer_t* tokenizer)
         return tokenizer->s[tokenizer->index++];
 }
 
-static void tokenizer_ungetc(tokenizer_t* tokenizer, int c)
+static void tokenizer_ungetc(tokenizer_t* tokenizer)
 {
-        tokenizer->index--;
+        if(tokenizer->index > 0)
+                tokenizer->index--;
 }
 
 static void tokenizer_reset_buffer(tokenizer_t* tokenizer)
@@ -2603,7 +2611,7 @@ static int tokenizer_feed_number(tokenizer_t* tokenizer, int *token)
 		r = tokenizer_append(tokenizer, c);
         } else {
                 r = tokenizer_append(tokenizer, 0);
-                tokenizer_ungetc(tokenizer, c);
+                tokenizer_ungetc(tokenizer);
                 r = k_tokenizer_newtoken;
                 *token = k_token_number;
         }	
@@ -2634,7 +2642,7 @@ static int tokenizer_feed_variable(tokenizer_t* tokenizer,
                 return k_tokenizer_continue;
 
         } else {
-                tokenizer_ungetc(tokenizer, c);
+                tokenizer_ungetc(tokenizer);
                 *token = k_token_variable;
                 return k_tokenizer_newtoken;
         }
@@ -2671,7 +2679,7 @@ static int tokenizer_start(tokenizer_t* tokenizer, int* token)
 	case '0': case '1': case '2': case '3': case '4': 
         case '5': case '6': case '7': case '8': case '9': 
 		tokenizer->state = k_tokenizer_number;
-                tokenizer_ungetc(tokenizer, c);
+                tokenizer_ungetc(tokenizer);
                 r = tokenizer_feed_number(tokenizer, token);
 		break;
 
@@ -2684,7 +2692,7 @@ static int tokenizer_start(tokenizer_t* tokenizer, int* token)
                     || (('A' <= c) && (c <= 'Z'))
                     || (c == '_')) {
                         tokenizer->state = k_tokenizer_variable;
-                        tokenizer_ungetc(tokenizer, c);
+                        tokenizer_ungetc(tokenizer);
                         r = tokenizer_feed_variable(tokenizer, token);
                 } else {
                         r = k_tokenizer_error;

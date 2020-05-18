@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include "r.h"
 
+#define ONE_MB (1024*1024)
 //#define MEM_DIAGNOSTICS
 
 #if defined MEM_DIAGNOSTICS
@@ -102,9 +103,8 @@ void *safe_realloc(void *ptr, size_t size)
 
 #else
 
-int mem_init(int *argc)
+int mem_init(int *argc __attribute__((unused)))
 {
-    (void *)argc;
     return 0;
 }
 
@@ -125,7 +125,7 @@ void *safe_malloc(size_t size, int zero)
                 return NULL;
         }
         if (zero)
-                memset(ptr, 0, size);
+                memset_wrapper(ptr, 0, size);
         return ptr;
 }
 
@@ -148,7 +148,7 @@ void *safe_realloc(void *ptr, size_t size)
                 // Not an error
                 r_warn("safe_realloc: size == 0"); 
 
-        ptr = realloc(ptr, size);
+        ptr = realloc_wrapper(ptr, size);
         if (size > 0 && ptr == NULL) {
                 r_err("safe_malloc: out of memory");
                 // Return NULL. Maybe the app can handle it correctly.
@@ -168,12 +168,12 @@ char *safe_strdup(const char *s)
         int len = 0;
         while (s[len] != 0) {
                 len++;
-                if (len >= 1048576) {
+                if (len >= ONE_MB) {
                         r_warn("safe_strdup: strlen(s) > 1MB! Too big."); 
                         return NULL;
                 }
         }
         char *t = r_alloc(len + 1);
-        memcpy(t, s, len+1);
+        memcpy_wrapper(t, s, len+1);
         return t;
 }

@@ -10,12 +10,12 @@ set(libr_VERSION_MAJOR 0)
 set(libr_VERSION_MINOR 1)
 
 # For now everything is debug. Set Compile options locally to maintain independent library builds.
+# TODO: Address Sanitizer flags.
 set(CMAKE_BUILD_TYPE Debug)
-#TBD: Turn Warning on and fix them
-#set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-#set(CMAKE_CXX_FLAGS_DEBUG "-O0")
-#set(CMAKE_C_FLAGS "-Wall -Wextra")
-#set(CMAKE_C_FLAGS_DEBUG "-O0")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Werror")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+set(CMAKE_C_FLAGS "-Wall -Wextra -Wpedantic -Werror")
+set(CMAKE_C_FLAGS_DEBUG "-O0")
 
 ############################################################
 
@@ -102,7 +102,7 @@ set(SOURCES
   src/util.c
   src/json.c
   src/serial_posix.c
-        src/os_wrapper.c include/r/os_wrapper.h)
+  src/os_wrapper.c include/r/os_wrapper.h)
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
