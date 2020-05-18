@@ -9,13 +9,27 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(libr_VERSION_MAJOR 0)
 set(libr_VERSION_MINOR 1)
 
+# Default option is off.
+# We override this on the server for a test buid, so tests should be run with this on before checking in.
+option(ADDRESS_SANITISER_BUILD "Enable build settings to allow address sanitiser" OFF) # default to off
+
+if(ADDRESS_SANITISER_BUILD)
+    message(WARNING "Enabling GCC address sanitiser will disable all Valgrind tasks due to compatibility errors")
+    set( PROJECT_SANITISE_FLAGS
+            "-fsanitize=address,undefined,shift,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,alignment,object-size,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr")
+else()
+    MESSAGE("libr sanitize flags off")
+    set( PROJECT_SANITISE_FLAGS "")
+endif()
+
 # For now everything is debug. Set Compile options locally to maintain independent library builds.
-# TODO: Address Sanitizer flags.
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Werror")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Werror ${PROJECT_SANITISE_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")
-set(CMAKE_C_FLAGS "-Wall -Wextra -Wpedantic -Werror")
+set(CMAKE_C_FLAGS "-Wall -Wextra -Wpedantic -Werror ${PROJECT_SANITISE_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG "-O0")
+
+set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} ${PROJECT_SANITISE_FLAGS}")
 
 ############################################################
 

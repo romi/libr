@@ -102,6 +102,7 @@ TEST_F(mem_tests, safe_free_frees_ptr_when_ptr)
     // Arrange
     const int size = 10;
     void *buffer = malloc(size);
+    free_wrapper_fake.custom_fake = free;
 
     // Act
     safe_free(buffer);
