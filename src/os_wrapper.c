@@ -43,11 +43,7 @@ char *getcwd_wrapper(char *__buf, size_t __size)
     return getcwd(__buf, __size);
 }
 
-int stat_wrapper (const char *__restrict __file, struct stat *__restrict __buf)
-{
-    return stat(__file, __buf);
-}
-
+// OS
 int usleep_wrapper (__useconds_t __useconds)
 {
     return usleep (__useconds);

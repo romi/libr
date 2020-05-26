@@ -37,30 +37,35 @@
 int path_exists(const char *path)
 {
         struct stat sb;
-        if (stat_wrapper(path, &sb) != 0)
-                return 0;
-        return 1;
+        if (path != NULL) {
+            if (stat(path, &sb) == 0)
+                return 1;
+        }
+        return 0;
 }
 
 int is_file(const char *path)
 {
         struct stat sb;
-        if (stat_wrapper(path, &sb) != 0)
+        if (path != NULL)
+        {
+            if (stat(path, &sb) != 0)
                 return 0;
-        if (S_ISREG(sb.st_mode))
- //       if ((sb.st_mode & S_IFMT) == S_IFREG)
+            if (S_ISREG(sb.st_mode))
                 return 1;
+        }
         return 0;
 }
 
 int is_directory(const char *path)
 {
         struct stat sb;
-        if (stat_wrapper(path, &sb) != 0)
+        if (path != NULL) {
+            if (stat(path, &sb) != 0)
                 return 0;
-        if(S_ISDIR(sb.st_mode))
-     //   if ((sb.st_mode & S_IFMT) == S_IFDIR)
+            if (S_ISDIR(sb.st_mode))
                 return 1;
+        }
         return 0;
 }
 
@@ -91,7 +96,10 @@ list_t *directory_list(const char *path)
         DIR *d;
         struct dirent *dir;
         list_t *list = NULL;
-        
+
+        if (path == NULL)
+            return NULL;
+
         d = opendir(path);
         if (d == NULL)
                 return NULL;
@@ -169,43 +177,53 @@ int directory_create(const char *path)
 list_t* path_break(const char *path)
 {
         list_t* elements = NULL;
-        membuf_t *buf = new_membuf();
-        if (buf == NULL)
-                return NULL;
 
-        if (path[0] == '/')
+        if (path == NULL)
+            return NULL;
+
+        membuf_t *buf = new_membuf();
+
+        if (buf != NULL){
+            if (path[0] == '/')
                 membuf_append(buf, "/", 1);
 
-        for (int i = 0; path[i] != 0; i++) {
+            for (int i = 0; path[i] != 0; i++) {
                 char c = path[i];
                 if (c == '/') {
-                        if (membuf_len(buf) > 0) {
-                                membuf_append_zero(buf);
-                                char *s = r_strdup(membuf_data(buf));
-                                elements = list_append(elements, s);
-                                membuf_clear(buf);
-                        } 
+                    if (membuf_len(buf) > 0) {
+                            membuf_append_zero(buf);
+                            char *s = r_strdup(membuf_data(buf));
+                            elements = list_append(elements, s);
+                            membuf_clear(buf);
+                    }
                 } else {
                         membuf_append(buf, &c, 1);
                 }
-        }
-        if (membuf_len(buf) > 0) {
+            }
+            if (membuf_len(buf) > 0) {
                 membuf_append_zero(buf);
                 char *s = r_strdup(membuf_data(buf));
                 elements = list_append(elements, s);
+            }
+            delete_membuf(buf);
         }
-        delete_membuf(buf);
+
         return elements;
 }
 
 int path_glue(list_t* elements, int absolute, char *buffer, int len)
 {
+        if ((elements == NULL) || (buffer == NULL))
+            return -1;
+
         const char *s = list_get(elements, char);
         elements = list_next(elements);
         
         if (rstreq(s, "/") && elements == NULL) {
-                rprintf(buffer, len, "/");
-                return 0;
+                if (rprintf(buffer, len, "/"))
+                    return 0;
+                else
+                    return -1;
         }
         
         membuf_t *buf = new_membuf();
@@ -247,35 +265,21 @@ static int get_user_info(const char *user, uid_t *uid, gid_t *gid)
 {
         struct passwd pwbuf;
         struct passwd *pwbufp = NULL;
-        char *buf;
-        long bufsize;
-
-        // From man getpwnam_r
-        bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
-        if (bufsize == -1)
-                bufsize = 16384;
-
-        buf = malloc((size_t)bufsize);
-        if (buf == NULL) {
-                r_panic("out of memory");
-                return -1;
-        }
+        const int bufsize = 16384;
+        char buf[bufsize];
 
         int err = getpwnam_r(user, &pwbuf, buf, bufsize, &pwbufp);
         if (pwbufp == NULL) {
                 if (err == 0) {
                         r_err("Failed to obtain the UID associated with '%s'", user);
-                        free(buf);
                         return -1;
                 } else {
                         char msg[200];
                         strerror_r(err, msg, 200);
                         r_err("getpwnam_r failed: %s", msg);
-                        free(buf);
                         return -1;
                 }
         }
-        free(buf);
 
         *uid = pwbuf.pw_uid;
         *gid = pwbuf.pw_gid;
@@ -293,102 +297,4 @@ int path_chown(const char *path, const char *user)
         }
                 
         return chown(path, uid, gid);
-}
-
-static int _file_lock(int fd)
-{
-        struct flock lock;
-        lock.l_type = F_WRLCK;
-        lock.l_start = 0;
-        lock.l_whence = SEEK_SET;
-        lock.l_len = 0;
-        lock.l_pid = 0;
-
-        while (fcntl(fd, F_SETLKW, &lock) == -1) {
-                if (errno != EINTR) {
-                        char msg[200];
-                        strerror_r(errno, msg, sizeof(msg));
-                        r_err("Failed to lock the file: %s", msg);
-                        return -1;
-                }
-        }
-        return 0;
-}
-
-int _file_backup(const char *path)
-{
-        char backup[1024];
-        rprintf(backup, sizeof(backup), "%s.backup", path);
-        if (rename(path, backup) != 0) {
-                if (errno != ENOENT) {
-                        r_warn("Failed to create a backup file");
-                        return -1;
-                }
-        }
-        return 0;
-}
-
-int _file_unlock(int fd)
-{
-        struct flock lock;
-        lock.l_type = F_UNLCK;
-        lock.l_start = 0;
-        lock.l_whence = SEEK_SET;
-        lock.l_len = 0;
-        lock.l_pid = 0;
-
-        if (fcntl(fd, F_SETLK, &lock) == -1) {
-                r_warn("Unlock failed");
-                return -1;
-        }
-        return 0;
-}
-
-int _file_store(const char *path, int fd, char *data, int32_t len)
-{
-        int32_t written = 0;
-        while (written < len) {
-                int32_t n = write(fd, data + written, len - written);
-                if (n == -1) {
-                        char msg[200];
-                        strerror_r(errno, msg, sizeof(msg));
-                        r_err("Failed to write the file %s: %s", path, msg);
-                        return -1;
-                }
-                written += n;
-        }
-        return 0;
-}
-
-int file_store(const char *path, char *data, int len, int flags)
-{
-        int err = -1;
-        int fd = -1;
-
-        fd = open(path, O_WRONLY | O_CREAT, 0666);
-        if (fd == -1) {
-                char msg[200];
-                strerror_r(errno, msg, sizeof(msg));
-                r_err("Failed to open %s: %s", path, msg);
-                return -1;
-        }
-
-        if ((flags & FS_LOCK) && _file_lock(fd) != 0)
-                goto close_and_exit;
-
-        if ((flags & FS_BACKUP) && _file_backup(path) != 0)
-                goto unlock_close_and_exit;
-        
-        err = _file_store(path, fd, data, len);
-        
-unlock_close_and_exit:
-        
-        if ((flags & FS_LOCK) && _file_unlock(fd) != 0)
-                err = -1;
-        
-close_and_exit:
-        
-        close(fd);
-
-        return err;
 }

@@ -161,6 +161,74 @@ TEST_F(list_tests, delete_list_multiple_list_entry_deletes_correct_number)
 
     //Assert
     ASSERT_EQ(safe_free_fake.call_count, 3);
+    ASSERT_EQ(safe_free_fake.arg0_history[0], &list1);
+    ASSERT_EQ(safe_free_fake.arg0_history[1], &list2);
+    ASSERT_EQ(safe_free_fake.arg0_history[2], &list3);
+}
+
+TEST_F(list_tests, delete_list_and_data_when_data_null_does_not_delete_data)
+{
+    // Arrange
+    _list_t list3 = {nullptr, nullptr};
+    _list_t list2 = {nullptr, &list3};
+    _list_t list1 = {nullptr, &list2};
+
+    // Act
+    delete_list_and_data(&list1, NULL);
+
+    //Assert
+    ASSERT_EQ(safe_free_fake.call_count, 3);
+    ASSERT_EQ(safe_free_fake.arg0_history[0], &list1);
+    ASSERT_EQ(safe_free_fake.arg0_history[1], &list2);
+    ASSERT_EQ(safe_free_fake.arg0_history[2], &list3);
+}
+
+TEST_F(list_tests, delete_list_and_data_when_data_not_null_deletes_data)
+{
+    // Arrange
+     int d1 = 1;
+     int d3 = 3;
+    _list_t list3 = {&d3, nullptr};
+    _list_t list2 = {nullptr, &list3};
+    _list_t list1 = {&d1, &list2};
+
+    // Act
+    delete_list_and_data(&list1, NULL);
+
+    //Assert
+    ASSERT_EQ(safe_free_fake.call_count, 5);
+    ASSERT_EQ(safe_free_fake.arg0_history[0], &d1);
+    ASSERT_EQ(safe_free_fake.arg0_history[1], &list1);
+    ASSERT_EQ(safe_free_fake.arg0_history[2], &list2);
+    ASSERT_EQ(safe_free_fake.arg0_history[3], &d3);
+    ASSERT_EQ(safe_free_fake.arg0_history[4], &list3);
+}
+
+void delete_func(void* element_data)
+{
+    if (element_data)
+        safe_free(element_data);
+}
+
+TEST_F(list_tests, delete_list_and_data_when_data_not_null_and_delete_function_supplied_deletes_data)
+{
+    // Arrange
+    int d1 = 1;
+    int d3 = 3;
+    _list_t list3 = {&d3, nullptr};
+    _list_t list2 = {nullptr, &list3};
+    _list_t list1 = {&d1, &list2};
+
+    // Act
+    delete_list_and_data(&list1, delete_func);
+
+    //Assert
+    ASSERT_EQ(safe_free_fake.call_count, 5);
+    ASSERT_EQ(safe_free_fake.arg0_history[0], &d1);
+    ASSERT_EQ(safe_free_fake.arg0_history[1], &list1);
+    ASSERT_EQ(safe_free_fake.arg0_history[2], &list2);
+    ASSERT_EQ(safe_free_fake.arg0_history[3], &d3);
+    ASSERT_EQ(safe_free_fake.arg0_history[4], &list3);
 }
 
 TEST_F(list_tests, delete1_list_deletes_correct_number)

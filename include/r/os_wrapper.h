@@ -21,7 +21,6 @@ int         gettimeofday_wrapper (struct timeval *__restrict __tv, __timezone_pt
 struct tm * localtime_r_wrapper (const time_t *__restrict __timer, struct tm *__restrict __tp);
 
 char *      getcwd_wrapper (char *__buf, size_t __size);
-int         stat_wrapper (const char *__restrict __file, struct stat *__restrict __buf);
 int         usleep_wrapper (__useconds_t __useconds);
 
 #endif //ROMI_ROVER_BUILD_AND_TEST_OS_WRAPPER_H

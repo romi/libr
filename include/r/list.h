@@ -33,10 +33,12 @@ struct _list_t
 };
 
 typedef int (*compare_func_t)(void* a, void* b);
+typedef void (delete_func_t)(void* element_data);
 
 list_t* new_list(void* data);
 void delete_list(list_t *list);
 void delete1_list(list_t *list);
+void delete_list_and_data(list_t *list, delete_func_t delete_func);
 list_t* list_sort(list_t *list, compare_func_t compare_func);
 list_t* list_concat(list_t *list1, list_t *list2);
 list_t* list_append(list_t *list, void* data);

@@ -49,8 +49,6 @@ enum {
         FS_LOCK = 2
 };
 
-int file_store(const char *path, char *data, int len, int flags);
-
 list_t *directory_list(const char *path);
 int directory_create(const char *path);
 

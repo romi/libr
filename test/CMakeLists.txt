@@ -2,6 +2,10 @@
 # This is not integrated with the rest of the romi build, and will only build on the current, experimental, build system in-house.
 cmake_minimum_required(VERSION 3.10)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(SRCS_OS
         src/tests_main.cpp
         src/mem_tests.cpp
@@ -13,10 +17,9 @@ set(SRCS_OS
 set(SRCS_FS
         src/tests_main.cpp
         src/fs_posix_tests.cpp
+        src/utils_tests.cpp
         mocks/log.mock.h
-        mocks/log.mock.c
-        mocks/os_wrapper.mock.h
-        mocks/os_wrapper.mock.c)
+        mocks/log.mock.c)
 
 set(SRCS_COMMON
         src/tests_main.cpp
@@ -55,7 +58,8 @@ add_executable( r_unit_tests_fs
 target_link_libraries( r_unit_tests_fs
         gtest
         gmock
-        r)
+        r
+        stdc++fs)
 
 target_include_directories(r_unit_tests_common
         PUBLIC

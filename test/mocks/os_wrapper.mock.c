@@ -8,5 +8,4 @@ DEFINE_FAKE_VALUE_FUNC(void *, realloc_wrapper, void *, size_t)
 DEFINE_FAKE_VALUE_FUNC(int, gettimeofday_wrapper, struct timeval *, __timezone_ptr_t)
 DEFINE_FAKE_VALUE_FUNC(struct tm * , localtime_r_wrapper, const time_t *, struct tm *)
 
-DEFINE_FAKE_VALUE_FUNC(int, stat_wrapper, const char *, struct stat *)
 DEFINE_FAKE_VALUE_FUNC(int, usleep_wrapper, __useconds_t)

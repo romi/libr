@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 
-#define FFF_GCC_FUNCTION_ATTRIBUTES __attribute__((weak))
-
 #include "fff.h"
 DEFINE_FFF_GLOBALS
 

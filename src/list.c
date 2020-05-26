@@ -50,6 +50,20 @@ void delete_list(list_t *list)
         }
 }
 
+void delete_list_and_data(list_t *list, delete_func_t delete_func)
+{
+    list_t *next;
+    while (list) {
+        next = list->next;
+        if((delete_func) && (list->data))
+            delete_func(list->data);
+        else if (list->data)
+            r_delete(list->data);
+        r_delete(list);;
+        list = next;
+    }
+}
+
 void delete1_list(list_t *list)
 {
         if (list) {
