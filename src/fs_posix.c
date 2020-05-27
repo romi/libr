@@ -298,3 +298,53 @@ int path_chown(const char *path, const char *user)
                 
         return chown(path, uid, gid);
 }
+
+int _file_backup(const char *path)
+{
+    char backup[1024];
+    rprintf(backup, sizeof(backup), "%s.backup", path);
+    if (rename(path, backup) != 0) {
+        if (errno != ENOENT) {
+            r_warn("Failed to create a backup file");
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int _file_store(const char *path, int fd, char *data, int32_t len)
+{
+    int32_t written = 0;
+
+    while (written < len) {
+        int32_t n = write(fd, data + written, len - written);
+        if (n == -1) {
+            char msg[200];
+            strerror_r(errno, msg, sizeof(msg));
+            r_err("Failed to write the file %s: %s", path, msg);
+            return -1;
+        }
+        written += n;
+    }
+    return 0;
+}
+
+int file_store(const char *path, char *data, int len, int flags)
+{
+    int err = -1;
+    int fd = -1;
+
+    _file_backup(path);
+
+    fd = open(path, O_WRONLY | O_CREAT, 0666);
+    if (fd == -1) {
+        char msg[200];
+        strerror_r(errno, msg, sizeof(msg));
+        r_err("Failed to open %s: %s %d", path, msg, flags);
+        return -1;
+    }
+
+    err = _file_store(path, fd, data, len);
+    close(fd);
+    return err;
+}
