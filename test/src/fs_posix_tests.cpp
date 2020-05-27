@@ -62,10 +62,9 @@ protected:
         if (!is_directory(testDirectory.c_str()))
         {
             mkdir(testDirectory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-            std::string buffer1("Humpty Dumpty sat on a wall");
-            std::string buffer2("Humpty Dumpty had a great fall");
-            MakeFile(file1Path, buffer1);
-            MakeFile(file2Path, buffer2);
+
+            MakeFile(file1Path, filePath1Data);
+            MakeFile(file2Path, filePath2Data);
         }
     }
 
@@ -111,15 +110,11 @@ protected:
     const std::string file2Path = testDirectory + std::string("filepath2");
     const std::string non_existing_file = "doesnt_exist.txt";
     const std::string non_existing_path = "/somepath/doesnt_exist/";
+    std::string filePath1Data = "Humpty Dumpty sat on a wall";
+    std::string filePath2Data =  "Humpty Dumpty had a great fall";
     std::string newDirectory = "./newDirectory/";
-};
 
-//
-//TEST_F(fs_posix_tests, test_path_fn_cpp)
-//{
-//    // Arrange
-//    TestBreak();
-//}
+};
 
 TEST_F(fs_posix_tests, path_exists_when_null_path_returns_0)
 {
@@ -715,5 +710,45 @@ TEST_F(fs_posix_tests, path_chown_path_does_not_exist_fails)
 
     //Assert
     ASSERT_EQ(actual, -1);
+    ASSERT_EQ(r_err_fake.call_count, 0);
+}
+
+TEST_F(fs_posix_tests, file_store_invalid_path_fails)
+{
+    // Arrange
+    const int datalen = 5;
+    char data[datalen] = "data";
+
+    std::string unknownpath = "/somerandompaththatdoesntexist/testfile";
+
+    // Act
+    int actual = file_store(unknownpath.c_str(), data, datalen, 0);
+
+    //Assert
+    ASSERT_EQ(actual, -1);
+    ASSERT_EQ(r_err_fake.call_count, 1);
+}
+
+TEST_F(fs_posix_tests, file_store_valid_backup_and_write_succeed)
+{
+    // Arrange
+    const int datalen = 4;
+    char data[datalen+1] = "data";
+    SetupFiles();
+    std::string backupfilePath = file1Path + ".backup";
+
+    // Act
+    int actual = file_store(file1Path.c_str(), data, datalen, 0);
+
+    std::string expected_string(data);
+    std::string actual_string = ReadFileAsString(file1Path);
+
+    std::string expected_backup_string(filePath1Data);
+    std::string actual_backup_string = ReadFileAsString(backupfilePath);
+
+    //Assert
+    ASSERT_EQ(actual, 0);
+    ASSERT_EQ(actual_string, expected_string);
+    ASSERT_EQ(actual_backup_string, expected_backup_string);
     ASSERT_EQ(r_err_fake.call_count, 0);
 }

@@ -89,7 +89,6 @@ TEST_F(utils_tests, rrandom_returns_filled_buffer_correct_size)
 
     // Assert
     ASSERT_EQ(actual, buffsize);
-    ASSERT_EQ(actual_string.size(), buffsize);
 }
 
 TEST_F(utils_tests, ruuid_returns_correct_length_string)
