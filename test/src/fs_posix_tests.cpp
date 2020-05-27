@@ -1,20 +1,18 @@
+#include <experimental/filesystem>
+#include <iostream>
 #include <string>
-#include <fstream>
 #include <zconf.h>
 #include "gtest/gtest.h"
+#include "test_file_utils.h"
 
 #include "fs.h"
+#include "mem.h"
 
 extern "C" {
 #include "log.mock.h"
 #include "os_wrapper.mock.h"
+#include "mem.mock.h"
 }
-
-
-#include <iostream>
-#include <experimental/filesystem>
-#include <r/mem.h>
-#include <mem.mock.h>
 
 namespace fs = std::experimental::filesystem;
 
@@ -24,20 +22,6 @@ protected:
     fs_posix_tests() = default;
 
     ~fs_posix_tests() override = default;
-
-    void MakeFile(std::string fileName, std::string& buffer)
-    {
-        remove(fileName.c_str());
-        std::ofstream outFile(fileName, std::ios::trunc | std::ios::binary);
-        if (outFile)
-        {
-            outFile.write(buffer.c_str(), static_cast<std::streamsize>(buffer.size()));
-        }
-        else
-        {
-            std::cout << "Failed to create file : " << fileName;
-        }
-    }
 
     void TestBreak()
     {
@@ -84,25 +68,6 @@ protected:
         {
             fs::remove_all(newDirectory.c_str());
         }
-    }
-
-    std::string ReadFileAsString(const std::string& filePath) const
-    {
-        std::ostringstream contents;
-        try
-        {
-            std::ifstream in;
-            in.exceptions(std::ifstream::badbit | std::ifstream::failbit);
-            in.open(filePath);
-            contents << in.rdbuf();
-        }
-        catch (const std::exception& ex)
-        {
-            std::cout << ex.what();
-            throw(ex);
-        }
-
-        return(contents.str());
     }
 
     const std::string testDirectory = "./testDirectory/";

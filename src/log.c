@@ -36,7 +36,13 @@ static char* _log_path = NULL;
 static mutex_t *_mutex = NULL;
 static log_writer_t _log_writer = NULL;
 static void *_log_write_data = NULL;
-        
+
+int r_log_init()
+{
+    _mutex = new_mutex();
+    return (_mutex == NULL)? -1 : 0;
+}
+
 void r_log_set_app(const char* name)
 {
         if (_log_app != NULL) 
@@ -95,12 +101,6 @@ const char *r_log_get_file()
         return _log_path;
 }
 
-int r_log_init()
-{
-        _mutex = new_mutex();
-        return (_mutex == NULL)? -1 : 0;
-}
-
 void r_log_cleanup()
 {
         if (_log_app != NULL) {
@@ -149,20 +149,6 @@ void r_log_get_writer(log_writer_t *callback, void **userdata)
         *userdata = _log_write_data;
 }
 
-static const char* get_timestamp(char *buffer, int len)
-{
-        struct timeval tv;
-        struct tm r;
-        
-        gettimeofday(&tv, NULL);
-        localtime_r(&tv.tv_sec, &r);
-        snprintf(buffer, len, "%04d-%02d-%02d %02d:%02d:%02d",
-                 1900 + r.tm_year, 1 + r.tm_mon, r.tm_mday, 
-                 r.tm_hour, r.tm_min, r.tm_sec);
-        
-        return buffer;
-}
-
 static void r_log_write(const char* s)
 {
         log_writer_t callback = NULL;
@@ -193,10 +179,11 @@ __attribute__((unused)) static void r_log_writer(const char* s)
 
 static void log_(int level, const char* s)
 {
+
         static char buffer[1024];
         static char timestamp[256];
-        const char* time = get_timestamp(timestamp, 256);
-        const char* type = "Unknown";
+        const char* time = clock_datetime(timestamp, sizeof(timestamp), '-', ' ', ':');
+        const char* type;
         const char* name = _log_app? _log_app : "?";
         switch (level) {
         case R_DEBUG: type = "DD"; break;
@@ -204,7 +191,7 @@ static void log_(int level, const char* s)
         case R_WARNING: type = "WW"; break;
         case R_ERROR: type = "EE"; break;
         case R_PANIC: type = "!!"; break;
-        //TODO: Add default.
+        default: type = "Unknown"; break;
         }
 
         rprintf(buffer, sizeof(buffer), "[%s] [%s] [%s] %s", time, type, name, s);
