@@ -36,7 +36,7 @@ TEST_F(mem_tests, mem_init_coverage)
 {
     // Arrange
     // Act
-   mem_init(nullptr);
+        mem_init(nullptr, nullptr);
     // Assert
 }
 TEST_F(mem_tests, mem_cleanup_coverage)

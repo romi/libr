@@ -28,16 +28,19 @@
 #define ONE_MB (1024*1024)
 //#define MEM_DIAGNOSTICS
 
+static out_of_memory_handler_t _out_of_memory_handler = NULL;
+
 #if defined MEM_DIAGNOSTICS
 #define SGC_USE_THREADS 1
 #include <sgc.h>
 
-int mem_init(int *argc)
+int mem_init(int *argc, out_of_memory_handler_t handler)
 {
 	if (sgc_init(argc, 0) != 0) {
                 r_err("Failed the initialise the SGC memory heap");
                 return -1;
         }
+        _out_of_memory_handler = handler;
         return 0;
 }
 
@@ -65,12 +68,19 @@ void *safe_malloc(size_t size, int zero)
                 return NULL;
         }
         void *ptr = sgc_new_object(size, SGC_ZERO, 0);
-        if (ptr == NULL) {
-                // Return NULL. Maybe the app can handle it correctly.
-                r_err("safe_malloc: out of memory");
-                return NULL;
+        if (ptr != NULL)
+                return ptr;
+        
+        if (_out_of_memory_handler != NULL) {
+                _out_of_memory_handler();
+        
+                ptr = sgc_new_object(size, SGC_ZERO, 0);
+                if (ptr != NULL)
+                        return ptr;
         }
-        return ptr;
+        
+        r_panic("safe_malloc: out of memory");
+        exit(1);
 }
 
 void safe_free(void *ptr)
@@ -94,18 +104,25 @@ void *safe_realloc(void *ptr, size_t size)
 
         ptr = sgc_resize_object(ptr, size, 0, 0);
         if (size > 0 && ptr == NULL) {
-                r_err("safe_malloc: out of memory");
-                // Return NULL. Maybe the app can handle it correctly.
-                return NULL;
+                if (_out_of_memory_handler != NULL) {
+                        _out_of_memory_handler();
+                        
+                        ptr = sgc_resize_object(ptr, size, 0, 0);
+                        if (ptr == NULL) {
+                                r_panic("safe_realloc: out of memory");
+                                exit(1);
+                        }
+                }
         }
         return ptr;
 }
 
 #else
 
-int mem_init(int *argc __attribute__((unused)))
+int mem_init(int *argc __attribute__((unused)), out_of_memory_handler_t handler)
 {
-    return 0;
+        _out_of_memory_handler = handler;
+        return 0;
 }
 
 void mem_cleanup()
@@ -119,13 +136,22 @@ void *safe_malloc(size_t size, int zero)
                 return NULL;
         }
         void *ptr = malloc_wrapper(size);
+
         if (ptr == NULL) {
-                // Return NULL. Maybe the app can handle it correctly.
-                r_err("safe_malloc: out of memory");
-                return NULL;
+                if (_out_of_memory_handler != NULL) {
+                        _out_of_memory_handler();
+                        
+                        ptr = malloc_wrapper(size);
+                        if (ptr == NULL) {
+                                r_panic("safe_malloc: out of memory");
+                                exit(1);
+                        }
+                }
         }
+        
         if (zero)
                 memset_wrapper(ptr, 0, size);
+        
         return ptr;
 }
 
@@ -150,9 +176,15 @@ void *safe_realloc(void *ptr, size_t size)
 
         ptr = realloc_wrapper(ptr, size);
         if (size > 0 && ptr == NULL) {
-                r_err("safe_malloc: out of memory");
-                // Return NULL. Maybe the app can handle it correctly.
-                return NULL;
+                if (_out_of_memory_handler != NULL) {
+                        _out_of_memory_handler();
+                        
+                        ptr = realloc_wrapper(ptr, size);
+                        if (ptr == NULL) {
+                                r_panic("safe_realloc: out of memory");
+                                exit(1);
+                        }
+                }
         }
         return ptr;
 }

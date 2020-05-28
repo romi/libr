@@ -230,8 +230,6 @@ int serial_read(serial_t *s, char *buf, int len)
 
 const char *serial_readline(serial_t *s, membuf_t *buffer)
 {
-        int r;
-
         if (s->fd == -1)
                 return NULL;
         
@@ -249,9 +247,7 @@ const char *serial_readline(serial_t *s, membuf_t *buffer)
                         // Check for \r\n
                         if (serial_peek(s) == '\n')
                                 c = serial_get(s);
-                        r = membuf_append_zero(buffer);
-                        if (r != 0)
-                                return NULL;
+                        membuf_append_zero(buffer);
                         
                         if (membuf_len(buffer) >= 3
                             && strncmp(membuf_data(buffer), "#!", 2) == 0) {
@@ -262,9 +258,7 @@ const char *serial_readline(serial_t *s, membuf_t *buffer)
                         }
 
                 } else if (c == '\n') {
-                        r = membuf_append_zero(buffer);
-                        if (r != 0)
-                                return NULL;
+                        membuf_append_zero(buffer);
                         
                         if (membuf_len(buffer) >= 3
                             && strncmp(membuf_data(buffer), "#!", 2) == 0) {
@@ -274,9 +268,7 @@ const char *serial_readline(serial_t *s, membuf_t *buffer)
                                 return membuf_data(buffer);
                         }
                 } else {
-                        r = membuf_put(buffer, (char) (c & 0xff));
-                        if (r != 0)
-                                return NULL;
+                        membuf_put(buffer, (char) (c & 0xff));
                 }
         }
 
@@ -444,9 +436,7 @@ const char *serial_command_sendf(serial_t *s, membuf_t *message, const char *for
         serial_lock(s);
 
         membuf_clear(s->out);
-        r = membuf_assure(s->out, len+1);
-        if (r != 0)
-                goto unlock_and_return;
+        membuf_assure(s->out, len+1);
 
         va_start(ap, format);
         membuf_vprintf(s->out, format, ap);
