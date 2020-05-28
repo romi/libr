@@ -56,7 +56,8 @@ int r_log_set_file(const char* path)
         
         r_info("Changing log to '%s'", path);
         
-        mutex_lock(_mutex);
+        if (_mutex) mutex_lock(_mutex);
+
         if (_log_path != NULL) {
                 r_free(_log_path);
                 _log_path = NULL;
@@ -89,7 +90,7 @@ int r_log_set_file(const char* path)
                         }
                 }
         }
-        mutex_unlock(_mutex);
+        if (_mutex) mutex_unlock(_mutex);
         
         r_info("Log started ----------------------------------------");
 
@@ -105,7 +106,7 @@ void r_log_cleanup()
 {
         if (_log_app != NULL) {
                 r_free(_log_app);
-                _log_app = "?";
+                _log_app = NULL;
         }
         if (_log_path != NULL) {
                 r_free(_log_path);
@@ -113,12 +114,16 @@ void r_log_cleanup()
         }
         if (_log_file != NULL && _log_file != stdout) {
                 fclose(_log_file);
-                _log_file = stdout;
+                _log_file = NULL;
         }
         if (_mutex != NULL) {
                 delete_mutex(_mutex);
                 _mutex = NULL;
         }
+
+        _log_level = R_DEBUG;
+        _log_writer = NULL;
+        _log_write_data = NULL;
 }
 
 int r_log_get_level()
@@ -172,11 +177,6 @@ static void r_log_write(const char* s)
         if (callback) callback(userdata, s);
 }
 
-__attribute__((unused)) static void r_log_writer(const char* s)
-{
-        r_log_write(s);
-}
-
 static void log_(int level, const char* s)
 {
 
@@ -191,7 +191,7 @@ static void log_(int level, const char* s)
         case R_WARNING: type = "WW"; break;
         case R_ERROR: type = "EE"; break;
         case R_PANIC: type = "!!"; break;
-        default: type = "Unknown"; break;
+        default: type = "??"; break;
         }
 
         rprintf(buffer, sizeof(buffer), "[%s] [%s] [%s] %s", time, type, name, s);
@@ -208,8 +208,8 @@ void r_err(const char* format, ...)
         char buffer[1024];
         va_list ap;
 
-        if (_log_level > R_ERROR)
-                return;
+//        if (_log_level > R_ERROR)
+//                return;
         if (_log_file == NULL)
                 _log_file = stdout;
 
