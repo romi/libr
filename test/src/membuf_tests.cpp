@@ -53,19 +53,6 @@ protected:
     _membuf_t membuffer;
 };
 
-TEST_F(membuf_tests, new_membuf_when_new_fails_logs_error_returns_null)
-{
-    // Arrange
-    safe_malloc_fake.return_val = nullptr;
-
-    // Act
-    membuf_t *actual = new_membuf();
-
-    // Assert
-    ASSERT_EQ(r_err_fake.call_count, 1);
-    ASSERT_EQ(actual, nullptr);
-}
-
 TEST_F(membuf_tests, new_membuf_when_new_succeeds_creates_mutex_returns_buffer)
 {
     // Arrange
@@ -96,7 +83,7 @@ TEST_F(membuf_tests, delete_membuf_when_mutex_not_null_deletes_mutex)
     // Assert
     ASSERT_EQ(delete_mutex_fake.call_count, 1);
     ASSERT_EQ(delete_mutex_fake.arg0_val, membuffer.mutex);
-    ASSERT_EQ(safe_free_fake.call_count, 1);
+    ASSERT_EQ(safe_free_fake.call_count, 2);
 }
 
 TEST_F(membuf_tests, delete_membuf_when_buffer_not_null_deletes_buffer_and_membuf)

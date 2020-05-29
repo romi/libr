@@ -45,10 +45,6 @@ static void membuf_grow_to_fit(membuf_t *b, int len)
 membuf_t *new_membuf()
 {
         membuf_t* membuf = r_new(membuf_t);
-        if (membuf == NULL) {
-                r_err("membuf: out of memory");
-                return NULL;
-        }
         membuf->mutex = new_mutex();
         return membuf;
 }
@@ -56,10 +52,8 @@ membuf_t *new_membuf()
 void delete_membuf(membuf_t *b)
 {
         if (b) {
-                if (b->mutex)
-                        delete_mutex(b->mutex);
-                if (b->buffer)
-                        r_free(b->buffer);
+                delete_mutex(b->mutex);
+                r_free(b->buffer);
                 r_delete(b);
         }
 }
@@ -100,11 +94,9 @@ void membuf_append_zero(membuf_t *b)
 
 void membuf_append_str(membuf_t *b, const char *s)
 {
-        size_t lens = strlen(s);
-        if (lens > KB_32) {
-                lens = KB_32;
+        size_t lens = strnlen(s, KB_32);
+        if (lens == KB_32)
                 r_warn("membuf_append_str: string truncated to 32kb");
-        }
         membuf_append(b, s, lens);
 }
 
@@ -190,5 +182,7 @@ static int32 membuf_json_writer(void* userdata, const char* s, int32 len)
 
 void membuf_print_obj(membuf_t *b, json_object_t obj)
 {
+        if (b == NULL)
+                return;
         json_serialise(obj, 0, membuf_json_writer, b);
 }

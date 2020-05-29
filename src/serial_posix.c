@@ -136,7 +136,6 @@ serial_t *new_serial(const char *device, int speed, int reset)
         
         // Create the object
         s = r_new(serial_t);
-        if (s == NULL) return NULL;
         
         s->fd = fd;
         s->device = r_strdup(device);
@@ -160,16 +159,15 @@ void delete_serial(serial_t *s)
 {
         if (s) {
                 s->quit = 1;
+                
                 serial_lock(s);
-                if (s->device)
-                        r_free(s->device);
-                if (s->out)
-                        delete_membuf(s->out);
+                r_free(s->device);
+                delete_membuf(s->out);
                 close(s->fd);
                 s->fd = -1;
                 serial_unlock(s);
-                if (s->mutex)
-                        delete_mutex(s->mutex);
+                
+                delete_mutex(s->mutex);
                 r_delete(s);
         }
 }

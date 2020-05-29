@@ -31,10 +31,6 @@ list_t* new_list(void* data)
 {
 
         list_t* list = r_new(list_t);
-        if (list == NULL) {
-                r_err("new_list: out of memory");
-                return NULL;
-        }
         list->data = data;
         list->next = NULL;
         return list;
@@ -59,16 +55,14 @@ void delete_list_and_data(list_t *list, delete_func_t delete_func)
             delete_func(list->data);
         else if (list->data)
             r_delete(list->data);
-        r_delete(list);;
+        r_delete(list);
         list = next;
     }
 }
 
 void delete1_list(list_t *list)
 {
-        if (list) {
-                r_delete(list);
-        }
+        r_delete(list);
 }
 
 list_t* list_concat(list_t *list1, list_t *list2)
