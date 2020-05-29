@@ -24,6 +24,8 @@ protected:
         RESET_FAKE(realloc_wrapper);
         RESET_FAKE(r_err);
         RESET_FAKE(r_warn);
+        RESET_FAKE(r_panic);
+        RESET_FAKE(exit_wrapper);
 	}
 
 	void TearDown() override
@@ -61,7 +63,7 @@ TEST_F(mem_tests, safe_malloc_returns_NULL_and_logs_warning_when_size_0)
     ASSERT_EQ(ptr, nullptr);
 }
 
-TEST_F(mem_tests, safe_malloc_returns_NULL_and_logs_error_when_malloc_fails)
+TEST_F(mem_tests, safe_malloc_logs_error_and_exits_when_malloc_fails)
 {
     // Arrange
     const int size = 10;
@@ -73,7 +75,8 @@ TEST_F(mem_tests, safe_malloc_returns_NULL_and_logs_error_when_malloc_fails)
 
     // Assert
     ASSERT_EQ(malloc_wrapper_fake.call_count, 1);
-    ASSERT_EQ(r_err_fake.call_count, 1);
+    ASSERT_EQ(r_panic_fake.call_count, 1);
+    ASSERT_EQ(exit_wrapper_fake.call_count, 1);
     ASSERT_EQ(ptr, nullptr);
 }
 
@@ -173,7 +176,7 @@ TEST_F(mem_tests, safe_realloc_errors_when_realloc_returns_NULL)
     // Assert
     ASSERT_EQ(realloc_wrapper_fake.call_count, 1);
     ASSERT_EQ(realloc_wrapper_fake.arg0_val, pdata);
-    ASSERT_EQ(r_err_fake.call_count, 1);
+    ASSERT_EQ(r_panic_fake.call_count, 1);
     ASSERT_EQ(realloc_buffer, nullptr);
 }
 

@@ -80,7 +80,7 @@ void *safe_malloc(size_t size, int zero)
 
         if (ptr == NULL) {
                 r_panic("safe_malloc: out of memory");
-                exit(1);
+                exit_wrapper(1);
         }
 
         return ptr;
@@ -119,7 +119,7 @@ void *safe_realloc(void *ptr, size_t size)
 
         if (size > 0 && ptr == NULL) {
                 r_panic("safe_realloc: out of memory");
-                exit(1);
+                exit_wrapper(1);
         }
         
         return ptr;
@@ -156,7 +156,7 @@ void *safe_malloc(size_t size, int zero)
 
         if (ptr == NULL) {
                 r_panic("safe_malloc: out of memory");
-                exit(1);
+                exit_wrapper(1);
         }
         
         if (zero)
@@ -198,7 +198,7 @@ void *safe_realloc(void *ptr, size_t size)
 
         if (size > 0 && ptr == NULL) {
                 r_panic("safe_realloc: out of memory");
-                exit(1);
+                exit_wrapper(1);
         }
         
         return ptr;
