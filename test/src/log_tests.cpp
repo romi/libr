@@ -8,7 +8,7 @@
 extern "C" {
 #include "fff.h"
 #include "os_wrapper.h"
-#include <time.h>
+#include <ctime>
 #include <sys/time.h>
 }
 
@@ -754,12 +754,61 @@ TEST_F(log_tests, log_debug_level_error_no_logs_to_stdout)
 {
     // Arrange
     std::string debug_string("PANIC!!");
-    std::string expected_stdoutput = "";
+    std::string expected_stdoutput;
     testing::internal::CaptureStdout();
 
     // Act
     r_log_set_level(R_ERROR);
     r_debug("%s", debug_string.c_str());
+    std::string actual_stdoutput = testing::internal::GetCapturedStdout();
+
+    // Assert
+    ASSERT_EQ(actual_stdoutput, expected_stdoutput);
+    r_log_cleanup();
+}
+
+TEST_F(log_tests, log_1k_buffer_logs_1k_buffer_plus_log_stamp)
+{
+    // Arrange
+    const int buffsize = 1024;
+    char buffer[buffsize];
+    memset(buffer, 'a', buffsize);
+    buffer[buffsize-1] = 0;
+
+    std::string debug_string(buffer);
+    std::string expected_stdoutput = CreateLogEntry(log_time, panic_type, log_app_name, debug_string);
+
+    testing::internal::CaptureStdout();
+
+    // Act
+    r_panic("%s", debug_string.c_str());
+    std::string actual_stdoutput = testing::internal::GetCapturedStdout();
+
+    // Assert
+    ASSERT_EQ(actual_stdoutput, expected_stdoutput);
+    r_log_cleanup();
+}
+
+TEST_F(log_tests, log_greater_than_1k_buffer_logs_1k_buffer_plus_log_stamp)
+{
+    // Arrange
+    const int buffsize = 1024;
+    char buffer[buffsize];
+    memset(buffer, 'a', buffsize);
+    buffer[buffsize-1] = 0;
+
+    const int bigbuffsize = 1048;
+    char bigbuffer[bigbuffsize];
+    memset(bigbuffer, 'a', bigbuffsize);
+    bigbuffer[bigbuffsize-1] = 0;
+
+    std::string debug_string(buffer);
+    std::string expected_stdoutput = CreateLogEntry(log_time, panic_type, log_app_name, debug_string);
+
+    testing::internal::CaptureStdout();
+
+    // Act
+    r_panic("%s", bigbuffer);
     std::string actual_stdoutput = testing::internal::GetCapturedStdout();
 
     // Assert

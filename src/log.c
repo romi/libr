@@ -24,10 +24,11 @@
  */
 #define _DEFAULT_SOURCE
 #include <string.h>
-#include <time.h>
 #include <stdarg.h>
-#include <sys/time.h>
 #include "r.h"
+
+#define ONE_KB_BUFFER (1024)
+#define LOG_INFO_SIZE (32) // Time, Type, Name
 
 static int _log_level = R_DEBUG;
 static FILE* _log_file = NULL;
@@ -142,10 +143,10 @@ void r_log_set_level(int level)
 
 void r_log_set_writer(log_writer_t callback, void *userdata)
 {
-        mutex_lock(_mutex);
+    if (_mutex) mutex_lock(_mutex);
         _log_write_data = userdata;
         _log_writer = callback;
-        mutex_unlock(_mutex);
+    if (_mutex) mutex_unlock(_mutex);
 }
 
 void r_log_get_writer(log_writer_t *callback, void **userdata)
@@ -154,8 +155,16 @@ void r_log_get_writer(log_writer_t *callback, void **userdata)
         *userdata = _log_write_data;
 }
 
+static void check_output_set()
+{
+    if (_log_file == NULL)
+        _log_file = stdout;
+}
+
 static void r_log_write(const char* s)
 {
+        check_output_set();
+
         log_writer_t callback = NULL;
         void *userdata = NULL;
                 
@@ -180,7 +189,7 @@ static void r_log_write(const char* s)
 static void log_(int level, const char* s)
 {
 
-        static char buffer[1024];
+        static char buffer[ONE_KB_BUFFER + LOG_INFO_SIZE];
         static char timestamp[256];
         const char* time = clock_datetime(timestamp, sizeof(timestamp), '-', ' ', ':');
         const char* type;
@@ -203,19 +212,20 @@ static void log_(int level, const char* s)
         }
 }
 
+
+static int log_printf(char* buffer, int bufflen, const char* format, va_list ap)
+{
+    memset(buffer, 0, bufflen);
+    vsnprintf(buffer, bufflen, format, ap);
+    return 0;
+}
+
 void r_err(const char* format, ...)
 {
-        char buffer[1024];
+        char buffer[ONE_KB_BUFFER];
         va_list ap;
-
-//        if (_log_level > R_ERROR)
-//                return;
-        if (_log_file == NULL)
-                _log_file = stdout;
-
         va_start(ap, format);
-        vsnprintf(buffer, 1024, format, ap);
-        buffer[1023] = 0;
+        log_printf(buffer, ONE_KB_BUFFER, format, ap);
         va_end(ap);
 
         log_(R_ERROR, buffer);
@@ -223,35 +233,25 @@ void r_err(const char* format, ...)
 
 void r_warn(const char* format, ...)
 {
-        char buffer[1024];
+        char _buffer[ONE_KB_BUFFER];
         va_list ap;
-
         if (_log_level > R_WARNING)
                 return;
-        if (_log_file == NULL)
-                _log_file = stdout;
-
         va_start(ap, format);
-        vsnprintf(buffer, 1024, format, ap);
-        buffer[1023] = 0;
+        log_printf(_buffer, ONE_KB_BUFFER, format, ap);
         va_end(ap);
 
-        log_(R_WARNING, buffer);
+        log_(R_WARNING, _buffer);
 }
 
 void r_info(const char* format, ...)
 {
-        char buffer[1024];
+        char buffer[ONE_KB_BUFFER];
         va_list ap;
-
         if (_log_level > R_INFO)
                 return;
-        if (_log_file == NULL)
-                _log_file = stdout;
-
         va_start(ap, format);
-        vsnprintf(buffer, 1024, format, ap);
-        buffer[1023] = 0;
+        log_printf(buffer, ONE_KB_BUFFER, format, ap);
         va_end(ap);
 
         log_(R_INFO, buffer);
@@ -259,17 +259,12 @@ void r_info(const char* format, ...)
 
 void r_debug(const char* format, ...)
 {
-        char buffer[1024];
+        char buffer[ONE_KB_BUFFER];
         va_list ap;
-
         if (_log_level > R_DEBUG) 
                 return;
-        if (_log_file == NULL)
-                _log_file = stdout;
-
         va_start(ap, format);
-        vsnprintf(buffer, 1024, format, ap);
-        buffer[1023] = 0;
+        log_printf(buffer, ONE_KB_BUFFER, format, ap);
         va_end(ap);
 
         log_(R_DEBUG, buffer);
@@ -277,17 +272,11 @@ void r_debug(const char* format, ...)
 
 void r_panic(const char* format, ...)
 {
-        char buffer[1024];
-        va_list ap;
+    char buffer[ONE_KB_BUFFER];
+    va_list ap;
+    va_start(ap, format);
+    log_printf(buffer, ONE_KB_BUFFER, format, ap);
+    va_end(ap);
 
-        if (_log_file == NULL)
-                _log_file = stdout;
-
-        va_start(ap, format);
-        vsnprintf(buffer, 1024, format, ap);
-        buffer[1023] = 0;
-        va_end(ap);
-
-        log_(R_PANIC, buffer);
+    log_(R_PANIC, buffer);
 }
-
