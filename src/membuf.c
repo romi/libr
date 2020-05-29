@@ -98,15 +98,14 @@ void membuf_append_zero(membuf_t *b)
         membuf_put(b, 0);
 }
 
-int membuf_append_str(membuf_t *b, const char *s)
+void membuf_append_str(membuf_t *b, const char *s)
 {
         size_t lens = strlen(s);
         if (lens > KB_32) {
-                r_err("membuf_append_str: string length > 32kb");
-                return  -1;
+                lens = KB_32;
+                r_warn("membuf_append_str: string truncated to 32kb");
         }
         membuf_append(b, s, lens);
-        return 0;
 }
 
 void membuf_clear(membuf_t *b)

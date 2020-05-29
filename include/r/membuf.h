@@ -49,7 +49,16 @@ void delete_membuf(membuf_t *b);
 void membuf_put(membuf_t *b, char c);
 void membuf_append(membuf_t *b, const char *data, int len);
 void membuf_append_zero(membuf_t *b);
-int membuf_append_str(membuf_t *b, const char *s);
+
+/**
+ *   Appends a zero-terminated string to the buffer. The string should
+ *   be less than 32kB long and will be (silently) truncated if it is
+ *   longer. To append larger strings, use membuf_append.
+ *
+ *   @b: the membuf
+ *   @s: the (short) string to be appended.
+ */
+void membuf_append_str(membuf_t *b, const char *s);
 int membuf_printf(membuf_t *b, const char* format, ...);
 int membuf_vprintf(membuf_t *b, const char* format, va_list ap);
 void membuf_print_obj(membuf_t *b, json_object_t obj);

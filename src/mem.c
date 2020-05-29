@@ -67,20 +67,23 @@ void *safe_malloc(size_t size, int zero)
                 r_warn("safe_malloc: size == 0");
                 return NULL;
         }
-        void *ptr = sgc_new_object(size, SGC_ZERO, 0);
-        if (ptr != NULL)
-                return ptr;
         
-        if (_out_of_memory_handler != NULL) {
+        void *ptr = sgc_new_object(size, SGC_ZERO, 0);
+
+        if (ptr == NULL && _out_of_memory_handler != NULL) {
+                // Free some memory
                 _out_of_memory_handler();
         
+                // Second attempt
                 ptr = sgc_new_object(size, SGC_ZERO, 0);
-                if (ptr != NULL)
-                        return ptr;
         }
-        
-        r_panic("safe_malloc: out of memory");
-        exit(1);
+
+        if (ptr == NULL) {
+                r_panic("safe_malloc: out of memory");
+                exit(1);
+        }
+
+        return ptr;
 }
 
 void safe_free(void *ptr)
@@ -103,17 +106,22 @@ void *safe_realloc(void *ptr, size_t size)
                 r_warn("safe_realloc: size == 0"); 
 
         ptr = sgc_resize_object(ptr, size, 0, 0);
-        if (size > 0 && ptr == NULL) {
-                if (_out_of_memory_handler != NULL) {
-                        _out_of_memory_handler();
-                        
-                        ptr = sgc_resize_object(ptr, size, 0, 0);
-                        if (ptr == NULL) {
-                                r_panic("safe_realloc: out of memory");
-                                exit(1);
-                        }
-                }
+        
+        if (size > 0
+            && ptr == NULL
+            && _out_of_memory_handler != NULL) {
+                // Free some memory
+                _out_of_memory_handler();
+        
+                // Second attempt
+                ptr = sgc_resize_object(ptr, size, 0, 0);
         }
+
+        if (size > 0 && ptr == NULL) {
+                r_panic("safe_realloc: out of memory");
+                exit(1);
+        }
+        
         return ptr;
 }
 
@@ -135,18 +143,20 @@ void *safe_malloc(size_t size, int zero)
                 r_warn("safe_malloc: size == 0");
                 return NULL;
         }
+        
         void *ptr = malloc_wrapper(size);
+        
+        if (ptr == NULL && _out_of_memory_handler != NULL) {
+                // Free some memory
+                _out_of_memory_handler();
+        
+                // Second attempt
+                ptr = malloc_wrapper(size);
+        }
 
         if (ptr == NULL) {
-                if (_out_of_memory_handler != NULL) {
-                        _out_of_memory_handler();
-                        
-                        ptr = malloc_wrapper(size);
-                        if (ptr == NULL) {
-                                r_panic("safe_malloc: out of memory");
-                                exit(1);
-                        }
-                }
+                r_panic("safe_malloc: out of memory");
+                exit(1);
         }
         
         if (zero)
@@ -175,17 +185,22 @@ void *safe_realloc(void *ptr, size_t size)
                 r_warn("safe_realloc: size == 0"); 
 
         ptr = realloc_wrapper(ptr, size);
-        if (size > 0 && ptr == NULL) {
-                if (_out_of_memory_handler != NULL) {
-                        _out_of_memory_handler();
-                        
-                        ptr = realloc_wrapper(ptr, size);
-                        if (ptr == NULL) {
-                                r_panic("safe_realloc: out of memory");
-                                exit(1);
-                        }
-                }
+        
+        if (size > 0
+            && ptr == NULL
+            && _out_of_memory_handler != NULL) {
+                // Free some memory
+                _out_of_memory_handler();
+        
+                // Second attempt
+                ptr = malloc_wrapper(size);
         }
+
+        if (size > 0 && ptr == NULL) {
+                r_panic("safe_realloc: out of memory");
+                exit(1);
+        }
+        
         return ptr;
 }
 

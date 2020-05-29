@@ -162,28 +162,6 @@ TEST_F(membuf_tests, membuf_put_when_membuf_not_empty_and_full_grows_by_2x_and_p
     ASSERT_EQ(membuffer.index, expected_length);
 }
 
-// TEST_F(membuf_tests, membuf_put_when_grows_fails_logs_error_returns_correct_error_code)
-// {
-//     // Arrange
-//     char expected_char = 'a';
-//     int expected_length = 128;
-//     int expected_return_code = -1;
-
-//     SetupMemBufferAndMutex(nullptr, 0, 0);
-//     safe_realloc_fake.return_val = nullptr;
-
-//     // Act
-//     int actual = membuf_put(&membuffer, expected_char);
-
-//     // Assert
-//     ASSERT_EQ(r_err_fake.call_count, 1);
-//     ASSERT_EQ(safe_realloc_fake.call_count, 1);
-//     ASSERT_EQ(safe_realloc_fake.arg1_val, expected_length);
-//     ASSERT_EQ(membuffer.buffer, nullptr);
-//     ASSERT_EQ(membuffer.length, 0);
-//     ASSERT_EQ(actual, expected_return_code);
-// }
-
 TEST_F(membuf_tests, membuf_lock_calls_mutex_lock_with_correct_parameter)
 {
     // Arrange
@@ -305,33 +283,6 @@ TEST_F(membuf_tests, membuf_append_calls_grow_correct_number_times)
     ASSERT_EQ(src_vector, grown_vector);
 }
 
-// TEST_F(membuf_tests, membuf_append_grow_fails_returns_correct_value)
-// {
-//     // Arrange
-//     const int dest_buffer_size = 2;
-//     char dest_buffer[dest_buffer_size] = {0};
-
-//     const int src_buffer_size = 16;
-//     char src_buffer[src_buffer_size];
-//     memset(src_buffer, 'a', sizeof(src_buffer));
-
-//     const int grown_buffer_size = 16;
-//     char grown_buffer[grown_buffer_size];
-
-//     void* myReturnVals[2] = { grown_buffer, nullptr};
-
-//     SET_RETURN_SEQ(safe_realloc, myReturnVals, 2);
-//     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, 0);
-
-//     // Act
-//     int actual = membuf_append(&membuffer, src_buffer, src_buffer_size);
-
-//     // Assert
-//     ASSERT_EQ(actual, -1);
-//     ASSERT_EQ(safe_realloc_fake.call_count, 2);
-
-// }
-
 TEST_F(membuf_tests, membuf_append_zero_appends_0)
 {
     // Arrange
@@ -356,15 +307,14 @@ TEST_F(membuf_tests, membuf_append_valid_string_appends_string)
     std::string expected_string = "teststring";
 
     // Act
-    int actual = membuf_append_str(&membuffer, expected_string.c_str());
+    membuf_append_str(&membuffer, expected_string.c_str());
     std::string actual_string(dest_buffer);
 
     // Assert
-    ASSERT_EQ(actual, 0);
     ASSERT_EQ(actual_string, expected_string);
 }
 
-TEST_F(membuf_tests, membuf_append_string_greater_32k_does_not_append_string_returns_error)
+TEST_F(membuf_tests, membuf_append_string_greater_32k_truncates_string)
 {
     // Arrange
     const int dest_buffer_size = 16;
@@ -377,14 +327,20 @@ TEST_F(membuf_tests, membuf_append_string_greater_32k_does_not_append_string_ret
     memset(large_string, 1, large_string_size);
     large_string[large_string_size -1] = 0;
 
-    std::string expected_string(dest_buffer);
+    const int large_buffer_size = 1024 * 32 + 8;
+    char large_buffer[large_buffer_size];
 
+    safe_realloc_fake.return_val = large_buffer;
+
+    std::string expected_string(dest_buffer);
+    expected_string.append(large_string, 1024 * 32);
+    
     // Act
-    int actual = membuf_append_str(&membuffer, large_string);
-    std::string actual_string(dest_buffer);
+    membuf_append_str(&membuffer, large_string);
+    std::string actual_string(membuf_data(&membuffer),
+                              membuf_len(&membuffer));
 
     // Assert
-    ASSERT_EQ(actual, -1);
     ASSERT_EQ(actual_string, expected_string);
 }
 
@@ -503,26 +459,6 @@ TEST_F(membuf_tests, membuf_size_returns_correct_value)
     ASSERT_EQ(actual, dest_buffer_size);
 }
 
-// TEST_F(membuf_tests, membuf_assure_when_grow_fails_returns_correct_value)
-// {
-//     // Arrange
-//     const int dest_buffer_size = 16;
-//     char dest_buffer[dest_buffer_size];
-//     memset(&dest_buffer, 0, sizeof(dest_buffer));
-
-//     int index = 4;
-//     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, index);
-
-//     safe_realloc_fake.return_val = nullptr;
-
-//     // Act
-//     int actual = membuf_assure(&membuffer, 18);
-
-//     // Assert
-//     ASSERT_EQ(actual, -1);
-//     ASSERT_EQ(membuffer.length, dest_buffer_size);
-// }
-
 TEST_F(membuf_tests, membuf_assure_when_grow_succeeds_returns_correct_value)
 {
     // Arrange
@@ -598,25 +534,3 @@ TEST_F(membuf_tests, membuf_printf_buffer_grows_returns_correct_value)
     ASSERT_EQ(membuffer.length, grown_buffer_size);
     ASSERT_EQ(actual_string, expected_string);
 }
-
-// TEST_F(membuf_tests, membuf_printf_buffer_fails_to_grow_returns_correct_value)
-// {
-//     // Arrange
-//     std::string expected_string = "";
-//     const int dest_buffer_size = 4;
-//     char dest_buffer[dest_buffer_size];
-//     memset(&dest_buffer, 0, sizeof(dest_buffer));
-
-//     int index = 0;
-//     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, index);
-//     safe_realloc_fake.return_val = nullptr;
-
-//     // Act
-//     int actual = membuf_printf(&membuffer, "%s", "integer");
-//     std::string actual_string(dest_buffer);
-
-//     // Assert
-//     ASSERT_EQ(actual, -1);
-//     ASSERT_EQ(membuffer.length, dest_buffer_size);
-//     ASSERT_EQ(actual_string, expected_string);
-// }
