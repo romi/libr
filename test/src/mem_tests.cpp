@@ -8,6 +8,15 @@ extern "C" {
 #include "os_wrapper.mock.h"
 }
 
+FAKE_VOID_FUNC0(handle_out_of_memory)
+
+static int out_of_memory_handler_called = 0;
+
+void out_of_memory_handler(void)
+{
+        out_of_memory_handler_called++;
+}
+
 
 class mem_tests : public ::testing::Test
 {
@@ -26,6 +35,8 @@ protected:
         RESET_FAKE(r_warn);
         RESET_FAKE(r_panic);
         RESET_FAKE(exit_wrapper);
+        RESET_FAKE(handle_out_of_memory);
+        out_of_memory_handler_called = 0;
 	}
 
 	void TearDown() override
@@ -38,7 +49,7 @@ TEST_F(mem_tests, mem_init_coverage)
 {
     // Arrange
     // Act
-        mem_init(nullptr, nullptr);
+        mem_init(nullptr, out_of_memory_handler);
     // Assert
 }
 TEST_F(mem_tests, mem_cleanup_coverage)
@@ -74,9 +85,10 @@ TEST_F(mem_tests, safe_malloc_logs_error_and_exits_when_malloc_fails)
     void *ptr = safe_malloc(size, 0);
 
     // Assert
-    ASSERT_EQ(malloc_wrapper_fake.call_count, 1);
+    ASSERT_EQ(malloc_wrapper_fake.call_count, 2);
     ASSERT_EQ(r_panic_fake.call_count, 1);
     ASSERT_EQ(exit_wrapper_fake.call_count, 1);
+    ASSERT_EQ(out_of_memory_handler_called, 1);
     ASSERT_EQ(ptr, nullptr);
 }
 
@@ -164,7 +176,7 @@ TEST_F(mem_tests, safe_realloc_warns_when_size_0)
     ASSERT_EQ(realloc_buffer, nullptr);
 }
 
-TEST_F(mem_tests, safe_realloc_errors_when_realloc_returns_NULL)
+TEST_F(mem_tests, safe_realloc_errors_and_exists_when_realloc_returns_NULL)
 {
     // Arrange
     const int size = 10;
@@ -174,9 +186,10 @@ TEST_F(mem_tests, safe_realloc_errors_when_realloc_returns_NULL)
     void *realloc_buffer = safe_realloc(pdata, size);
 
     // Assert
-    ASSERT_EQ(realloc_wrapper_fake.call_count, 1);
+    ASSERT_EQ(realloc_wrapper_fake.call_count, 2);
     ASSERT_EQ(realloc_wrapper_fake.arg0_val, pdata);
     ASSERT_EQ(r_panic_fake.call_count, 1);
+    ASSERT_EQ(out_of_memory_handler_called, 1);
     ASSERT_EQ(realloc_buffer, nullptr);
 }
 

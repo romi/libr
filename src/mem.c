@@ -193,7 +193,7 @@ void *safe_realloc(void *ptr, size_t size)
                 _out_of_memory_handler();
         
                 // Second attempt
-                ptr = malloc_wrapper(size);
+                ptr = realloc_wrapper(ptr, size);
         }
 
         if (size > 0 && ptr == NULL) {
