@@ -60,7 +60,6 @@ static void* _run(void* data)
         thread->run(thread->data);
         if (thread->autodelete)
                 delete_thread(thread);
-        pthread_exit(NULL);
         return NULL;
 }
 

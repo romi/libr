@@ -9,7 +9,7 @@
 extern "C" {
 #include "log.mock.h"
 #include "mem.mock.h"
-#include "thread.mock.h"
+#include "mutex.mock.h"
 }
 
 

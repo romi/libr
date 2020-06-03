@@ -28,20 +28,39 @@ set(SRCS_COMMON
         src/list_tests.cpp
         src/clock_posix_tests.cpp
         src/membuf_tests.cpp
+#        src/thread_pthread_tests.cpp
+        mocks/pthread_condition.mock.h
+        mocks/pthread_condition.mock.c
         mocks/log.mock.h
         mocks/log.mock.c
         mocks/mem.mock.h
         mocks/mem.mock.c
+        mocks/mutex.mock.h
+        mocks/mutex.mock.c
         mocks/os_wrapper.mock.h
         mocks/os_wrapper.mock.c
-        mocks/thread.mock.h
-        mocks/thread.mock.c)
+        mocks/pthread.mock.h
+        mocks/pthread.mock.c)
 
 set(SRCS_LOG
         src/tests_main.cpp
         src/log_tests.cpp
         support/test_file_utils.h
         support/test_file_utils.cpp)
+
+set(SRCS_THREAD
+        src/tests_main.cpp
+        src/thread_pthread_tests.cpp
+        mocks/pthread_condition.mock.h
+        mocks/pthread_condition.mock.c
+        mocks/log.mock.h
+        mocks/log.mock.c
+        mocks/mem.mock.h
+        mocks/mem.mock.c
+        mocks/pthread_mutex.mock.h
+        mocks/pthread_mutex.mock.c
+        mocks/pthread.mock.h
+        mocks/pthread.mock.c)
 
 
 add_executable( r_unit_tests_common
@@ -78,6 +97,14 @@ target_link_libraries( r_unit_tests_log
         r
         stdc++fs)
 
+add_executable( r_unit_tests_thread
+                ${SRCS_THREAD})
+
+target_link_libraries( r_unit_tests_thread
+        gtest
+        gmock
+        r)
+
 target_include_directories(r_unit_tests_common
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
@@ -94,6 +121,11 @@ target_include_directories(r_unit_tests_fs
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
 
 target_include_directories(r_unit_tests_log
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/mocks
+        ${CMAKE_CURRENT_SOURCE_DIR}/support)
+
+target_include_directories(r_unit_tests_thread
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
@@ -118,6 +150,12 @@ add_test(
         COMMAND r_unit_tests_log
 )
 
+
+add_test(
+        NAME r_unit_tests_thread
+        COMMAND r_unit_tests_thread
+)
+
 SETUP_TARGET_FOR_COVERAGE_LCOV(
         NAME r_unit_tests_common_coverage
         EXECUTABLE ctest -V ${n_cores}
@@ -137,3 +175,8 @@ SETUP_TARGET_FOR_COVERAGE_LCOV(
         NAME r_unit_tests_log_coverage
         EXECUTABLE ctest -V ${n_cores}
         DEPENDENCIES r_unit_tests_log)
+
+SETUP_TARGET_FOR_COVERAGE_LCOV(
+        NAME r_unit_tests_thread_coverage
+        EXECUTABLE ctest -V ${n_cores}
+        DEPENDENCIES r_unit_tests_thread)
