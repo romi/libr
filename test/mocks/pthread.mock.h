@@ -9,9 +9,6 @@
 extern "C" {
 #endif
 
-//static int g_pthread_exit_count;
-//void *     g_pthread_exit_param;
-
 typedef void *(*start_routine_cb) (void *);
 
 DECLARE_FAKE_VOID_FUNC(test_run_function_mock, void* )
@@ -24,8 +21,6 @@ DECLARE_FAKE_VALUE_FUNC(int,
                        void *)
 
 DECLARE_FAKE_VALUE_FUNC(int, pthread_join, pthread_t, void **)
-
-//DECLARE_FAKE_VOID_FUNC(pthread_exit, void *)
 
 #ifdef __cplusplus
 }

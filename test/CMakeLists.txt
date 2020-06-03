@@ -28,9 +28,9 @@ set(SRCS_COMMON
         src/list_tests.cpp
         src/clock_posix_tests.cpp
         src/membuf_tests.cpp
-#        src/thread_pthread_tests.cpp
-        mocks/pthread_condition.mock.h
-        mocks/pthread_condition.mock.c
+        src/serial_posix_tests.cpp
+        mocks/fcntl.mock.h
+        mocks/fcntl.mock.c
         mocks/log.mock.h
         mocks/log.mock.c
         mocks/mem.mock.h
@@ -38,9 +38,7 @@ set(SRCS_COMMON
         mocks/mutex.mock.h
         mocks/mutex.mock.c
         mocks/os_wrapper.mock.h
-        mocks/os_wrapper.mock.c
-        mocks/pthread.mock.h
-        mocks/pthread.mock.c)
+        mocks/os_wrapper.mock.c)
 
 set(SRCS_LOG
         src/tests_main.cpp
@@ -51,14 +49,14 @@ set(SRCS_LOG
 set(SRCS_THREAD
         src/tests_main.cpp
         src/thread_pthread_tests.cpp
-        mocks/pthread_condition.mock.h
-        mocks/pthread_condition.mock.c
+        mocks/pthread.condition.mock.h
+        mocks/pthread.condition.mock.c
         mocks/log.mock.h
         mocks/log.mock.c
         mocks/mem.mock.h
         mocks/mem.mock.c
-        mocks/pthread_mutex.mock.h
-        mocks/pthread_mutex.mock.c
+        mocks/pthread.mutex.mock.h
+        mocks/pthread.mutex.mock.c
         mocks/pthread.mock.h
         mocks/pthread.mock.c)
 

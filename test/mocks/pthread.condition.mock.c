@@ -1,4 +1,4 @@
-#include "pthread_condition.mock.h"
+#include "pthread.condition.mock.h"
 
 DEFINE_FAKE_VALUE_FUNC(int, pthread_cond_init, pthread_cond_t *, const pthread_condattr_t *)
 DEFINE_FAKE_VALUE_FUNC(int, pthread_cond_destroy, pthread_cond_t* )

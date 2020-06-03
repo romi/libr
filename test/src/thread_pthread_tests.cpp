@@ -4,8 +4,8 @@
 #include "thread.h"
 
 extern "C" {
-#include "pthread_condition.mock.h"
-#include "pthread_mutex.mock.h"
+#include "pthread.condition.mock.h"
+#include "pthread.mutex.mock.h"
 #include "pthread.mock.h"
 #include "mem.mock.h"
 }
