@@ -22,5 +22,6 @@ struct tm * localtime_r_wrapper (const time_t *__restrict __timer, struct tm *__
 
 char *      getcwd_wrapper (char *__buf, size_t __size);
 int         usleep_wrapper (__useconds_t __useconds);
+void        exit_wrapper (int __code);
 
 #endif //ROMI_ROVER_BUILD_AND_TEST_OS_WRAPPER_H

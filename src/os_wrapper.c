@@ -48,3 +48,8 @@ int usleep_wrapper (__useconds_t __useconds)
 {
     return usleep (__useconds);
 }
+
+void exit_wrapper (int __code)
+{
+    exit(__code);
+}

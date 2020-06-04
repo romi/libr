@@ -32,7 +32,18 @@
 extern "C" {
 #endif
 
-int mem_init(int *argc);
+typedef void (*out_of_memory_handler_t)(void);
+
+/**
+ * Initializes memory allocation subsystem.
+ *
+ * @handler: The function to be called when memory allocation
+ * fails. This function should free up memory such that upon return
+ * the memory request can be satisfied. If not, the application will
+ * exit. The value of the handler can be NULL, in which case the
+ * application will immediately exit on an out-of-memory situation.
+ */        
+int mem_init(int *argc, out_of_memory_handler_t handler);
 void mem_cleanup();
 
 void *safe_malloc(size_t size, int zero);

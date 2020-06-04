@@ -29,9 +29,6 @@
 extern "C" {
 #endif
 
-int r_init(int *argc);
-void r_cleanup();
-
 #include <r/mem.h>
 #include <r/thread.h>
 #include <r/fs.h>
@@ -43,6 +40,19 @@ void r_cleanup();
 #include <r/json.h>
 #include <r/serial.h>
 #include <r/os_wrapper.h>
+
+/**
+ * Initializes the library.
+ *
+ * @handler: The function to be called when memory allocation
+ * fails. This function should free up memory such that upon return
+ * the memory request can be satisfied. If not, the application will
+ * exit. The value of the handler can be NULL, in which case the
+ * application will immediately exit on an out-of-memory situation.
+ */        
+int r_init(int *argc, out_of_memory_handler_t handler);
+
+void r_cleanup();
 
 #ifdef __cplusplus
 }
