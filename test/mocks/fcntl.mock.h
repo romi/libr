@@ -3,13 +3,13 @@
 
 #include <fcntl.h>
 #include "fff.h"
-#include "thread.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 DECLARE_FAKE_VALUE_FUNC_VARARG(int, open, const char *, int, ...)
+DECLARE_FAKE_VALUE_FUNC(int, close, int)
 
 #ifdef __cplusplus
 }

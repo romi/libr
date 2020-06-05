@@ -48,3 +48,14 @@ int usleep_wrapper (__useconds_t __useconds)
 {
     return usleep (__useconds);
 }
+
+// FCNTL
+int open_wrapper (const char *file_device, int oflag)
+{
+    return open(file_device, oflag);
+}
+
+int close_wrapper (int fd)
+{
+    return close(fd);
+}

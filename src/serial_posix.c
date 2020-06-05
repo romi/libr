@@ -23,10 +23,7 @@
 
  */
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
 #include <string.h>
@@ -73,7 +70,7 @@ static int open_serial(const char *device, int speed, int reset)
                 return -1;                
         }
 
-        fd = open(device, O_RDWR | O_NOCTTY | O_SYNC);
+        fd = open_wrapper(device, O_RDWR | O_NOCTTY | O_SYNC);
         if (fd < 0) {
                 r_err("open_serial: error %d opening %s: %s",
                         errno, device, strerror(errno));
@@ -83,7 +80,7 @@ static int open_serial(const char *device, int speed, int reset)
         memset(&tty, 0, sizeof(tty));
         if (tcgetattr(fd, &tty) != 0) {
                 r_err("open_serial: error %d from tcgetattr", errno);
-                close(fd);
+                close_wrapper(fd);
                 return -1;
         }
 
@@ -104,8 +101,7 @@ static int open_serial(const char *device, int speed, int reset)
         // no parity check; no break processing; don't map NL to CR,
         // CR to NL, uppercase to lowercase; ring bell; shut off
         // xon/xoff ctrl; ...
-        tty.c_iflag = 0;             
-        tty.c_iflag |= IGNCR;    // ignore carriage-return '\r'
+        tty.c_iflag = IGNCR;    // ignore carriage-return '\r'
         
         // oflag
         // no remapping; no delays; no post-processing
@@ -120,7 +116,7 @@ static int open_serial(const char *device, int speed, int reset)
 
         if (tcsetattr(fd, TCSANOW, &tty) != 0) {
                 r_err("open_serial: error %d from tcsetattr", errno);
-                close(fd);
+                close_wrapper(fd);
                 return -1;
         }
         return fd;
@@ -136,7 +132,11 @@ serial_t *new_serial(const char *device, int speed, int reset)
         
         // Create the object
         s = r_new(serial_t);
-        if (s == NULL) return NULL;
+
+        if (s == NULL) {
+            close_wrapper(fd);
+            return NULL;
+        }
         
         s->fd = fd;
         s->device = r_strdup(device);
@@ -165,7 +165,7 @@ void delete_serial(serial_t *s)
                         r_free(s->device);
                 if (s->out)
                         delete_membuf(s->out);
-                close(s->fd);
+                close_wrapper(s->fd);
                 s->fd = -1;
                 serial_unlock(s);
                 if (s->mutex)
