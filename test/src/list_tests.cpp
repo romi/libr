@@ -78,20 +78,6 @@ protected:
 
 };
 
-TEST_F(list_tests, new_list_when_r_new_fails_logs_returns_nullptr)
-{
-    // Arrange
-    safe_malloc_fake.return_val = nullptr;
-
-    // Act
-    _list_t *plist = new_list(nullptr);
-
-    //Assert
-    ASSERT_EQ(safe_malloc_fake.call_count, 1);
-    ASSERT_EQ(r_err_fake.call_count, 1);
-    ASSERT_EQ(plist, nullptr);
-}
-
 TEST_F(list_tests, new_list_when_r_new_succeeds_returns_valid_pointer)
 {
     // Arrange
@@ -295,20 +281,6 @@ TEST_F(list_tests, list_concat_when_lists_valid_succeeds)
     ASSERT_EQ(list1_end.next, &list2);
 }
 
-TEST_F(list_tests, list_append_)
-{
-    // Arrange
-
-    safe_malloc_fake.return_val = nullptr;
-
-    // Act
-    _list_t *plist = list_append(nullptr, nullptr);
-
-    //Assert
-    ASSERT_EQ(safe_malloc_fake.call_count, 1);
-    ASSERT_EQ(plist, nullptr);
-}
-
 TEST_F(list_tests, list_append_when_r_new_succeeds_list_parameter_nullptr_returns_new_list_sets_data)
 {
     // Arrange
@@ -346,23 +318,6 @@ TEST_F(list_tests, list_append_when_r_new_succeeds_list_parameter_valid_returns_
     ASSERT_EQ(list_old.next, &list_old_end);
     ASSERT_EQ(list_old_end.next, &list_new);
     ASSERT_EQ(list_new.data, &data);
-}
-
-TEST_F(list_tests, list_prepend_when_when_r_new_fails_returns_nullptr)
-{
-    // Arrange
-    _list_t list_old{nullptr, nullptr};
-
-    int data = 10;
-
-    safe_malloc_fake.return_val = nullptr;
-
-    // Act
-    _list_t *plist = list_prepend(&list_old, &data);
-
-    //Assert
-    ASSERT_EQ(safe_malloc_fake.call_count, 1);
-    ASSERT_EQ(plist, nullptr);
 }
 
 TEST_F(list_tests, list_prepend_when_when_r_new_succeeds_new_list_is_prepended)
@@ -945,24 +900,6 @@ TEST_F(list_tests, list_insert_past_end_inserts_at_end)
     //Assert
     ASSERT_EQ(list_nth(actual, 5)->data, f_valid);
     ASSERT_EQ(list_nth(actual, 6)->data, g_valid);
-}
-
-
-/////
-
-TEST_F(list_tests, list_insert_ordered_new_list_fails_returns_nullptr)
-{
-    // Arrange
-    const char *a_avalid = "a_avalid";
-    _list_t *test_list = CreateList3((void*)a_valid, (void*)b_valid, (void*)c_valid);
-
-    safe_malloc_fake.return_val = nullptr;
-
-    // Act
-    _list_t *actual = list_insert_ordered(test_list, (void*)a_avalid, list_str_compare_func);
-
-    //Assert
-    ASSERT_EQ(actual, nullptr);
 }
 
 TEST_F(list_tests, list_insert_ordered_nullptr_list_returns_new_entry)

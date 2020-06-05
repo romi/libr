@@ -62,7 +62,7 @@ protected:
 
         RESET_FAKE(new_membuf)
 
-     //   tcgetattr_custom_fake_return = 0;
+        safe_malloc_fake.return_val = &serial_data;
     }
 
     void TearDown() override
@@ -92,6 +92,8 @@ protected:
     }
 
 public:
+    serial_t serial_data;
+
     static unsigned int cflags_data;
     static speed_t speed_data;
     static termios termios_data;
@@ -369,31 +371,6 @@ TEST_F(serial_posix_tests, new_serial_setattr_sets_correct_attributes)
     ASSERT_EQ(termios_data.c_oflag, (0) );
 }
 
-TEST_F(serial_posix_tests, new_serial_alloc_fails_returns_NULL)
-{
-    // Arrange
-    std::string device = "/dev/ttys1";
-    int speed = 115200;
-    int reset = 1;
-    serial_t *expected_serial = nullptr;
-
-    int open_return_value = 1;
-    open_wrapper_fake.return_val = open_return_value;
-    tcgetattr_fake.return_val = 0;
-    tcsetattr_fake.return_val = 0;
-
-    safe_malloc_fake.return_val = nullptr;
-
-    // Act
-    serial_t *actual_serial =  new_serial(device.c_str(), speed, reset);
-
-    //Assert
-    ASSERT_EQ(actual_serial, expected_serial);
-    ASSERT_EQ(safe_malloc_fake.call_count, 1);
-}
-
-
-
 TEST_F(serial_posix_tests, new_serial_device_dup_fails_returns_NULL)
 {
     // Arrange
@@ -409,7 +386,6 @@ TEST_F(serial_posix_tests, new_serial_device_dup_fails_returns_NULL)
 
     // Data returned by memory allocations.
     mutex_t mutex_data;
-    serial_t serial_data;
     char *device_dup = nullptr;
     membuf_t membuf_data;
 
@@ -445,7 +421,6 @@ TEST_F(serial_posix_tests, new_serial_new_membuf_fails_returns_NULL)
 
     // Data returned by memory allocations.
     mutex_t mutex_data;
-    serial_t serial_data;
     const char *device_dup = "/dev/ttys1";
     membuf_t *membuf_data = nullptr;
 
@@ -479,7 +454,6 @@ TEST_F(serial_posix_tests, new_serial_valid_data_sets_data_returns_serial)
 
     // Data returned by memory allocations.
     mutex_t mutex_data;
-    serial_t serial_data;
     serial_t *expected_serial = &serial_data;
     const char *device_dup = "/dev/ttys1";
     membuf_t membuf_data;

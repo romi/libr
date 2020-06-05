@@ -69,7 +69,6 @@ struct _sexp_t {
 sexp_t *new_sexp(const char *name, int index)
 {
         sexp_t *e = r_new(sexp_t);
-        if (e == NULL) return NULL;
         e->name = r_strdup(name);
         e->index = index;
         e->next = NULL;
@@ -79,7 +78,7 @@ sexp_t *new_sexp(const char *name, int index)
 void delete_sexp(sexp_t *e)
 {
         if (e) {
-                if (e->name) r_free(e->name);
+                r_free(e->name);
                 r_delete(e);
         }
 }

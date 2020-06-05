@@ -59,3 +59,8 @@ int close_wrapper (int fd)
 {
     return close(fd);
 }
+
+void exit_wrapper (int __code)
+{
+    exit(__code);
+}

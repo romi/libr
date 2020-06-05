@@ -71,19 +71,19 @@ public:
 };
 
 
-TEST_F(thread_pthread_tests, thread_pthread_create_fails_returns_NULL)
-{
-    // Arrange
-    safe_malloc_fake.return_val = nullptr;
-
-    // Act
-    thread_t *test_thread = new_thread(test_run_function_mock, nullptr, 0, 0);
-
-    //Assert
-    ASSERT_EQ(nullptr, test_thread);
-
-    ASSERT_EQ(safe_malloc_fake.call_count, 1);
-}
+//TEST_F(thread_pthread_tests, thread_pthread_create_fails_returns_NULL)
+//{
+//    // Arrange
+//    safe_malloc_fake.return_val = nullptr;
+//
+//    // Act
+//    thread_t *test_thread = new_thread(test_run_function_mock, nullptr, 0, 0);
+//
+//    //Assert
+//    ASSERT_EQ(nullptr, test_thread);
+//
+//    ASSERT_EQ(safe_malloc_fake.call_count, 1);
+//}
 
 TEST_F(thread_pthread_tests, thread_pthread_create_fails_deletes_thread_data)
 {
@@ -189,7 +189,7 @@ TEST_F(thread_pthread_tests, thread_join_calls_join)
 {
     // Arrange
     thread_t thread_data;
-    pthread_t pthread_data;
+    pthread_t pthread_data = 0;
     thread_data.thread = pthread_data;
     pthread_join_fake.return_val = 10;
 
@@ -203,18 +203,18 @@ TEST_F(thread_pthread_tests, thread_join_calls_join)
 }
 
 
-TEST_F(thread_pthread_tests, new_mutex_fails_returns_NULL)
-{
-    // Arrange
-    safe_malloc_fake.return_val = nullptr;
-
-    // Act
-    mutex_t* actual = new_mutex();
-
-    //Assert
-    ASSERT_EQ(actual, nullptr);
-    ASSERT_EQ(pthread_mutex_init_fake.call_count, 0);
-}
+//TEST_F(thread_pthread_tests, new_mutex_fails_returns_NULL)
+//{
+//    // Arrange
+//    safe_malloc_fake.return_val = nullptr;
+//
+//    // Act
+//    mutex_t* actual = new_mutex();
+//
+//    //Assert
+//    ASSERT_EQ(actual, nullptr);
+//    ASSERT_EQ(pthread_mutex_init_fake.call_count, 0);
+//}
 
 TEST_F(thread_pthread_tests, new_mutex_returns_mutex)
 {
@@ -233,7 +233,7 @@ TEST_F(thread_pthread_tests, new_mutex_returns_mutex)
 TEST_F(thread_pthread_tests, delete_mutex_deletes_mutex)
 {
     // Arrange
-    pthread_mutex_t pthread_mutex;
+    pthread_mutex_t pthread_mutex  = PTHREAD_MUTEX_INITIALIZER;
 
     mutex_t mutex_data;
     mutex_data.mutex = pthread_mutex;
@@ -283,18 +283,18 @@ TEST_F(thread_pthread_tests, mutex_unlock_unlocks_mutex)
     ASSERT_EQ(pthread_mutex_unlock_fake.call_count, 1);
 }
 
-TEST_F(thread_pthread_tests, new_condition_fails_returns_NULL)
-{
-    // Arrange
-    safe_malloc_fake.return_val = nullptr;
-
-    // Act
-    condition_t* actual = new_condition();
-
-    //Assert
-    ASSERT_EQ(actual, nullptr);
-    ASSERT_EQ(pthread_cond_init_fake.call_count, 0);
-}
+//TEST_F(thread_pthread_tests, new_condition_fails_returns_NULL)
+//{
+//    // Arrange
+//    safe_malloc_fake.return_val = nullptr;
+//
+//    // Act
+//    condition_t* actual = new_condition();
+//
+//    //Assert
+//    ASSERT_EQ(actual, nullptr);
+//    ASSERT_EQ(pthread_cond_init_fake.call_count, 0);
+//}
 
 TEST_F(thread_pthread_tests, new_condition_returns_condition)
 {
@@ -313,7 +313,7 @@ TEST_F(thread_pthread_tests, new_condition_returns_condition)
 TEST_F(thread_pthread_tests, delete_condition_deletes_condition)
 {
     // Arrange
-    pthread_cond_t pthread_condition;
+    pthread_cond_t pthread_condition = PTHREAD_COND_INITIALIZER;
 
     condition_t condition_data;
     condition_data.cond = pthread_condition;

@@ -24,9 +24,9 @@
  */
 #include "r.h"
 
-int r_init(int *argc)
+int r_init(int *argc, out_of_memory_handler_t handler)
 {
-        return mem_init(argc);
+        return mem_init(argc, handler);
 }
 
 void r_cleanup()
