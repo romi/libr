@@ -2448,11 +2448,12 @@ static json_object_t json_parser_loop(json_parser_t* parser,
         }
         
         int32 r;
+        int done = 0;
         
         errmsg[0] = 0;
         *err = 0;
 
-        while (1) {
+        do {
                 
                 int c = json_parser_getc(parser, in, ptr);
 
@@ -2468,14 +2469,12 @@ static json_object_t json_parser_loop(json_parser_t* parser,
                         return json_null();
                 }
                 
-                int done = _parser_done(parser);
+                done = _parser_done(parser);
                 if (c == -1 && !done) {
                         FORMAT_ERR("The file is corrupt.");
                         return json_null();
                 }
-                if (done)
-                        break;
-        }
+        } while (!done);
         
         if (json_parser_flush(parser, in, ptr)) {
                 FORMAT_ERR(json_parser_errstr(parser));
