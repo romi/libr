@@ -427,7 +427,7 @@ json_object_t json_string_create(const char* s)
 
 	string = base_get(base, string_t);
 	string->length = len;
-	memcpy(string->s, s, string->length);
+	JSON_MEMCPY(string->s, s, string->length);
 	string->s[string->length] = 0;
 
 	return base;
@@ -2125,7 +2125,7 @@ char _numtrans[_state_last][_input_last] = {
 
 char _endstate[_state_last] = { 0, 0, 0, 1, 1, 0, 0, 1, 0, 1 };
 
-static int32 json_numinput(json_parser_t* parser, char c)
+static inline int32 json_numinput(json_parser_t* parser, char c)
 {
         (void) parser;
 	if (('1' <= c) && (c <= '9')) return _d19;
@@ -2374,11 +2374,16 @@ static int32 json_parser_feed_one(json_parser_t* parser, char c)
 	return ret;
 }
 
-int32 json_parser_done(json_parser_t* parser)
+static inline int32 _parser_done(json_parser_t* parser)
 {
 	return (parser->state_stack_top == 0
                 && parser->value_stack_top == 0
                 && parser->state_stack[parser->state_stack_top] == k_value_parsed);
+}
+
+int32 json_parser_done(json_parser_t* parser)
+{
+	return _parser_done(parser);
 }
 
 json_object_t json_parser_result(json_parser_t* parser)
@@ -2447,7 +2452,7 @@ static json_object_t json_parser_loop(json_parser_t* parser,
         errmsg[0] = 0;
         *err = 0;
 
-        while (!json_parser_done(parser)) {
+        while (1) {
                 
                 int c = json_parser_getc(parser, in, ptr);
 
@@ -2461,12 +2466,14 @@ static json_object_t json_parser_loop(json_parser_t* parser,
                 if (r != 0) {
                         FORMAT_ERR(json_parser_errstr(parser));
                         return json_null();
-                } 
-                if (c == -1 && !json_parser_done(parser)) {
+                }
+                
+                int done = _parser_done(parser);
+                if (c == -1 && !done) {
                         FORMAT_ERR("The file is corrupt.");
                         return json_null();
                 }
-                if (json_parser_done(parser))
+                if (done)
                         break;
         }
         
