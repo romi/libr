@@ -489,30 +489,112 @@ TEST_F(serial_posix_tests, delete_serial_when_NULL_does_not_delete)
     ASSERT_EQ(safe_free_fake.call_count, 0);
 }
 
-//TEST_F(serial_posix_tests, delete_serial_when_NOT_NULL_does_not_delete)
-//{
-//    // Arrange
-//    int speed = 115200;
-//    int reset = 1;
-//    int fd = 1;
-//
-//    mutex_t mutex_data;
-//    serial_t serial_data;
-//    serial_t *expected_serial = &serial_data;
-//    const char *device = "/dev/ttys1";
-//    membuf_t membuf_data;
-//
-//    // Act
-//    serial_t *actual_serial =  new_serial(device.c_str(), speed, reset);
-//
-//    //Assert
-//    ASSERT_EQ(actual_serial, expected_serial);
-//    ASSERT_EQ(expected_serial->device, device_dup);
-//    ASSERT_EQ(expected_serial->mutex, &mutex_data);
-//    ASSERT_EQ(expected_serial->errors, 0);
-//    ASSERT_EQ(expected_serial->fd, open_return_value);
-//    ASSERT_EQ(expected_serial->nextchar, -1);
-//    ASSERT_EQ(expected_serial->out, &membuf_data);
-//    ASSERT_EQ(expected_serial->speed, speed);
-//    ASSERT_EQ(expected_serial->quit, 0);
-//}
+TEST_F(serial_posix_tests, delete_serial_sets_quit_1)
+{
+    // Arrange
+    serial_t serial_data;
+    serial_data.quit = 5;
+    serial_t *expected_serial = &serial_data;
+
+    // Act
+    delete_serial(expected_serial);
+
+    //Assert
+    ASSERT_EQ(serial_data.quit, 1);
+}
+
+TEST_F(serial_posix_tests, delete_serial_locks_and_unlocks_mutex)
+{
+    // Arrange
+    mutex_t mutex_data;
+    serial_t serial_data;
+    serial_data.mutex = &mutex_data;
+    serial_t *expected_serial = &serial_data;
+
+    // Act
+    delete_serial(expected_serial);
+
+    //Assert
+    ASSERT_EQ(mutex_lock_fake.call_count, 1);
+    ASSERT_EQ(mutex_lock_fake.arg0_val, &mutex_data);
+    ASSERT_EQ(mutex_unlock_fake.call_count, 1);
+    ASSERT_EQ(mutex_unlock_fake.arg0_val, &mutex_data);
+}
+
+TEST_F(serial_posix_tests, delete_serial_locks_deletes_mutex)
+{
+    // Arrange
+    mutex_t mutex_data;
+    serial_t serial_data;
+    serial_data.mutex = &mutex_data;
+    serial_t *expected_serial = &serial_data;
+
+    // Act
+    delete_serial(expected_serial);
+
+    //Assert
+    ASSERT_EQ(delete_mutex_fake.call_count, 1);
+    ASSERT_EQ(delete_mutex_fake.arg0_val, &mutex_data);
+}
+
+TEST_F(serial_posix_tests, delete_serial_deletes_device)
+{
+    // Arrange
+    std::string device = "/dev/ttys1";
+    serial_t serial_data;
+    serial_data.device = (char *)device.c_str();
+    serial_t *expected_serial = &serial_data;
+
+    // Act
+    delete_serial(expected_serial);
+
+    //Assert
+    ASSERT_EQ(safe_free_fake.arg0_history[0], (char *)device.c_str());
+}
+
+TEST_F(serial_posix_tests, delete_serial_deletes_out_membuf)
+{
+    // Arrange
+    membuf_t membuf_data;
+    serial_t serial_data;
+    serial_data.out = &membuf_data;
+    serial_t *expected_serial = &serial_data;
+
+    // Act
+    delete_serial(expected_serial);
+
+    //Assert
+    ASSERT_EQ(delete_membuf_fake.call_count, 1);
+    ASSERT_EQ(delete_membuf_fake.arg0_val, &membuf_data);
+}
+
+TEST_F(serial_posix_tests, delete_serial_closes_fd)
+{
+    // Arrange
+    int fd = 10;
+    int fd_closed = -1;
+    serial_t serial_data;
+    serial_data.fd = fd;
+    serial_t *expected_serial = &serial_data;
+
+    // Act
+    delete_serial(expected_serial);
+
+    //Assert
+    ASSERT_EQ(close_wrapper_fake.call_count, 1);
+    ASSERT_EQ(close_wrapper_fake.arg0_val, fd);
+    ASSERT_EQ(serial_data.fd, fd_closed);
+}
+
+TEST_F(serial_posix_tests, delete_serial_deletes_serial)
+{
+    // Arrange
+    serial_t serial_data;
+    serial_t *expected_serial = &serial_data;
+
+    // Act
+    delete_serial(expected_serial);
+
+    //Assert
+    ASSERT_EQ(safe_free_fake.arg0_history[1], expected_serial);
+}
