@@ -149,8 +149,6 @@ typedef struct _json_parser_t json_parser_t;
 
 json_parser_t* json_parser_create();
 void json_parser_destroy(json_parser_t* parser);
-void json_parser_init(json_parser_t* parser);
-void json_parser_cleanup(json_parser_t* parser);
 
 void json_parser_reset(json_parser_t* parser);
 
@@ -160,10 +158,13 @@ char* json_parser_errstr(json_parser_t* parser);
 int32 json_parser_feed(json_parser_t* parser, const char* buffer, int32 len);
 int32 json_parser_done(json_parser_t* parser);
 
+json_object_t json_parser_eval_ext(json_parser_t* parser, const char* s,
+                                   int* err, char* errmsg, int len);
 json_object_t json_parser_eval(json_parser_t* parser, const char* buffer);
 
 json_object_t json_parser_result(json_parser_t* parser);
 
+json_object_t json_parse_ext(const char* buffer, int* err, char* errmsg, int len);
 json_object_t json_parse(const char* buffer);
 
 // null
