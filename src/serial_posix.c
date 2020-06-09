@@ -89,7 +89,8 @@ static int open_serial(const char *device, int speed, int reset)
         // CLOCAL: ignore modem controls
         // CREAD: enable reading
         // CS8: 8-bit characters
-        tty.c_cflag = CLOCAL | CREAD | CS8; 
+    // ToDo: Whats going on here? Should thie or in these values? HUPCL
+        tty.c_cflag = CLOCAL | CREAD | CS8;
         if (!reset)
                 tty.c_cflag &= ~HUPCL;   // disable hang-up-on-close to avoid reset
 
@@ -178,7 +179,7 @@ int serial_get(serial_t *s)
         unsigned char c;
 
         if (s->fd == -1) return -1;
-        
+
         if (s->nextchar != -1) {
                 int n = s->nextchar;
                 s->nextchar = -1;
@@ -188,15 +189,16 @@ int serial_get(serial_t *s)
         while (!s->quit) {
                 ssize_t n = read(s->fd, &c, 1);
                 if (n == 1) {
-                        //printf("serial_get: '%c'\n", c);
+                        printf("serial_get: '%c'\n", c);
                         return (int) c;
                 }
                 if (n == -1) {
+                        // ToDo: Should this be r_err?
                         perror("serial_get");
                         return -1;
                 }
-                //printf("serial_get: sleep (n=%d)\n", (int) n);
-                usleep(1000);
+                printf("serial_get: sleep (n=%d)\n", (int) n);
+                usleep_wrapper(1000);
         }
         return -1;
 }
@@ -220,6 +222,19 @@ int serial_read(serial_t *s, char *buf, int len)
         return 0;
 }
 
+static int arduino_debug_string(membuf_t *buffer)
+{
+    char *data = membuf_data(buffer);
+    if (membuf_len(buffer) >= 3
+        && strncmp(data, "#!", 2) == 0)
+    {
+        r_debug("serial_readline Arduino: %s", data);
+        membuf_clear(buffer);
+        return 1;
+    }
+    return 0;
+}
+
 const char *serial_readline(serial_t *s, membuf_t *buffer)
 {
         if (s->fd == -1)
@@ -230,35 +245,22 @@ const char *serial_readline(serial_t *s, membuf_t *buffer)
         while (!s->quit) {
                 int c = serial_get(s);
 
-                //printf("%c", c);
-                
                 if (c == -1) {
                         return NULL;
                         
                 } else if (c == '\r') {
-                        // Check for \r\n
                         if (serial_peek(s) == '\n')
                                 c = serial_get(s);
                         membuf_append_zero(buffer);
-                        
-                        if (membuf_len(buffer) >= 3
-                            && strncmp(membuf_data(buffer), "#!", 2) == 0) {
-                                r_debug("serial_readline: %s", membuf_data(buffer));
-                                membuf_clear(buffer);
-                        } else {
-                                return membuf_data(buffer);
+                        if (!arduino_debug_string(buffer)){
+                            return membuf_data(buffer);
                         }
 
                 } else if (c == '\n') {
                         membuf_append_zero(buffer);
-                        
-                        if (membuf_len(buffer) >= 3
-                            && strncmp(membuf_data(buffer), "#!", 2) == 0) {
-                                r_debug("serial_readline: %s", membuf_data(buffer));
-                                membuf_clear(buffer);
-                        } else {
-                                return membuf_data(buffer);
-                        }
+                    if (!arduino_debug_string(buffer)){
+                        return membuf_data(buffer);
+                    }
                 } else {
                         membuf_put(buffer, (char) (c & 0xff));
                 }

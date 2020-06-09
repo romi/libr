@@ -72,6 +72,8 @@ set(SRCS_SERIAL
         mocks/mutex.mock.c
         mocks/os_wrapper.mock.h
         mocks/os_wrapper.mock.c
+        mocks/system.mock.h
+        mocks/system.mock.c
         mocks/termios.mock.h
         mocks/termios.mock.c)
 

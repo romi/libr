@@ -4,6 +4,7 @@
 #include "fff.h"
 #include "log.h"
 
+DECLARE_FAKE_VOID_FUNC_VARARG(r_debug, const char*, ...)
 DECLARE_FAKE_VOID_FUNC_VARARG(r_err, const char*, ...)
 DECLARE_FAKE_VOID_FUNC_VARARG(r_warn, const char*, ...)
 DECLARE_FAKE_VOID_FUNC_VARARG(r_panic, const char*, ...)
