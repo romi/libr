@@ -5,5 +5,6 @@
 #include "fff.h"
 
 DECLARE_FAKE_VALUE_FUNC(ssize_t, read, int, void *, size_t)
+DECLARE_FAKE_VALUE_FUNC(ssize_t, write, int, const void *, size_t)
 
 #endif //ROMI_ROVER_BUILD_AND_TEST_SYSTEM_MOCK_H

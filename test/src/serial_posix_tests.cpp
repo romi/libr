@@ -33,6 +33,8 @@ struct _mutex_t
     pthread_mutex_t mutex;
 };
 
+const int ERROR = -1;
+
 class serial_posix_tests : public ::testing::Test
 {
 protected:
@@ -80,8 +82,8 @@ protected:
         current_char = 0;
 
         serial_data.quit = 0;
-        serial_data.fd = -1;
-        serial_data.nextchar = -1;
+        serial_data.fd = ERROR;
+        serial_data.nextchar = ERROR;
         serial_data.device = nullptr;
         serial_data.mutex = nullptr;
         serial_data.speed = 0;
@@ -179,9 +181,8 @@ TEST_F(serial_posix_tests, new_serial_open_fails_returns_null)
     int reset = 0;
     serial_t *expected_serial = nullptr;
 
-    int open_return_value = -1;
     safe_malloc_fake.return_val = nullptr;
-    open_wrapper_fake.return_val = open_return_value;
+    open_wrapper_fake.return_val = ERROR;
 
     // Act
     serial_t *actual_serial =  new_serial(device.c_str(), speed, reset);
@@ -220,7 +221,7 @@ TEST_F(serial_posix_tests, new_serial_getattr_fails_closes_port_returns_null)
     int open_return_value = 1;
     safe_malloc_fake.return_val = nullptr;
     open_wrapper_fake.return_val = open_return_value;
-    tcgetattr_fake.return_val = -1;
+    tcgetattr_fake.return_val = ERROR;
 
     // Act
     serial_t *actual_serial =  new_serial(device.c_str(), speed, reset);
@@ -372,7 +373,7 @@ TEST_F(serial_posix_tests, new_serial_if_reset_set_HUPCL_flag_set)
 
     tcgetattr_fake.custom_fake = tcgetattr_custom_fake;
     cfsetspeed_fake.custom_fake = cfsetspeed_custom_fake;
-    tcsetattr_fake.return_val = -1;
+    tcsetattr_fake.return_val = ERROR;
     // Act
     serial_t *actual_serial =  new_serial(device.c_str(), speed, reset);
  //   unsigned int HUPCL_flag = cflags_data & HUPCL;
@@ -536,7 +537,7 @@ TEST_F(serial_posix_tests, new_serial_valid_data_sets_data_returns_serial)
     ASSERT_EQ(expected_serial->mutex, &mutex_data);
     ASSERT_EQ(expected_serial->errors, 0);
     ASSERT_EQ(expected_serial->fd, open_return_value);
-    ASSERT_EQ(expected_serial->nextchar, -1);
+    ASSERT_EQ(expected_serial->nextchar, ERROR);
     ASSERT_EQ(expected_serial->out, &membuf_data);
     ASSERT_EQ(expected_serial->speed, speed);
     ASSERT_EQ(expected_serial->quit, 0);
@@ -630,7 +631,6 @@ TEST_F(serial_posix_tests, delete_serial_closes_fd)
 {
     // Arrange
     int fd = 10;
-    int fd_closed = -1;
     serial_data.fd = fd;
     serial_t *expected_serial = &serial_data;
 
@@ -640,7 +640,7 @@ TEST_F(serial_posix_tests, delete_serial_closes_fd)
     //Assert
     ASSERT_EQ(close_wrapper_fake.call_count, 1);
     ASSERT_EQ(close_wrapper_fake.arg0_val, fd);
-    ASSERT_EQ(serial_data.fd, fd_closed);
+    ASSERT_EQ(serial_data.fd, ERROR);
 }
 
 TEST_F(serial_posix_tests, delete_serial_deletes_serial)
@@ -658,21 +658,19 @@ TEST_F(serial_posix_tests, delete_serial_deletes_serial)
 TEST_F(serial_posix_tests, serial_get_when_port_closed_returns_error)
 {
     // Arrange
-    int error_character = -1;
-    serial_data.fd = error_character;
+    serial_data.fd = ERROR;
     serial_t *expected_serial = &serial_data;
 
     // Act
     int actual = serial_get(expected_serial);
 
     //Assert
-    ASSERT_EQ(actual, error_character);
+    ASSERT_EQ(actual, ERROR);
 }
 
 TEST_F(serial_posix_tests, serial_get_when_char_already_read_return_char_resets_nextchar)
 {
     // Arrange
-    int unset_character = -1;
     char expected_character = 'a';
     serial_data.fd = 10;
     serial_data.nextchar = (int)expected_character;
@@ -683,22 +681,21 @@ TEST_F(serial_posix_tests, serial_get_when_char_already_read_return_char_resets_
 
     //Assert
     ASSERT_EQ(actual, expected_character);
-    ASSERT_EQ(serial_data.nextchar, unset_character);
+    ASSERT_EQ(serial_data.nextchar, ERROR);
 }
 
 TEST_F(serial_posix_tests, serial_get_when_quit_set_does_not_read_returns_error)
 {
     // Arrange
-    int erro_character = -1;
     serial_data.fd = 10;
-    serial_data.quit = erro_character;
+    serial_data.quit = ERROR;
     serial_t *expected_serial = &serial_data;
 
     // Act
     int actual = serial_get(expected_serial);
 
     //Assert
-    ASSERT_EQ(actual, erro_character);
+    ASSERT_EQ(actual, ERROR);
     ASSERT_EQ(read_fake.call_count, 0);
 }
 
@@ -734,9 +731,9 @@ TEST_F(serial_posix_tests, serial_get_reads_multiple_characters_retries_until_on
     char actual = (char)serial_get(expected_serial);
 
     //Assert
-    ASSERT_NE(actual, -1);
+    ASSERT_NE(actual, ERROR);
     ASSERT_EQ(read_fake.call_count, read_read_count);
-    ASSERT_EQ(usleep_wrapper_fake.call_count, read_read_count -1);
+    ASSERT_EQ(usleep_wrapper_fake.call_count, (read_read_count - 1));
 }
 
 TEST_F(serial_posix_tests, serial_get_read_error_returns_error)
@@ -744,14 +741,13 @@ TEST_F(serial_posix_tests, serial_get_read_error_returns_error)
     // Arrange
     serial_data.fd = 10;
     serial_t *expected_serial = &serial_data;
-
-    read_fake.return_val = -1;
+    read_fake.return_val = ERROR;
 
     // Act
     char actual = (char)serial_get(expected_serial);
 
     //Assert
-    ASSERT_EQ(actual, -1);
+    ASSERT_EQ(actual, ERROR);
     ASSERT_EQ(read_fake.call_count, 1);
     ASSERT_EQ(usleep_wrapper_fake.call_count, 0);
 }
@@ -759,7 +755,6 @@ TEST_F(serial_posix_tests, serial_get_read_error_returns_error)
 TEST_F(serial_posix_tests, serial_read_fd_not_set_quits)
 {
     // Arrange
-    serial_data.fd = -1;
     serial_t *expected_serial = &serial_data;
 
     const int buffer_size = 1024;
@@ -769,7 +764,7 @@ TEST_F(serial_posix_tests, serial_read_fd_not_set_quits)
     char actual = (char)serial_read(expected_serial, buffer, buffer_size);
 
     //Assert
-    ASSERT_EQ(actual, -1);
+    ASSERT_EQ(actual, ERROR);
     ASSERT_EQ(read_fake.call_count, 0);
 }
 
@@ -778,7 +773,7 @@ TEST_F(serial_posix_tests, serial_read_quit_set_quits)
 {
     // Arrange
     serial_data.fd = 10;
-    serial_data.quit = -1;
+    serial_data.quit = ERROR;
     serial_t *expected_serial = &serial_data;
 
     const int buffer_size = 1024;
@@ -788,7 +783,7 @@ TEST_F(serial_posix_tests, serial_read_quit_set_quits)
     char actual = (char)serial_read(expected_serial, buffer, buffer_size);
 
     //Assert
-    ASSERT_EQ(actual, -1);
+    ASSERT_EQ(actual, ERROR);
     ASSERT_EQ(read_fake.call_count, 0);
 }
 
@@ -798,7 +793,7 @@ TEST_F(serial_posix_tests, serial_read_read_fails_returns_error)
     serial_data.fd = 10;
     serial_t *expected_serial = &serial_data;
 
-    read_fake.return_val = -1;
+    read_fake.return_val = ERROR;
     const int buffer_size = 1024;
     char buffer[buffer_size];
 
@@ -806,7 +801,7 @@ TEST_F(serial_posix_tests, serial_read_read_fails_returns_error)
     char actual = (char)serial_read(expected_serial, buffer, buffer_size);
 
     //Assert
-    ASSERT_EQ(actual, -1);
+    ASSERT_EQ(actual, ERROR);
     ASSERT_EQ(read_fake.call_count, 1);
 }
 
@@ -887,7 +882,7 @@ TEST_F(serial_posix_tests, serial_read_line_quit_set_quits)
     membuf_t membuf_data;
 
     serial_data.fd = 10;
-    serial_data.quit = -1;
+    serial_data.quit = ERROR;
     serial_t *expected_serial = &serial_data;
 
     // Act
@@ -904,7 +899,7 @@ TEST_F(serial_posix_tests, serial_read_line_read_fails_returns_error)
 
     serial_data.fd = 10;
     serial_t *expected_serial = &serial_data;
-    read_fake.return_val = -1;
+    read_fake.return_val = ERROR;
 
     // Act
     const char *actual = serial_readline(expected_serial, &membuf_data);
@@ -1021,3 +1016,13 @@ TEST_F(serial_posix_tests, serial_read_line_n_arduino_debug_is_printed_and_clear
 }
 
 
+TEST_F(serial_posix_tests, serial_put_if_fd_unset_returns_error)
+{
+    // Arrange
+    char c = 'a';
+    // Act
+    int actual = serial_put(&serial_data, c);
+
+    //Assert
+    ASSERT_EQ(actual, ERROR);
+}
