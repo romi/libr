@@ -78,6 +78,15 @@ protected:
         read_data = "serial line\n";
         read_return_value = 0;
         current_char = 0;
+
+        serial_data.quit = 0;
+        serial_data.fd = -1;
+        serial_data.nextchar = -1;
+        serial_data.device = nullptr;
+        serial_data.mutex = nullptr;
+        serial_data.speed = 0;
+        serial_data.errors = 0;
+        serial_data.out = nullptr;
     }
 
     void TearDown() override
@@ -546,7 +555,6 @@ TEST_F(serial_posix_tests, delete_serial_when_NULL_does_not_delete)
 TEST_F(serial_posix_tests, delete_serial_sets_quit_1)
 {
     // Arrange
-    serial_t serial_data;
     serial_data.quit = 5;
     serial_t *expected_serial = &serial_data;
 
@@ -561,7 +569,6 @@ TEST_F(serial_posix_tests, delete_serial_locks_and_unlocks_mutex)
 {
     // Arrange
     mutex_t mutex_data;
-    serial_t serial_data;
     serial_data.mutex = &mutex_data;
     serial_t *expected_serial = &serial_data;
 
@@ -579,7 +586,6 @@ TEST_F(serial_posix_tests, delete_serial_locks_deletes_mutex)
 {
     // Arrange
     mutex_t mutex_data;
-    serial_t serial_data;
     serial_data.mutex = &mutex_data;
     serial_t *expected_serial = &serial_data;
 
@@ -595,7 +601,6 @@ TEST_F(serial_posix_tests, delete_serial_deletes_device)
 {
     // Arrange
     std::string device = "/dev/ttys1";
-    serial_t serial_data;
     serial_data.device = (char *)device.c_str();
     serial_t *expected_serial = &serial_data;
 
@@ -610,7 +615,6 @@ TEST_F(serial_posix_tests, delete_serial_deletes_out_membuf)
 {
     // Arrange
     membuf_t membuf_data;
-    serial_t serial_data;
     serial_data.out = &membuf_data;
     serial_t *expected_serial = &serial_data;
 
@@ -627,7 +631,6 @@ TEST_F(serial_posix_tests, delete_serial_closes_fd)
     // Arrange
     int fd = 10;
     int fd_closed = -1;
-    serial_t serial_data;
     serial_data.fd = fd;
     serial_t *expected_serial = &serial_data;
 
@@ -643,7 +646,6 @@ TEST_F(serial_posix_tests, delete_serial_closes_fd)
 TEST_F(serial_posix_tests, delete_serial_deletes_serial)
 {
     // Arrange
-    serial_t serial_data;
     serial_t *expected_serial = &serial_data;
 
     // Act
@@ -657,7 +659,6 @@ TEST_F(serial_posix_tests, serial_get_when_port_closed_returns_error)
 {
     // Arrange
     int error_character = -1;
-    serial_t serial_data;
     serial_data.fd = error_character;
     serial_t *expected_serial = &serial_data;
 
@@ -673,7 +674,6 @@ TEST_F(serial_posix_tests, serial_get_when_char_already_read_return_char_resets_
     // Arrange
     int unset_character = -1;
     char expected_character = 'a';
-    serial_t serial_data;
     serial_data.fd = 10;
     serial_data.nextchar = (int)expected_character;
     serial_t *expected_serial = &serial_data;
@@ -690,9 +690,7 @@ TEST_F(serial_posix_tests, serial_get_when_quit_set_does_not_read_returns_error)
 {
     // Arrange
     int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
     serial_data.quit = erro_character;
     serial_t *expected_serial = &serial_data;
 
@@ -707,11 +705,7 @@ TEST_F(serial_posix_tests, serial_get_when_quit_set_does_not_read_returns_error)
 TEST_F(serial_posix_tests, serial_get_reads_one_character)
 {
     // Arrange
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
 
     read_fake.custom_fake = read_custom_fake;
@@ -729,11 +723,7 @@ TEST_F(serial_posix_tests, serial_get_reads_one_character)
 TEST_F(serial_posix_tests, serial_get_reads_multiple_characters_retries_until_one_char_read)
 {
     // Arrange
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
 
     const int read_read_count = 3;
@@ -752,11 +742,7 @@ TEST_F(serial_posix_tests, serial_get_reads_multiple_characters_retries_until_on
 TEST_F(serial_posix_tests, serial_get_read_error_returns_error)
 {
     // Arrange
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
 
     read_fake.return_val = -1;
@@ -773,11 +759,7 @@ TEST_F(serial_posix_tests, serial_get_read_error_returns_error)
 TEST_F(serial_posix_tests, serial_read_fd_not_set_quits)
 {
     // Arrange
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = -1;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
 
     const int buffer_size = 1024;
@@ -795,10 +777,7 @@ TEST_F(serial_posix_tests, serial_read_fd_not_set_quits)
 TEST_F(serial_posix_tests, serial_read_quit_set_quits)
 {
     // Arrange
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
     serial_data.quit = -1;
     serial_t *expected_serial = &serial_data;
 
@@ -816,11 +795,7 @@ TEST_F(serial_posix_tests, serial_read_quit_set_quits)
 TEST_F(serial_posix_tests, serial_read_read_fails_returns_error)
 {
     // Arrange
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
 
     read_fake.return_val = -1;
@@ -838,12 +813,8 @@ TEST_F(serial_posix_tests, serial_read_read_fails_returns_error)
 TEST_F(serial_posix_tests, serial_read_read_succeeds_returns_correct_data)
 {
     // Arrange
-    int erro_character = -1;
     int num__to_read = 4;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
     current_char = 0;
 
@@ -869,14 +840,10 @@ TEST_F(serial_posix_tests, serial_read_read_succeeds_returns_correct_data)
 TEST_F(serial_posix_tests, serial_read_read_succeeds_multiple_times_returns_correct_data)
 {
     // Arrange
-    int erro_character = -1;
     int num__to_read = 12;
     int num_chars_read = 4;
     int num_read_calls = num__to_read / num_chars_read;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
     current_char = 0;
 
@@ -904,11 +871,6 @@ TEST_F(serial_posix_tests, serial_read_line_fd_not_set_quits)
     // Arrange
     membuf_t membuf_data;
 
-    int erro_character = -1;
-    serial_t serial_data;
-    serial_data.fd = erro_character;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
 
     // Act
@@ -924,11 +886,8 @@ TEST_F(serial_posix_tests, serial_read_line_quit_set_quits)
     // Arrange
     membuf_t membuf_data;
 
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = erro_character;
+    serial_data.quit = -1;
     serial_t *expected_serial = &serial_data;
 
     // Act
@@ -943,13 +902,9 @@ TEST_F(serial_posix_tests, serial_read_line_read_fails_returns_error)
     // Arrange
     membuf_t membuf_data;
 
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
-    read_fake.return_val = erro_character;
+    read_fake.return_val = -1;
 
     // Act
     const char *actual = serial_readline(expected_serial, &membuf_data);
@@ -962,12 +917,7 @@ TEST_F(serial_posix_tests, serial_read_line_read_reads_r_n_terminated_line)
 {
     // Arrange
     membuf_t membuf_data;
-
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
     read_fake.custom_fake = read_size_custom_fake;
     read_return_value = 1;
@@ -993,12 +943,7 @@ TEST_F(serial_posix_tests, serial_read_line_read_reads_n_terminated_line)
 {
     // Arrange
     membuf_t membuf_data;
-
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
     read_fake.custom_fake = read_size_custom_fake;
     read_return_value = 1;
@@ -1025,11 +970,7 @@ TEST_F(serial_posix_tests, serial_read_line_rn_arduino_debug_is_printed_and_clea
     // Arrange
     membuf_t membuf_data;
 
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
     read_fake.custom_fake = read_size_custom_fake;
     read_return_value = 1;
@@ -1056,12 +997,7 @@ TEST_F(serial_posix_tests, serial_read_line_n_arduino_debug_is_printed_and_clear
 {
     // Arrange
     membuf_t membuf_data;
-
-    int erro_character = -1;
-    serial_t serial_data;
     serial_data.fd = 10;
-    serial_data.nextchar = erro_character;
-    serial_data.quit = 0;
     serial_t *expected_serial = &serial_data;
     read_fake.custom_fake = read_size_custom_fake;
     read_return_value = 1;
@@ -1083,4 +1019,5 @@ TEST_F(serial_posix_tests, serial_read_line_n_arduino_debug_is_printed_and_clear
     ASSERT_EQ(membuf_append_zero_fake.call_count, 2);
     ASSERT_EQ(r_debug_fake.call_count, 1);
 }
+
 
