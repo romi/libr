@@ -74,6 +74,7 @@ protected:
         RESET_FAKE(membuf_data)
 
         RESET_FAKE(read)
+        RESET_FAKE(write)
 
         safe_malloc_fake.return_val = &serial_data;
 
@@ -89,6 +90,7 @@ protected:
         serial_data.speed = 0;
         serial_data.errors = 0;
         serial_data.out = nullptr;
+        put_data = "";
     }
 
     void TearDown() override
@@ -134,7 +136,7 @@ protected:
 
         while (char_data_index < size)
             char_data[char_data_index++] = read_data[current_char++];
-        return read_return_value;
+        return size;
     }
 
     static ssize_t read_return_number_custom_fake( int fd, void *data, size_t size)
@@ -149,6 +151,27 @@ protected:
         return read_return_value;
     }
 
+    static ssize_t write_custom_fake(int fd, const void *data, size_t size)
+    {
+        fd_data = fd;
+        request_size_data = size;
+        write_data = (void *)data;
+        return write_return_value;
+    }
+
+    static ssize_t write_size_custom_fake(int fd, const void *data, size_t size)
+    {
+        fd_data = fd;
+        request_size_data = size;
+        write_data = (void *)data;
+        return size;
+    }
+
+//    static membuf_put_custom_fake(membuf_t *buf, char c)
+//    {
+//
+//    }
+
 public:
     serial_t serial_data;
 
@@ -158,9 +181,13 @@ public:
 
     static int fd_data;
     static std::string read_data;
+    static std::string put_data;
     static size_t request_size_data;
     static ssize_t read_return_value;
     static int current_char;
+
+    static void *write_data;
+    static ssize_t write_return_value;
 };
 
 unsigned int serial_posix_tests::cflags_data;
@@ -169,9 +196,12 @@ speed_t serial_posix_tests::speed_data;
 
 int serial_posix_tests::fd_data;
 std::string serial_posix_tests::read_data;
+std::string serial_posix_tests::put_data;
 size_t serial_posix_tests::request_size_data;
 ssize_t serial_posix_tests::read_return_value;
 int serial_posix_tests::current_char;
+void* serial_posix_tests::write_data;
+ssize_t serial_posix_tests::write_return_value;
 
 TEST_F(serial_posix_tests, new_serial_open_fails_returns_null)
 {
@@ -1025,4 +1055,466 @@ TEST_F(serial_posix_tests, serial_put_if_fd_unset_returns_error)
 
     //Assert
     ASSERT_EQ(actual, ERROR);
+}
+
+TEST_F(serial_posix_tests, serial_put_quit_set_does_not_write)
+{
+    // Arrange
+    char c = 'a';
+    serial_data.fd = 10;
+    serial_data.quit = 1;
+
+    // Act
+    int actual = serial_put(&serial_data, c);
+
+    //Assert
+    ASSERT_EQ(actual, 0);
+    ASSERT_EQ(write_fake.call_count, 0);
+}
+
+TEST_F(serial_posix_tests, serial_put_write_succeeds_returns_0)
+{
+    // Arrange
+    char c = 'a';
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    write_fake.return_val = 1;
+
+    // Act
+    int actual = serial_put(&serial_data, c);
+
+    //Assert
+    ASSERT_EQ(actual, 0);
+    ASSERT_EQ(write_fake.call_count, 1);
+    ASSERT_EQ(write_fake.arg0_val, serial_data.fd);
+    ASSERT_EQ(write_fake.arg2_val, 1);
+}
+
+TEST_F(serial_posix_tests, serial_put_write_fails_returns_error)
+{
+    // Arrange
+    char c = 'a';
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    write_fake.return_val = -1;
+
+    // Act
+    int actual = serial_put(&serial_data, c);
+
+    //Assert
+    ASSERT_EQ(actual, ERROR);
+    ASSERT_EQ(write_fake.call_count, 1);
+    ASSERT_EQ(write_fake.arg0_val, serial_data.fd);
+    ASSERT_EQ(write_fake.arg2_val, 1);
+}
+
+TEST_F(serial_posix_tests, serial_put_write_0_retries_returns_error)
+{
+    // Arrange
+    char c = 'a';
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+
+    long write_return_values[3] = { 0, 0, 1 };
+    SET_RETURN_SEQ(write, write_return_values, 3);
+
+    // Act
+    int actual = serial_put(&serial_data, c);
+
+    //Assert
+    ASSERT_EQ(actual, 0);
+    ASSERT_EQ(write_fake.call_count, 3);
+}
+
+TEST_F(serial_posix_tests, serial_write_fd_unset_returns)
+{
+    // Arrange
+    const char *buffer = "buffer";
+    std::string bufferstring(buffer);
+    serial_data.quit = 0;
+
+    // Act
+    int actual = serial_write(&serial_data, buffer, bufferstring.length());
+
+    //Assert
+    ASSERT_EQ(actual, ERROR);
+    ASSERT_EQ(write_fake.call_count, 0);
+}
+
+TEST_F(serial_posix_tests, serial_write_when_quit_set_quits)
+{
+    // Arrange
+    const char *buffer = "buffer";
+    std::string bufferstring(buffer);
+
+    serial_data.quit = 1;
+    serial_data.fd = 10;
+
+    // Act
+    int actual = serial_write(&serial_data, buffer, bufferstring.length());
+
+    //Assert
+    ASSERT_EQ(actual, ERROR);
+    ASSERT_EQ(write_fake.call_count, 0);
+}
+
+TEST_F(serial_posix_tests, serial_write_called_with_correct_parameters)
+{
+    // Arrange
+    const char *buffer = "buffer";
+    std::string bufferstring(buffer);
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    write_fake.return_val = bufferstring.length();
+
+    // Act
+    int actual = serial_write(&serial_data, buffer, bufferstring.length());
+
+    //Assert
+    ASSERT_EQ(actual, 0);
+    ASSERT_EQ(write_fake.call_count, 1);
+    ASSERT_EQ(write_fake.arg0_val, serial_data.fd);
+    ASSERT_EQ(write_fake.arg1_val, buffer);
+    ASSERT_EQ(write_fake.arg2_val, bufferstring.length());
+}
+
+TEST_F(serial_posix_tests, serial_write_called_correct_number_of_times)
+{
+    // Arrange
+    const char *buffer = "buffer";
+    std::string bufferstring(buffer);
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    write_fake.return_val = bufferstring.length();
+
+    long write_return_values[3] = { 0, 3, 3 };
+    SET_RETURN_SEQ(write, write_return_values, 3);
+
+    // Act
+    int actual = serial_write(&serial_data, buffer, bufferstring.length());
+    int bufferLength = bufferstring.length();
+
+    //Assert
+    ASSERT_EQ(actual, 0);
+    ASSERT_EQ(write_fake.call_count, 3);
+    ASSERT_EQ(write_fake.arg0_val, serial_data.fd);
+    ASSERT_EQ(write_fake.arg1_history[0], buffer);
+    ASSERT_EQ(write_fake.arg1_history[1], buffer);
+    ASSERT_EQ(write_fake.arg1_history[2], buffer+write_return_values[1]);
+    ASSERT_EQ(write_fake.arg2_history[0], bufferLength);
+    ASSERT_EQ(write_fake.arg2_history[1], bufferLength);
+    ASSERT_EQ(write_fake.arg2_history[2], (bufferLength-=write_return_values[1]));
+}
+
+TEST_F(serial_posix_tests, serial_write_fails_returns_error)
+{
+    // Arrange
+    const char *buffer = "buffer";
+    std::string bufferstring(buffer);
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    write_fake.return_val = ERROR;
+
+    // Act
+    int actual = serial_write(&serial_data, buffer, bufferstring.length());
+
+    //Assert
+    ASSERT_EQ(actual, ERROR);
+    ASSERT_EQ(write_fake.call_count, 1);
+}
+
+TEST_F(serial_posix_tests, serial_print_calls_write_with_correct_parameters)
+{
+    // Arrange
+    const char *buffer = "buffer";
+    std::string bufferstring(buffer);
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    write_fake.return_val = bufferstring.length();
+
+    // Act
+    int actual = serial_print(&serial_data, buffer);
+
+    //Assert
+    ASSERT_EQ(actual, 0);
+    ASSERT_EQ(write_fake.call_count, 1);
+    ASSERT_EQ(write_fake.arg0_val, serial_data.fd);
+    ASSERT_EQ(write_fake.arg1_val, buffer);
+    ASSERT_EQ(write_fake.arg2_val, bufferstring.length());
+}
+
+TEST_F(serial_posix_tests, serial_println_write_fails_returns_error)
+{
+    // Arrange
+    const char *serial_string = "buffer";
+    std::string bufferstring(serial_string);
+    int expected_string_length = bufferstring.length() + 2; // \r\n chars
+    write_fake.return_val = ERROR;
+
+
+    const int buffer_length = 24;
+    char buffer[buffer_length];
+    memset(buffer, 0, buffer_length);
+
+    membuf_t membuf_data;
+    membuf_data.length = buffer_length;
+    membuf_data.buffer = buffer;
+    membuf_data.index = 0;
+
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    serial_data.out = &membuf_data;
+
+    membuf_data_fake.return_val = membuf_data.buffer;
+    membuf_len_fake.return_val = expected_string_length;
+
+    // Act
+    int actual = serial_println(&serial_data, buffer);
+
+    //Assert
+    ASSERT_EQ(actual, ERROR);
+    ASSERT_EQ(write_fake.call_count, 1);
+    ASSERT_EQ(write_fake.arg0_val, serial_data.fd);
+    ASSERT_EQ(write_fake.arg1_val, buffer);
+    ASSERT_EQ(write_fake.arg2_val, expected_string_length);
+}
+
+TEST_F(serial_posix_tests, serial_println_write_parameters_are_correct_sends_rn)
+{
+    // Arrange
+    const char *serial_string = "buffer";
+    std::string bufferstring(serial_string);
+    std::string expected_line_end("\r\n");
+    int expected_string_length = bufferstring.length() + expected_line_end.length();
+    write_fake.custom_fake = write_size_custom_fake;
+
+    const int buffer_length = 24;
+    char buffer[buffer_length];
+    memset(buffer, 0, buffer_length);
+
+    membuf_t membuf_data;
+    membuf_data.length = buffer_length;
+    membuf_data.buffer = buffer;
+    membuf_data.index = 0;
+
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    serial_data.out = &membuf_data;
+
+    membuf_data_fake.return_val = membuf_data.buffer;
+    membuf_len_fake.return_val = expected_string_length;
+
+    // Act
+    int actual = serial_println(&serial_data, buffer);
+    std::string actual_line_end((char*)write_data);
+
+    //Assert
+    ASSERT_EQ(actual, 0);
+    ASSERT_EQ(write_fake.call_count, 1);
+    ASSERT_EQ(write_fake.arg0_history[0], serial_data.fd);
+    ASSERT_EQ(write_fake.arg1_history[0], buffer);
+    ASSERT_EQ(write_fake.arg2_history[0], expected_string_length);
+    ASSERT_EQ(expected_line_end, actual_line_end);
+}
+
+TEST_F(serial_posix_tests, serial_printf_formats_data)
+{
+    // Arrange
+    std::string intput_string("expected");
+    std::string expected_formatted_string("expected1");
+    write_fake.custom_fake = write_size_custom_fake;
+
+    const int buffer_length = 24;
+    char buffer[buffer_length];
+    memset(buffer, 0, buffer_length);
+
+    membuf_t membuf_data;
+    membuf_data.length = buffer_length;
+    membuf_data.buffer = buffer;
+    membuf_data.index = 0;
+
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    serial_data.out = &membuf_data;
+
+    membuf_data_fake.return_val = membuf_data.buffer;
+    membuf_len_fake.return_val = expected_formatted_string.length();
+
+    // Act
+    int actual = serial_printf(&serial_data, "%s%d", intput_string.c_str(), 1);
+    std::string actual_formatted_string((char*)write_data);
+
+    //Assert
+    ASSERT_EQ(actual, 0);
+    ASSERT_EQ(write_fake.call_count, 1);
+    ASSERT_EQ(expected_formatted_string, actual_formatted_string);
+}
+
+TEST_F(serial_posix_tests, serial_command_send_socket_null_returns_null)
+{
+    // Arrange
+    membuf_t membuf_data;
+    const char *command = "L90";
+
+    // Act
+    const char *actual = serial_command_send(nullptr, &membuf_data, command);
+
+    //Assert
+    ASSERT_EQ(actual, nullptr);
+}
+
+TEST_F(serial_posix_tests, serial_command_send_send_fails_logs_error_inc_error_count)
+{
+    // Arrange
+    const int buffer_length = 24;
+    char buffer[buffer_length];
+    memset(buffer, 0, buffer_length);
+
+    membuf_t membuf_data;
+    membuf_data.length = buffer_length;
+    membuf_data.buffer = buffer;
+    membuf_data.index = 0;
+    const char *command = "L90";
+
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    serial_data.out = &membuf_data;
+
+    membuf_data_fake.return_val = membuf_data.buffer;
+    membuf_len_fake.return_val = membuf_data.length;
+    write_fake.return_val = -1;
+
+    std::string expected_r_err_string("serial_command_send: failed to send the command");
+
+    // Act
+    const char *actual = serial_command_send(&serial_data, &membuf_data, command);
+
+    //Assert
+    ASSERT_EQ(actual, nullptr);
+    ASSERT_EQ(r_err_fake.call_count, 1);
+    ASSERT_EQ(r_err_fake.arg0_val, expected_r_err_string);
+    ASSERT_EQ(serial_data.errors, 1);
+}
+
+TEST_F(serial_posix_tests, serial_command_send_read_fails_logs_error_inc_error_count)
+{
+    // Arrange
+    const int buffer_length = 24;
+    char buffer[buffer_length];
+    memset(buffer, 0, buffer_length);
+
+    membuf_t membuf_data;
+    membuf_data.length = buffer_length;
+    membuf_data.buffer = buffer;
+    membuf_data.index = 0;
+    const char *command = "L90";
+
+    std::string expected_command(command);
+    expected_command += "\r\n";
+
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    serial_data.out = &membuf_data;
+
+    membuf_data_fake.return_val = membuf_data.buffer;
+    membuf_len_fake.return_val = expected_command.length();
+    write_fake.return_val = 1;
+
+    std::string expected_r_err_string("serial_command_send: reply == NULL");
+  //  read_fake.custom_fake = read_size_custom_fake;
+  //  read_return_value = -1;
+ //   read_data = "line\r\n";
+    read_fake.return_val = -1;
+
+    // Act
+    const char *actual = serial_command_send(&serial_data, &membuf_data, command);
+
+    //Assert
+    ASSERT_EQ(actual, nullptr);
+    ASSERT_EQ(r_err_fake.call_count, 1);
+    ASSERT_EQ(r_err_fake.arg0_val, expected_r_err_string);
+    ASSERT_EQ(serial_data.errors, 1);
+}
+
+TEST_F(serial_posix_tests, serial_command_send_reads_ERR_logs_error_inc_error_count)
+{
+    // Arrange
+    const int buffer_length = 24;
+    char buffer[buffer_length];
+    memset(buffer, 0, buffer_length);
+
+    membuf_t membuf_data;
+    membuf_data.length = buffer_length;
+    membuf_data.buffer = buffer;
+    membuf_data.index = 0;
+    const char *command = "L90";
+
+    std::string expected_command(command);
+    expected_command += "\r\n";
+
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    serial_data.out = &membuf_data;
+
+    write_fake.return_val = 1;
+
+    std::string expected_read_data = "ERROR DATA";
+    std::string expected_r_err_string("serial_command_send: %s");
+
+    read_data = expected_read_data + "\r\n";
+    read_fake.custom_fake = read_size_custom_fake;
+
+    const int read_read_count = 2;
+    const char* membuf_data_return[read_read_count] = { membuf_data.buffer, expected_read_data.c_str() };
+    SET_RETURN_SEQ(membuf_data, (char**)membuf_data_return, read_read_count);
+
+    // Act
+    const char *actual = serial_command_send(&serial_data, &membuf_data, command);
+
+    //Assert
+    ASSERT_EQ(actual, expected_read_data.c_str());
+    ASSERT_EQ(r_err_fake.call_count, 1);
+    ASSERT_EQ(r_err_fake.arg0_val, expected_r_err_string);
+    ASSERT_EQ(serial_data.errors, 1);
+}
+
+TEST_F(serial_posix_tests, serial_command_succeeds_returns_reply)
+{
+    // Arrange
+    const int buffer_length = 24;
+    char buffer[buffer_length];
+    memset(buffer, 0, buffer_length);
+
+    membuf_t membuf_data;
+    membuf_data.length = buffer_length;
+    membuf_data.buffer = buffer;
+    membuf_data.index = 0;
+    const char *command = "L90";
+
+    std::string expected_command(command);
+    expected_command += "\r\n";
+
+    serial_data.quit = 0;
+    serial_data.fd = 10;
+    serial_data.out = &membuf_data;
+
+    write_fake.return_val = 1;
+
+    std::string expected_read_data = "GOOD DATA";
+    std::string expected_r_err_string("serial_command_send: %s");
+
+    read_data = expected_read_data + "\r\n";
+    read_fake.custom_fake = read_size_custom_fake;
+
+    const int read_read_count = 2;
+    const char* membuf_data_return[read_read_count] = { membuf_data.buffer, expected_read_data.c_str() };
+    SET_RETURN_SEQ(membuf_data, (char**)membuf_data_return, read_read_count);
+
+    // Act
+    const char *actual = serial_command_send(&serial_data, &membuf_data, command);
+
+    //Assert
+    ASSERT_EQ(actual, expected_read_data.c_str());
+    ASSERT_EQ(r_err_fake.call_count, 0);
+    ASSERT_EQ(serial_data.errors, 0);
 }
