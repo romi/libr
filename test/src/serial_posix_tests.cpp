@@ -67,6 +67,8 @@ protected:
 
         RESET_FAKE(read)
         RESET_FAKE(write)
+        actual_serial = nullptr;
+        membuf_data = nullptr;
 
         read_data = "serial line\n";
         write_data = "";
@@ -77,9 +79,9 @@ protected:
         port_speed = 9600;
         reset_flag = 0;
         put_data = "";
-        actual_serial = nullptr;
 
         open_wrapper_fake.return_val = fd;
+        membuf_data = new_membuf();
     }
 
     void TearDown() override
@@ -89,19 +91,21 @@ protected:
             delete_serial(actual_serial);
             actual_serial = nullptr;
         }
+        if (membuf_data != nullptr)
+        {
+            delete_membuf(membuf_data);
+            membuf_data = nullptr;
+        }
     }
 
     static int tcgetattr_custom_fake(int fd __attribute__((unused)), struct termios *pterm)
     {
         pterm->c_cflag = cflags_data;
-       // return tcgetattr_custom_fake_return;
         return 0;
     }
 
     static int tcsetattr_custom_fake(int fd __attribute__((unused)) ,int actions __attribute__((unused)), const struct termios *pterm)
     {
-//        fd_data = fd;
-//        actions_data = actions;
         memcpy(&termios_data, pterm, sizeof(termios_data));
         return 0;
     }
@@ -145,14 +149,6 @@ protected:
         return read_return_value;
     }
 
-//    static ssize_t write_custom_fake(int fd, const void *data, size_t size)
-//    {
-//        fd_data = fd;
-//        request_size_data = size;
-//        write_data = (char *)data;
-//        return write_return_value;
-//    }
-
     static ssize_t write_size_custom_fake(int fd, const void *data, size_t size)
     {
         fd_data = fd;
@@ -161,17 +157,13 @@ protected:
         return size;
     }
 
-//    static membuf_put_custom_fake(membuf_t *buf, char c)
-//    {
-//
-//    }
-
 public:
     // Serial Setup data;
     std::string device;
     int port_speed = 0;
     int reset_flag;
     serial_t *actual_serial;
+    membuf_t *membuf_data;
 
     static unsigned int cflags_data;
     static termios termios_data;
@@ -277,8 +269,6 @@ TEST_F(serial_posix_tests, new_serial_9600_speed_is_set_correctly)
     port_speed = 9600;
     serial_t *expected_serial = nullptr;
 
-//    int fd = 1;
-//    open_wrapper_fake.return_val = fd;
     tcgetattr_fake.return_val = 0;
     tcsetattr_fake.return_val = ERROR;
 
@@ -296,8 +286,6 @@ TEST_F(serial_posix_tests, new_serial_19200_speed_is_set_correctly)
     port_speed = 19200;
     serial_t *expected_serial = nullptr;
 
-//    int fd = 1;
-//    open_wrapper_fake.return_val = fd;
     tcgetattr_fake.return_val = 0;
     tcsetattr_fake.return_val = ERROR;
 
@@ -317,8 +305,6 @@ TEST_F(serial_posix_tests, new_serial_38400_speed_is_set_correctly)
     port_speed = 38400;
     serial_t *expected_serial = nullptr;
 
-//    int fd = 1;
-//    open_wrapper_fake.return_val = fd;
     tcgetattr_fake.return_val = 0;
     tcsetattr_fake.return_val = ERROR;
 
@@ -336,8 +322,6 @@ TEST_F(serial_posix_tests, new_serial_57600_speed_is_set_correctly)
     port_speed = 57600;
     serial_t *expected_serial = nullptr;
 
-//    int fd = 1;
-//    open_wrapper_fake.return_val = fd;
     tcgetattr_fake.return_val = 0;
     tcsetattr_fake.return_val = ERROR;
 
@@ -356,8 +340,6 @@ TEST_F(serial_posix_tests, new_serial_115200_speed_is_set_correctly)
     port_speed = 115200;
     serial_t *expected_serial = nullptr;
 
-//    int fd = 1;
-//    open_wrapper_fake.return_val = fd;
     tcgetattr_fake.return_val = 0;
     tcsetattr_fake.return_val = ERROR;
 
@@ -376,8 +358,6 @@ TEST_F(serial_posix_tests, new_serial_if_reset_clear_HUPCL_flag_cleared)
     port_speed = 115200;
     serial_t *expected_serial = nullptr;
 
-//    int fd = 1;
-//    open_wrapper_fake.return_val = fd;
     tcgetattr_fake.return_val = 0;
     cfsetspeed_fake.custom_fake = cfsetspeed_custom_fake;
     tcsetattr_fake.return_val = ERROR;
@@ -496,23 +476,6 @@ TEST_F(serial_posix_tests, delete_serial_when_NULL_does_not_delete)
 }
 
 
-//TEST_F(serial_posix_tests, delete_serial_sets_quit_1)
-//{
-//    // Arrange
-//    actual_serial =  new_serial(device.c_str(), port_speed, reset_flag);
-//    char *actual_device = actual_serial->device;
-//    _membuf_t *actual_out = actual_serial->out;
-//
-//    // Act
-//    delete_serial(actual_serial);
-//    actual_serial = nullptr;
-//
-//    //Assert
-//    ASSERT_EQ(actual_out, nullptr);
-//    ASSERT_EQ(actual_device, nullptr);
-//}
-
-
 TEST_F(serial_posix_tests, delete_serial_locks_and_unlocks_mutex)
 {
     // Arrange
@@ -550,39 +513,6 @@ TEST_F(serial_posix_tests, delete_serial_deletes_mutex)
     ASSERT_EQ(delete_mutex_fake.arg0_history[1], &mutex_data);
 }
 
-//TEST_F(serial_posix_tests, delete_serial_deletes_device)
-//{
-//    // Arrange
-//    std::string device = "/dev/ttys1";
-//    serial_data.device = (char *)device.c_str();
-//    serial_t *expected_serial = &serial_data;
-//
-//    // Act
-//    delete_serial(expected_serial);
-//
-//    //Assert
-////    ASSERT_EQ(safe_free_fake.arg0_history[0], (char *)device.c_str());
-//}
-
-
-//TEST_F(serial_posix_tests, delete_serial_deletes_out_membuf)
-//{
-//    // Arrange
-////    membuf_t membuf_data;
-////    serial_data.out = &membuf_data;
-////    serial_t *expected_serial = &serial_data;
-//
-//    serial_t *expected_serial = new_serial()
-//
-//    // Act
-//    delete_serial(expected_serial);
-//
-//    //Assert
-//    ASSERT_EQ(delete_membuf_fake.call_count, 1);
-//    ASSERT_EQ(delete_membuf_fake.arg0_val, &membuf_data);
-//}
-
-
 TEST_F(serial_posix_tests, delete_serial_closes_fd)
 {
     // Arrange
@@ -598,20 +528,6 @@ TEST_F(serial_posix_tests, delete_serial_closes_fd)
     ASSERT_EQ(close_wrapper_fake.call_count, 1);
     ASSERT_EQ(close_wrapper_fake.arg0_val, fd);
 }
-
-
-//TEST_F(serial_posix_tests, delete_serial_deletes_serial)
-//{
-//    // Arrange
-//    serial_t *expected_serial = &serial_data;
-//
-//    // Act
-//    delete_serial(expected_serial);
-//
-//    //Assert
-//    ASSERT_EQ(safe_free_fake.arg0_history[1], expected_serial);
-//}
-
 
 TEST_F(serial_posix_tests, serial_get_when_port_closed_returns_error)
 {
@@ -875,7 +791,6 @@ TEST_F(serial_posix_tests, serial_read_line_fd_not_set_quits)
 TEST_F(serial_posix_tests, serial_read_line_quit_set_quits)
 {
     // Arrange
-    membuf_t membuf_data;
     serial_t serial_data;
     serial_data.fd = 10;
     serial_data.quit = ERROR;
@@ -883,7 +798,7 @@ TEST_F(serial_posix_tests, serial_read_line_quit_set_quits)
     serial_t *expected_serial = &serial_data;
 
     // Act
-    const char *actual = serial_readline(expected_serial, &membuf_data);
+    const char *actual = serial_readline(expected_serial, membuf_data);
 
     //Assert
     ASSERT_EQ(actual, nullptr);
@@ -892,7 +807,6 @@ TEST_F(serial_posix_tests, serial_read_line_quit_set_quits)
 TEST_F(serial_posix_tests, serial_read_line_read_fails_returns_error)
 {
     // Arrange
-    membuf_t membuf_data;
     serial_t serial_data;
     serial_data.fd = 10;
     serial_data.quit = 0;
@@ -901,7 +815,7 @@ TEST_F(serial_posix_tests, serial_read_line_read_fails_returns_error)
     read_fake.return_val = ERROR;
 
     // Act
-    const char *actual = serial_readline(expected_serial, &membuf_data);
+    const char *actual = serial_readline(expected_serial, membuf_data);
 
     //Assert
     ASSERT_EQ(actual, nullptr);
@@ -910,8 +824,6 @@ TEST_F(serial_posix_tests, serial_read_line_read_fails_returns_error)
 TEST_F(serial_posix_tests, serial_read_line_read_reads_r_n_terminated_line)
 {
     // Arrange
-    membuf_t *membuf_data = new_membuf();
-
     serial_t serial_data;
     serial_data.fd = 10;
     serial_data.quit = 0;
@@ -930,14 +842,11 @@ TEST_F(serial_posix_tests, serial_read_line_read_reads_r_n_terminated_line)
     ASSERT_EQ(actual, membuf_data->buffer);
     ASSERT_EQ(std::string(membuf_data->buffer), expected_string);
     ASSERT_EQ(std::string(actual), expected_string);
-
-    delete_membuf(membuf_data);
 }
 
 TEST_F(serial_posix_tests, serial_read_line_read_reads_n_terminated_line)
 {
     // Arrange
-    membuf_t *membuf_data = new_membuf();
     serial_t serial_data;
     serial_data.fd = 10;
     serial_data.quit = 0;
@@ -955,16 +864,12 @@ TEST_F(serial_posix_tests, serial_read_line_read_reads_n_terminated_line)
     ASSERT_EQ(std::string(actual), expected_string);
     ASSERT_EQ(std::string(membuf_data->buffer), expected_string);
     ASSERT_EQ(read_fake.call_count, read_data.length());
-
-    delete_membuf(membuf_data);
 }
 
 
 TEST_F(serial_posix_tests, serial_read_line_rn_arduino_debug_is_printed_and_cleared)
 {
     // Arrange
-    membuf_t *membuf_data = new_membuf();
-
     serial_t serial_data;
     serial_data.fd = 10;
     serial_data.quit = 0;
@@ -983,14 +888,11 @@ TEST_F(serial_posix_tests, serial_read_line_rn_arduino_debug_is_printed_and_clea
     ASSERT_EQ(std::string(actual), expected_string);
     ASSERT_EQ(read_fake.call_count, read_data.length());
     ASSERT_EQ(r_debug_fake.call_count, 1);
-
-    delete_membuf(membuf_data);
 }
 
 TEST_F(serial_posix_tests, serial_read_line_n_arduino_debug_is_printed_and_cleared)
 {
     // Arrange
-    membuf_t *membuf_data = new_membuf();
     serial_t serial_data;
     serial_data.fd = 10;
     serial_data.quit = 0;
@@ -1008,7 +910,6 @@ TEST_F(serial_posix_tests, serial_read_line_n_arduino_debug_is_printed_and_clear
     ASSERT_EQ(std::string(actual), expected_string);
     ASSERT_EQ(read_fake.call_count, read_data.length());
     ASSERT_EQ(r_debug_fake.call_count, 1);
-    delete_membuf(membuf_data);
 }
 
 TEST_F(serial_posix_tests, serial_put_if_fd_unset_returns_error)
@@ -1276,16 +1177,11 @@ TEST_F(serial_posix_tests, serial_println_write_parameters_are_correct_sends_rn)
     std::string expected_write_string = bufferstring + expected_line_end;
     write_fake.custom_fake = write_size_custom_fake;
 
-
-    membuf_t membuf_data;
-    membuf_data.length = 0;
-    membuf_data.index = 0;
-
     serial_t serial_data;
     serial_data.fd = 10;
     serial_data.quit = 0;
     serial_data.nextchar = ERROR;
-    serial_data.out = &membuf_data;
+    serial_data.out = membuf_data;
 
     // Act
     int actual = serial_println(&serial_data, serial_string);
@@ -1307,8 +1203,6 @@ TEST_F(serial_posix_tests, serial_printf_formats_data)
     std::string expected_formatted_string("expected1");
     write_fake.custom_fake = write_size_custom_fake;
 
-    membuf_t *membuf_data = new_membuf();
-
     serial_t serial_data;
     serial_data.fd = 10;
     serial_data.quit = 0;
@@ -1323,17 +1217,15 @@ TEST_F(serial_posix_tests, serial_printf_formats_data)
     ASSERT_EQ(actual, 0);
     ASSERT_EQ(write_fake.call_count, 1);
     ASSERT_EQ(expected_formatted_string, actual_formatted_string);
-    delete_membuf(membuf_data);
 }
 
 TEST_F(serial_posix_tests, serial_command_send_socket_null_returns_null)
 {
     // Arrange
-    membuf_t membuf_data;
     const char *command = "L90";
 
     // Act
-    const char *actual = serial_command_send(nullptr, &membuf_data, command);
+    const char *actual = serial_command_send(nullptr, membuf_data, command);
 
     //Assert
     ASSERT_EQ(actual, nullptr);
@@ -1342,7 +1234,6 @@ TEST_F(serial_posix_tests, serial_command_send_socket_null_returns_null)
 TEST_F(serial_posix_tests, serial_command_send_send_fails_logs_error_inc_error_count)
 {
     // Arrange
-    membuf_t *membuf_data = new_membuf();
     const char *command = "L90";
 
     serial_t serial_data;
@@ -1350,6 +1241,7 @@ TEST_F(serial_posix_tests, serial_command_send_send_fails_logs_error_inc_error_c
     serial_data.quit = 0;
     serial_data.nextchar = ERROR;
     serial_data.out = membuf_data;
+    serial_data.errors = 0;
 
     write_fake.return_val = -1;
 
@@ -1363,13 +1255,11 @@ TEST_F(serial_posix_tests, serial_command_send_send_fails_logs_error_inc_error_c
     ASSERT_EQ(r_err_fake.call_count, 2);
     ASSERT_EQ(r_err_fake.arg0_history[1], expected_r_err_string);
     ASSERT_EQ(serial_data.errors, 1);
-    delete_membuf(membuf_data);
 }
 
 TEST_F(serial_posix_tests, serial_command_send_read_fails_logs_error_inc_error_count)
 {
     // Arrange
-    membuf_t *membuf_data = new_membuf();
     const char *command = "L90";
 
     std::string expected_command(command);
@@ -1395,14 +1285,12 @@ TEST_F(serial_posix_tests, serial_command_send_read_fails_logs_error_inc_error_c
     ASSERT_EQ(r_err_fake.call_count, 2);
     ASSERT_EQ(r_err_fake.arg0_history[1], expected_r_err_string);
     ASSERT_EQ(serial_data.errors, 1);
-    delete_membuf(membuf_data);
 }
 
 
 TEST_F(serial_posix_tests, serial_command_send_reads_ERR_logs_error_inc_error_count)
 {
     // Arrange
-    membuf_t *membuf_data = new_membuf();
     const char *command = "L90";
 
     std::string expected_command(command);
@@ -1431,14 +1319,12 @@ TEST_F(serial_posix_tests, serial_command_send_reads_ERR_logs_error_inc_error_co
     ASSERT_EQ(r_err_fake.call_count, 1);
     ASSERT_EQ(r_err_fake.arg0_val, expected_r_err_string);
     ASSERT_EQ(serial_data.errors, 1);
-    delete_membuf(membuf_data);
 }
 
 
 TEST_F(serial_posix_tests, serial_command_succeeds_returns_reply)
 {
     // Arrange
-    membuf_t *membuf_data = new_membuf();
     const char *command = "L90";
 
     std::string expected_command(command);
@@ -1466,15 +1352,12 @@ TEST_F(serial_posix_tests, serial_command_succeeds_returns_reply)
     ASSERT_EQ(std::string(actual), expected_read_data);
     ASSERT_EQ(r_err_fake.call_count, 0);
     ASSERT_EQ(serial_data.errors, 0);
-
-    delete_membuf(membuf_data);
 }
 
 
 TEST_F(serial_posix_tests, serial_command_sendf_socket_null_returns_error)
 {
     // Arrange
-    membuf_t *membuf_data = new_membuf();
     const char *command = "L90";
 
     // Act
@@ -1482,14 +1365,11 @@ TEST_F(serial_posix_tests, serial_command_sendf_socket_null_returns_error)
 
     //Assert
     ASSERT_EQ(actual, nullptr);
-
-    delete_membuf(membuf_data);
 }
 
 TEST_F(serial_posix_tests, serial_command_sendf_formats_command)
 {
     // Arrange
-    membuf_t *membuf_data = new_membuf();
     std::string command("L90");
     int command_parameter = 111;
     std::string format("%s%d");
@@ -1521,8 +1401,6 @@ TEST_F(serial_posix_tests, serial_command_sendf_formats_command)
     ASSERT_EQ(std::string(actual_command), expected_command);
     ASSERT_EQ(r_err_fake.call_count, 0);
     ASSERT_EQ(serial_data.errors, 0);
-
-    delete_membuf(membuf_data);
 }
 
 TEST_F(serial_posix_tests, serial_flush_calls_flush_with_correct_data)
