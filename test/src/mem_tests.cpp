@@ -5,6 +5,7 @@
 
 extern "C" {
 #include "log.mock.h"
+#include "memory_wrapper.mock.h"
 #include "os_wrapper.mock.h"
 }
 
@@ -16,7 +17,6 @@ void out_of_memory_handler(void)
 {
         out_of_memory_handler_called++;
 }
-
 
 class mem_tests : public ::testing::Test
 {

@@ -141,14 +141,8 @@ serial_t *new_serial(const char *device, int speed, int reset)
         s->nextchar = -1;
         s->errors = 0;
         s->quit = 0;
-        
         s->mutex = new_mutex();
-        
-        if (s->device == NULL || s->out == NULL) {
-                delete_serial(s);
-                return NULL;
-        }
-        
+
         return s;
 }
 
@@ -189,15 +183,14 @@ int serial_get(serial_t *s)
         while (!s->quit) {
                 ssize_t n = read(s->fd, &c, 1);
                 if (n == 1) {
-                        printf("serial_get: '%c'\n", c);
+   //                     printf("serial_get: '%c'\n", c);
                         return (int) c;
                 }
                 if (n == -1) {
-                        // ToDo: Should this be r_err?
-                        perror("serial_get");
+                        r_err("serial_get");
                         return -1;
                 }
-                printf("serial_get: sleep (n=%d)\n", (int) n);
+ //               printf("serial_get: sleep (n=%d)\n", (int) n);
                 usleep_wrapper(1000);
         }
         return -1;
@@ -214,7 +207,7 @@ int serial_read(serial_t *s, char *buf, int len)
                         return -1;
                 ssize_t m = read(s->fd, buf + n, len - n);
                 if (m == -1) {
-                        perror("serial_read");
+                        r_err("serial_read");
                         return -1;
                 }
                 n += m;
@@ -277,7 +270,7 @@ int serial_put(serial_t *s, char c)
                 if (m == 1)
                         return 0;
                 if (m < 0) {
-                        perror("serial_put");
+                        r_err("serial_put");
                         return -1;
                 }
         }
@@ -296,7 +289,7 @@ int serial_write(serial_t *s, const char *buf, int len)
                         return -1;
                 ssize_t m = write(s->fd, buf + n, len - n);
                 if (m < 0) {
-                        perror("serial_write");
+                        r_err("serial_write");
                         return -1;
                 }
                 n += m;
@@ -309,17 +302,12 @@ int serial_print(serial_t *s, const char *line)
         return serial_write(s, line, strlen(line));
 }
 
-//int serial_println(serial_t *s, const char *line)
-//{
-//        if (serial_write(s, line, strlen(line)) != 0)
-//                return -1;
-//        int ret = serial_write(s, "\r\n", 2);
-//	return ret;
-//}
-
 int serial_println(serial_t *s, const char *line)
 {
-    return serial_printf(s, "%s\r\n", line);
+        if (serial_write(s, line, strlen(line)) != 0)
+                return -1;
+        int ret = serial_write(s, "\r\n", 2);
+	return ret;
 }
 
 int serial_printf(serial_t *s, const char *format, ...)
@@ -340,32 +328,6 @@ int serial_printf(serial_t *s, const char *format, ...)
 
     return serial_write(s, membuf_data(s->out), membuf_len(s->out));
 }
-
-//int serial_printf(serial_t *s, const char *format, ...)
-//{
-//        va_list ap;
-//        int len, r;
-//
-//        va_start(ap, format);
-//        len = vsnprintf(NULL, 0, format, ap);
-//        va_end(ap);
-//
-//        if (len < 0) {
-//                r_err("serial_printf: vsnprintf returned an error");
-//                return -1;
-//        }
-//
-//        membuf_clear(s->out);
-//        r = membuf_assure(s->out, len+1);
-//        if (r != 0)
-//                return -1;
-//
-//        va_start(ap, format);
-//        membuf_vprintf(s->out, format, ap);
-//        va_end(ap);
-//
-//        return serial_write(s, membuf_data(s->out), membuf_len(s->out));
-//}
 
 void serial_lock(serial_t *s)
 {
@@ -461,8 +423,6 @@ const char *serial_command_send(serial_t *s, membuf_t *message, const char *cmd)
 const char *serial_command_sendf(serial_t *s, membuf_t *message, const char *format, ...)
 {
     va_list ap;
-    int r;
-    const char *reply = NULL;
 
     if (s == NULL)
         return NULL;
@@ -472,17 +432,7 @@ const char *serial_command_sendf(serial_t *s, membuf_t *message, const char *for
     membuf_vprintf(s->out, format, ap);
     va_end(ap);
 
-    //r_debug("serial_command_sendf: %s", membuf_data(s->out));
-    //printf("serial: sending command: %s\n", membuf_data(s->out));
-    r = serial_println(s, membuf_data(s->out));
-    if (r == 0) {
-        //printf("serial: reading reply\n");
-        reply = serial_readline(s, message);
-    }
-    serial_unlock(s);
-    //r_debug("serial_command_sendf: reply %s", reply);
-
-    return reply;
+    return serial_command_send(s, message, membuf_data(s->out));
 }
 
 
