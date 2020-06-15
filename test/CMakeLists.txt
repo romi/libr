@@ -11,6 +11,8 @@ set(SRCS_OS
         src/mem_tests.cpp
         mocks/log.mock.h
         mocks/log.mock.c
+        mocks/memory_wrapper.mock.h
+        mocks/memory_wrapper.mock.c
         mocks/os_wrapper.mock.h
         mocks/os_wrapper.mock.c)
 
@@ -64,10 +66,6 @@ set(SRCS_SERIAL
         src/serial_posix_tests.cpp
         mocks/log.mock.h
         mocks/log.mock.c
-        mocks/membuf.mock.h
-        mocks/membuf.mock.c
-        mocks/mem.mock.h
-        mocks/mem.mock.c
         mocks/mutex.mock.h
         mocks/mutex.mock.c
         mocks/os_wrapper.mock.h

@@ -145,5 +145,6 @@ TEST_F(clock_posix_tests, clock_sleep_calls_usleep_with_correct_time)
     clock_sleep(time_seconds);
 
     //Assert
+    ASSERT_EQ(usleep_wrapper_fake.call_count, 1);
     ASSERT_EQ(usleep_wrapper_fake.arg0_val, expected);
 }
