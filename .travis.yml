@@ -18,7 +18,7 @@ script:
   # once CMake has done its job we just build using make as usual
   - make
   # if the project uses ctest we can run the tests like this
-  - ctest -V
+  - ctest -V -R r_unit*
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
