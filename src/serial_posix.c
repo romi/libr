@@ -89,7 +89,8 @@ static int open_serial(const char *device, int speed, int reset)
         // CLOCAL: ignore modem controls
         // CREAD: enable reading
         // CS8: 8-bit characters
-        tty.c_cflag = CLOCAL | CREAD | CS8; 
+    // ToDo: Whats going on here? Should thie or in these values? HUPCL
+        tty.c_cflag = CLOCAL | CREAD | CS8;
         if (!reset)
                 tty.c_cflag &= ~HUPCL;   // disable hang-up-on-close to avoid reset
 
@@ -140,14 +141,8 @@ serial_t *new_serial(const char *device, int speed, int reset)
         s->nextchar = -1;
         s->errors = 0;
         s->quit = 0;
-        
         s->mutex = new_mutex();
-        
-        if (s->device == NULL || s->out == NULL) {
-                delete_serial(s);
-                return NULL;
-        }
-        
+
         return s;
 }
 
@@ -178,7 +173,7 @@ int serial_get(serial_t *s)
         unsigned char c;
 
         if (s->fd == -1) return -1;
-        
+
         if (s->nextchar != -1) {
                 int n = s->nextchar;
                 s->nextchar = -1;
@@ -188,15 +183,15 @@ int serial_get(serial_t *s)
         while (!s->quit) {
                 ssize_t n = read(s->fd, &c, 1);
                 if (n == 1) {
-                        //printf("serial_get: '%c'\n", c);
+   //                     printf("serial_get: '%c'\n", c);
                         return (int) c;
                 }
                 if (n == -1) {
-                        perror("serial_get");
+                        r_err("serial_get");
                         return -1;
                 }
-                //printf("serial_get: sleep (n=%d)\n", (int) n);
-                usleep(1000);
+ //               printf("serial_get: sleep (n=%d)\n", (int) n);
+                usleep_wrapper(1000);
         }
         return -1;
 }
@@ -212,12 +207,25 @@ int serial_read(serial_t *s, char *buf, int len)
                         return -1;
                 ssize_t m = read(s->fd, buf + n, len - n);
                 if (m == -1) {
-                        perror("serial_read");
+                        r_err("serial_read");
                         return -1;
                 }
                 n += m;
         }
         return 0;
+}
+
+static int arduino_debug_string(membuf_t *buffer)
+{
+    char *data = membuf_data(buffer);
+    if (membuf_len(buffer) >= 3
+        && strncmp(data, "#!", 2) == 0)
+    {
+        r_debug("serial_readline Arduino: %s", data);
+        membuf_clear(buffer);
+        return 1;
+    }
+    return 0;
 }
 
 const char *serial_readline(serial_t *s, membuf_t *buffer)
@@ -230,35 +238,22 @@ const char *serial_readline(serial_t *s, membuf_t *buffer)
         while (!s->quit) {
                 int c = serial_get(s);
 
-                //printf("%c", c);
-                
                 if (c == -1) {
                         return NULL;
                         
                 } else if (c == '\r') {
-                        // Check for \r\n
                         if (serial_peek(s) == '\n')
                                 c = serial_get(s);
                         membuf_append_zero(buffer);
-                        
-                        if (membuf_len(buffer) >= 3
-                            && strncmp(membuf_data(buffer), "#!", 2) == 0) {
-                                r_debug("serial_readline: %s", membuf_data(buffer));
-                                membuf_clear(buffer);
-                        } else {
-                                return membuf_data(buffer);
+                        if (!arduino_debug_string(buffer)){
+                            return membuf_data(buffer);
                         }
 
                 } else if (c == '\n') {
                         membuf_append_zero(buffer);
-                        
-                        if (membuf_len(buffer) >= 3
-                            && strncmp(membuf_data(buffer), "#!", 2) == 0) {
-                                r_debug("serial_readline: %s", membuf_data(buffer));
-                                membuf_clear(buffer);
-                        } else {
-                                return membuf_data(buffer);
-                        }
+                    if (!arduino_debug_string(buffer)){
+                        return membuf_data(buffer);
+                    }
                 } else {
                         membuf_put(buffer, (char) (c & 0xff));
                 }
@@ -275,7 +270,7 @@ int serial_put(serial_t *s, char c)
                 if (m == 1)
                         return 0;
                 if (m < 0) {
-                        perror("serial_put");
+                        r_err("serial_put");
                         return -1;
                 }
         }
@@ -294,7 +289,7 @@ int serial_write(serial_t *s, const char *buf, int len)
                         return -1;
                 ssize_t m = write(s->fd, buf + n, len - n);
                 if (m < 0) {
-                        perror("serial_write");
+                        r_err("serial_write");
                         return -1;
                 }
                 n += m;
@@ -334,32 +329,6 @@ int serial_printf(serial_t *s, const char *format, ...)
     return serial_write(s, membuf_data(s->out), membuf_len(s->out));
 }
 
-//int serial_printf(serial_t *s, const char *format, ...)
-//{
-//        va_list ap;
-//        int len, r;
-//
-//        va_start(ap, format);
-//        len = vsnprintf(NULL, 0, format, ap);
-//        va_end(ap);
-//
-//        if (len < 0) {
-//                r_err("serial_printf: vsnprintf returned an error");
-//                return -1;
-//        }
-//
-//        membuf_clear(s->out);
-//        r = membuf_assure(s->out, len+1);
-//        if (r != 0)
-//                return -1;
-//
-//        va_start(ap, format);
-//        membuf_vprintf(s->out, format, ap);
-//        va_end(ap);
-//
-//        return serial_write(s, membuf_data(s->out), membuf_len(s->out));
-//}
-
 void serial_lock(serial_t *s)
 {
         mutex_lock(s->mutex);
@@ -383,13 +352,12 @@ const char *serial_command_send(serial_t *s, membuf_t *message, const char *cmd)
         serial_lock(s);
         
         r = serial_println(s, cmd);
-        if (r == 0) 
+        if (r == 0)
                 reply = serial_readline(s, message);
 
         if (r != 0) {
                 s->errors++;
-                r_err("serial_command_send: "
-                        "failed to send the command");
+                r_err("serial_command_send: failed to send the command");
         } else if (reply == NULL) {
                 s->errors++;
                 r_err("serial_command_send: reply == NULL");
@@ -406,51 +374,67 @@ const char *serial_command_send(serial_t *s, membuf_t *message, const char *cmd)
         return reply;
 }
 
+//const char *serial_command_sendf(serial_t *s, membuf_t *message, const char *format, ...)
+//{
+//        va_list ap;
+//        int len, r;
+//        const char *reply = NULL;
+//
+//        if (s == NULL)
+//                return NULL;
+//
+//        // Check how long the buffer should be.
+//        va_start(ap, format);
+//        len = vsnprintf(NULL, 0, format, ap);
+//        va_end(ap);
+//
+//        if (len < 0) {
+//                r_err("serial_command_sendf: vsnprintf returned an error");
+//                return NULL;
+//        }
+//
+//        serial_lock(s);
+//
+//        membuf_clear(s->out);
+//        membuf_assure(s->out, len+1);
+//
+//        va_start(ap, format);
+//        membuf_vprintf(s->out, format, ap);
+//        va_end(ap);
+//
+//	//r_debug("serial_command_sendf: %s", membuf_data(s->out));
+//
+//        //printf("serial: sending command: %s\n", membuf_data(s->out));
+//        r = serial_println(s, membuf_data(s->out));
+//        if (r != 0)
+//                goto unlock_and_return;
+//
+//        //printf("serial: reading reply\n");
+//        reply = serial_readline(s, message);
+//
+//unlock_and_return:
+//        serial_unlock(s);
+//
+//	//r_debug("serial_command_sendf: reply %s", reply);
+//
+//        return reply;
+//}
+
 const char *serial_command_sendf(serial_t *s, membuf_t *message, const char *format, ...)
 {
-        va_list ap;
-        int len, r;
-        const char *reply = NULL;
+    va_list ap;
 
-        if (s == NULL)
-                return NULL;
+    if (s == NULL)
+        return NULL;
 
-        // Check how long the buffer should be. 
-        va_start(ap, format);
-        len = vsnprintf(NULL, 0, format, ap);
-        va_end(ap);
+    serial_lock(s);
+    va_start(ap, format);
+    membuf_vprintf(s->out, format, ap);
+    va_end(ap);
 
-        if (len < 0) {
-                r_err("serial_command_sendf: vsnprintf returned an error");
-                return NULL;
-        }
-        
-        serial_lock(s);
-
-        membuf_clear(s->out);
-        membuf_assure(s->out, len+1);
-
-        va_start(ap, format);
-        membuf_vprintf(s->out, format, ap);
-        va_end(ap);
-
-	//r_debug("serial_command_sendf: %s", membuf_data(s->out));
-
-        //printf("serial: sending command: %s\n", membuf_data(s->out));
-        r = serial_println(s, membuf_data(s->out));
-        if (r != 0) 
-                goto unlock_and_return;
-
-        //printf("serial: reading reply\n");
-        reply = serial_readline(s, message);
-
-unlock_and_return:
-        serial_unlock(s);
-
-	//r_debug("serial_command_sendf: reply %s", reply);
-
-        return reply;
+    return serial_command_send(s, message, membuf_data(s->out));
 }
+
 
 int serial_flush(serial_t *s)
 {

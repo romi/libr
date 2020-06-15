@@ -111,7 +111,7 @@ void membuf_append_str(membuf_t *b, const char *s)
 
 void membuf_clear(membuf_t *b)
 {
-        if (b) {
+        if (b && b->buffer) {
                 memset(b->buffer, 0, b->length);
                 b->index = 0;
         }
