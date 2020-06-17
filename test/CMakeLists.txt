@@ -186,32 +186,34 @@ add_test(
         COMMAND r_unit_tests_serial
 )
 
-SETUP_TARGET_FOR_COVERAGE_LCOV(
-        NAME r_unit_tests_common_coverage
-        EXECUTABLE ctest -V ${n_cores}
-        DEPENDENCIES r_unit_tests_common)
+if(BUILD_COVERAGE)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(
+            NAME r_unit_tests_common_coverage
+            EXECUTABLE ctest -V ${n_cores}
+            DEPENDENCIES r_unit_tests_common)
 
-SETUP_TARGET_FOR_COVERAGE_LCOV(
-        NAME r_unit_tests_os_coverage
-        EXECUTABLE ctest -V ${n_cores}
-        DEPENDENCIES r_unit_tests_os)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(
+            NAME r_unit_tests_os_coverage
+            EXECUTABLE ctest -V ${n_cores}
+            DEPENDENCIES r_unit_tests_os)
 
-SETUP_TARGET_FOR_COVERAGE_LCOV(
-        NAME r_unit_tests_fs_coverage
-        EXECUTABLE ctest -V ${n_cores}
-        DEPENDENCIES r_unit_tests_fs)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(
+            NAME r_unit_tests_fs_coverage
+            EXECUTABLE ctest -V ${n_cores}
+            DEPENDENCIES r_unit_tests_fs)
 
-SETUP_TARGET_FOR_COVERAGE_LCOV(
-        NAME r_unit_tests_log_coverage
-        EXECUTABLE ctest -V ${n_cores}
-        DEPENDENCIES r_unit_tests_log)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(
+            NAME r_unit_tests_log_coverage
+            EXECUTABLE ctest -V ${n_cores}
+            DEPENDENCIES r_unit_tests_log)
 
-SETUP_TARGET_FOR_COVERAGE_LCOV(
-        NAME r_unit_tests_thread_coverage
-        EXECUTABLE ctest -V ${n_cores}
-        DEPENDENCIES r_unit_tests_thread)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(
+            NAME r_unit_tests_thread_coverage
+            EXECUTABLE ctest -V ${n_cores}
+            DEPENDENCIES r_unit_tests_thread)
 
-SETUP_TARGET_FOR_COVERAGE_LCOV(
-        NAME r_unit_tests_serial_coverage
-        EXECUTABLE ctest -V ${n_cores}
-        DEPENDENCIES r_unit_tests_serial)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(
+            NAME r_unit_tests_serial_coverage
+            EXECUTABLE ctest -V ${n_cores}
+            DEPENDENCIES r_unit_tests_serial)
+endif()
