@@ -11,7 +11,7 @@ set(libr_VERSION_MINOR 1)
 
 # Default option is off.
 # We override this on the server for a test buid, so tests should be run with this on before checking in.
-option(ADDRESS_SANITISER_BUILD "Enable build settings to allow address sanitiser" OFF) # default to off
+option(ADDRESS_SANITISER_BUILD "Enable build settings to allow address sanitiser" ON) # default to off
 
 if(ADDRESS_SANITISER_BUILD)
     message(WARNING "Enabling GCC address sanitiser will disable all Valgrind tasks due to compatibility errors")
