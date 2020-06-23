@@ -63,8 +63,7 @@ TEST_F(clock_posix_tests, clock_timestamp_is_correct)
     gettimeofday_wrapper_fake.return_val = 0;
     gettimeofday_wrapper_fake.custom_fake = clock_posix_tests::gettimeofday_wrapper_custom_fake;
 
-//    uint64_t expected = (fake_time.tv_sec * MICROSECONDS_IN_SECOND) + fake_time.tv_usec;
-    uint64_t expected = 0;
+    uint64_t expected = (fake_time.tv_sec * MICROSECONDS_IN_SECOND) + fake_time.tv_usec;
 
     // Act
     uint64_t actual = clock_timestamp();
