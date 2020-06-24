@@ -2,6 +2,8 @@
 # This is not integrated with the rest of the romi build, and will only build on the current, experimental, build system in-house.
 cmake_minimum_required(VERSION 3.10)
 
+project(libr_tests)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -218,3 +220,21 @@ if(BUILD_COVERAGE)
             EXECUTABLE ctest -V ${n_cores}
             DEPENDENCIES r_unit_tests_serial)
 endif()
+
+SET(JSON_INPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_data)
+
+add_custom_target(build-time-make-directory ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${JSON_INPUT_DIR})
+
+add_custom_command(TARGET r_unit_tests_log_json POST_BUILD
+        COMMAND
+        ${CMAKE_COMMAND} -E copy
+        json_data/*.json
+        ${JSON_INPUT_DIR}
+        WORKING_DIRECTORY
+            ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS
+            r_unit_tests_log_json
+        COMMENT
+        "Copying json test data to ${JSON_INPUT_DIR}"
+        )
