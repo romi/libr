@@ -39,9 +39,10 @@ set(SRCS_COMMON
         mocks/os_wrapper.mock.h
         mocks/os_wrapper.mock.c)
 
-set(SRCS_LOG
+set(SRCS_LOG_JSON
         src/tests_main.cpp
         src/log_tests.cpp
+        src/json_tests.cpp
         support/test_file_utils.h
         support/test_file_utils.cpp)
 
@@ -100,10 +101,10 @@ target_link_libraries( r_unit_tests_fs
         r
         stdc++fs)
 
-add_executable( r_unit_tests_log
-        ${SRCS_LOG})
+add_executable( r_unit_tests_log_json
+        ${SRCS_LOG_JSON})
 
-target_link_libraries( r_unit_tests_log
+target_link_libraries( r_unit_tests_log_json
         gtest
         gmock
         r
@@ -141,7 +142,7 @@ target_include_directories(r_unit_tests_fs
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
 
-target_include_directories(r_unit_tests_log
+target_include_directories(r_unit_tests_log_json
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
@@ -172,8 +173,8 @@ add_test(
 )
 
 add_test(
-        NAME r_unit_tests_log
-        COMMAND r_unit_tests_log
+        NAME r_unit_tests_log_json
+        COMMAND r_unit_tests_log_json
 )
 
 add_test(
@@ -203,9 +204,9 @@ if(BUILD_COVERAGE)
             DEPENDENCIES r_unit_tests_fs)
 
     SETUP_TARGET_FOR_COVERAGE_LCOV(
-            NAME r_unit_tests_log_coverage
+            NAME r_unit_tests_log_json_coverage
             EXECUTABLE ctest -V ${n_cores}
-            DEPENDENCIES r_unit_tests_log)
+            DEPENDENCIES r_unit_tests_log_json)
 
     SETUP_TARGET_FOR_COVERAGE_LCOV(
             NAME r_unit_tests_thread_coverage
