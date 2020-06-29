@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <math.h>
 #include "r/mem.h"
 #include "r/log.h"
@@ -308,11 +307,11 @@ json_object_t json_null()
 {
         if (_null == NULL) {
                 _null = base_new(k_json_null, 0);
-                _null->type = k_json_null;
                 if (_null == NULL) {
                         fprintf(stderr, "Failed to allocate the null object\n");
                         exit(1);
                 }
+                _null->type = k_json_null;
         }
 
 	return _null;
@@ -322,11 +321,11 @@ json_object_t json_true()
 {
         if (_true == NULL) {
                 _true = base_new(k_json_true, 0);
-                _true->type = k_json_true;
                 if (_true == NULL) {
                         fprintf(stderr, "Failed to allocate the null object\n");
                         exit(1);
                 }
+            _true->type = k_json_true;
         }
 
 	return _true;
@@ -336,11 +335,11 @@ json_object_t json_false()
 {
         if (_false == NULL) {
                 _false = base_new(k_json_false, 0);
-                _false->type = k_json_false;
                 if (_false == NULL) {
                         fprintf(stderr, "Failed to allocate the null object\n");
                         exit(1);
                 }
+            _false->type = k_json_false;
         }
 
 	return _false;
@@ -350,11 +349,11 @@ json_object_t json_undefined()
 {
         if (_undefined == NULL) {
                 _undefined = base_new(k_json_undefined, 0);
-                _undefined->type = k_json_undefined;
                 if (_undefined == NULL) {
                         fprintf(stderr, "Failed to allocate the null object\n");
                         exit(1);
                 }
+                _undefined->type = k_json_undefined;
         }
 
 	return _undefined;
@@ -1282,7 +1281,7 @@ int32 json_serialise_text(json_serialise_t* serialise,
 	case k_json_number: {
 		char buf[128];
 		if (floor(object->value.number) == object->value.number) 
-			snprintf(buf, 128, "%ld", (long) floor(object->value.number));
+			snprintf(buf, 128, "%.0lf", floor(object->value.number));
 		else 
 			snprintf(buf, 128, "%f", object->value.number);
 		
@@ -1398,7 +1397,15 @@ int32 json_serialise_text(json_serialise_t* serialise,
                 }
 		r = json_write(fun, userdata, "}");
 		if (r != 0) return r;
-	} break; }
+	} break;
+	case k_json_variable:
+            break;
+	    case k_json_accessor:
+            break;
+	    case k_json_array_element:
+            break;
+
+	}
 
 	return 0;
 }
@@ -1490,8 +1497,26 @@ static inline int32 whitespace(int32 c)
 json_parser_t* json_parser_create()
 {
 	json_parser_t* parser = JSON_NEW(json_parser_t);
-        json_parser_reset(parser);
+	json_parser_reset(parser);
 	return parser;
+}
+
+static void destroy_value_stack(json_parser_t* parser)
+{
+    for (int32 i = 0; i <= parser->value_stack_top; i++)
+        json_unref(parser->value_stack[i]);
+    parser->value_stack_top = -1;
+    parser->state_stack_top = 0;
+    parser->state_stack[0] = k_parse_value;
+}
+
+
+void json_parser_data_destroy(json_parser_t* parser)
+{
+    if (parser != NULL) {
+        destroy_value_stack(parser);
+        json_parser_destroy(parser);
+    }
 }
 
 void json_parser_destroy(json_parser_t* parser)
@@ -1643,9 +1668,10 @@ static inline int32 push_value(json_parser_t* parser, json_object_t v)
 {
         if (parser->value_stack_top + 1 >= parser->stack_depth) {
                 json_parser_set_error(parser, k_stack_overflow, "Stack overflow");
+                json_unref(v);
                 return k_stack_overflow;
         }
-  	parser->value_stack[++parser->value_stack_top] = v;
+  	    parser->value_stack[++parser->value_stack_top] = v;
         return k_continue;
 }
 
@@ -2499,7 +2525,7 @@ json_object_t json_load(const char* filename, int* err, char* errmsg, int len)
                 *err = 1;
                 snprintf(errmsg, len, "json_load: Failed to open the file: %s", filename);
                 errmsg[len-1] = 0;
-                json_parser_destroy(parser);
+            json_parser_data_destroy(parser);
                 return json_null();
         }
 
@@ -2509,7 +2535,10 @@ json_object_t json_load(const char* filename, int* err, char* errmsg, int len)
                                              err, errmsg, len);
 
         fclose(fp);
-        json_parser_destroy(parser);
+        if(json_isnull(obj))
+            json_parser_data_destroy(parser);
+        else
+            json_parser_destroy(parser);
 
         return obj;
 }
@@ -2545,7 +2574,10 @@ json_object_t json_parse_ext(const char* buffer, int* err, char* errmsg, int len
         obj = json_parser_loop(parser, "[string]", string_input_read, &in,
                                err, errmsg, len);
 
-        json_parser_destroy(parser);
+        if(json_isnull(obj))
+            json_parser_data_destroy(parser);
+        else
+            json_parser_destroy(parser);
         return obj;        
 }
         

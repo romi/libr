@@ -16,7 +16,7 @@ option(ADDRESS_SANITISER_BUILD "Enable build settings to allow address sanitiser
 if(ADDRESS_SANITISER_BUILD)
     message(WARNING "Enabling GCC address sanitiser will disable all Valgrind tasks due to compatibility errors")
     set( PROJECT_SANITISE_FLAGS
-            "-fsanitize=address,undefined,shift,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,alignment,object-size,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr")
+            "-fsanitize=address,undefined,shift,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,alignment,object-size,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr -fno-omit-frame-pointer")
 else()
     MESSAGE("libr sanitize flags off")
     set( PROJECT_SANITISE_FLAGS "")

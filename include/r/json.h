@@ -45,8 +45,8 @@ typedef double real_t;
 #ifdef __cplusplus
 extern "C" {
 #endif
-        
-enum {
+
+    typedef enum _json_type_t{
         k_json_null = 0,
         k_json_true = 1,
         k_json_false = 2,
@@ -59,16 +59,16 @@ enum {
 
         k_json_variable = 200,
         k_json_accessor = 201,
-        k_json_array_element = 202,
-};
+        k_json_array_element = 202
+}json_type_t;
 
 typedef struct _base_t {
-        unsigned short refcount;	
-        unsigned short type;
+        unsigned short refcount;
+        json_type_t type;
         union {
                 void* data;
                 real_t number;
-        } value;	
+        } value;
 } base_t;
 
 typedef base_t* json_object_t;
@@ -83,7 +83,6 @@ typedef int32 (*json_iterator_t)(const char* key, json_object_t value, void* dat
 /* Return zero if all went well, and non-zero when an error
    occured. The error code will be returned by json_serialise(). */
 typedef int32 (*json_writer_t)(void* userdata, const char* s, int32 len);
-        
 //
 
 #define json_type(__o) ((base_t*)__o)->type
