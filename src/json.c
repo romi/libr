@@ -2465,19 +2465,23 @@ static json_object_t json_parser_loop(json_parser_t* parser,
 {
         
 #define FORMAT_ERR(__s) {                                               \
-                *err = 1;                                               \
-                snprintf(errmsg, len,                                   \
-                         "json_parser_loop: %s:%d:%d  error: %s",       \
-                         name, parser->linenum, parser->colnum,         \
-                         __s);                                          \
-                errmsg[len-1] = 0;                                      \
+                if (err) *err = 1;                                      \
+                if (errmsg) {                                           \
+                        snprintf(errmsg, len,                           \
+                                 "json_parser_loop: %s:%d:%d  error: %s", \
+                                 name, parser->linenum, parser->colnum, \
+                                 __s);                                  \
+                        errmsg[len-1] = 0;                              \
+                }                                                       \
         }
         
         int32 r;
         int done = 0;
         
-        errmsg[0] = 0;
-        *err = 0;
+        if (errmsg)
+                errmsg[0] = 0;
+        if (err)
+                *err = 0;
 
         do {
                 
