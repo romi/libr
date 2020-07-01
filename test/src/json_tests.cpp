@@ -137,6 +137,35 @@ TEST_P(json_tests, json_correctly_parses_test_file)
     json_unref(obj);
 }
 
+TEST_P(json_tests, json_correctly_parses_test_string)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string filename = GetParam();
+    std::string json_filename = json_directory + filename;
+    auto success_and_type = parse_json_filename(filename);
+    auto expected_err = get_expected_error(success_and_type.first);
+
+    // Act
+    std::string json_string = ReadFileAsString(json_filename);
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+
+    bool expected_type = is_type(success_and_type.second, obj);
+
+    //Assert
+    if (success_and_type.first == "y") {
+        ASSERT_EQ(expected_err, 0);
+        ASSERT_TRUE(expected_type);
+    }
+    else
+        ASSERT_NE(expected_err, 0);
+
+    json_unref(obj);
+}
+
+
 //TEST_F(json_tests, json_correctly_parses_test_file_specific)
 //{
 //    // Arrange
