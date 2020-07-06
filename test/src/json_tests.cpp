@@ -1,11 +1,14 @@
 #include <string>
 #include <experimental/filesystem>
+
 #include <zconf.h>
 #include "gtest/gtest.h"
 #include "test_file_utils.h"
 #include "json.h"
 
-#include "mem.h"
+extern "C" {
+#include <math.h>
+}
 
 extern std::string full_exe_path;
 
@@ -83,6 +86,12 @@ int isnumber(json_object_t obj)
                && json_isnumber(json_array_get(obj, 0)));
 }
 
+double get_number(json_object_t obj)
+{
+    double ret = json_array_getnum(obj, 0);
+    return ret;
+}
+
 int isstring(json_object_t obj)
 {
     return json_isstring(obj)
@@ -90,6 +99,12 @@ int isstring(json_object_t obj)
                && json_array_length(obj) == 1
                && json_isstring(json_array_get(obj, 0)));
 }
+
+const char *get_string(json_object_t obj)
+{
+    return json_array_getstr(obj, 0);
+}
+
 
 bool is_type(std::string type, json_object_t obj)
 {
@@ -165,15 +180,13 @@ TEST_P(json_tests, json_correctly_parses_test_string)
     json_unref(obj);
 }
 
-
 //TEST_F(json_tests, json_correctly_parses_test_file_specific)
 //{
 //    // Arrange
 //    int parse_error = 0;
 //    char error_message[256];
 //
-//    std::string filename("n_structure_open_array_object_small.json");
-////    std::string filename("n_structure_unclosed_array.json");
+//    std::string filename("y_number_negative_one.json");
 //    std::cout << filename << std::endl;
 //    std::string json_filename = json_directory + filename;
 //    auto success_and_type = parse_json_filename(filename);
@@ -194,4 +207,197 @@ TEST_P(json_tests, json_correctly_parses_test_string)
 //
 //    json_unref(obj);
 //}
+
+
+TEST_F(json_tests, json_number_value_correct_when_valid)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    double expected_number = -1;
+
+    std::string filename("y_number_negative_one.json");
+    std::string json_filename = json_directory + filename;
+    auto success_and_type = parse_json_filename(filename);
+
+    // Act
+    auto obj = json_load(json_filename.c_str(), &parse_error, error_message, sizeof(error_message));
+    double actual_number = get_number(obj);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(expected_number, actual_number);
+}
+
+TEST_F(json_tests, json_number_value_correct_when_invalid)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string filename("y_string_simple_ascii.json");
+    std::string json_filename = json_directory + filename;
+    auto success_and_type = parse_json_filename(filename);
+
+    // Act
+    auto obj = json_load(json_filename.c_str(), &parse_error, error_message, sizeof(error_message));
+    double actual_number = get_number(obj);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_TRUE(isnan(actual_number));
+}
+
+TEST_F(json_tests, json_string_value_correct_when_valid)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string filename("y_string_simple_ascii.json");
+    std::string json_filename = json_directory + filename;
+    auto success_and_type = parse_json_filename(filename);
+    std::string expected_string = "asd ";
+
+    // Act
+    auto obj = json_load(json_filename.c_str(), &parse_error, error_message, sizeof(error_message));
+    std::string actual_string = get_string(obj);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(expected_string, actual_string);
+}
+
+TEST_F(json_tests, json_string_value_correct_when_not_string_in_array)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string filename("y_number_negative_one.json");
+    std::string json_filename = json_directory + filename;
+    auto success_and_type = parse_json_filename(filename);
+
+    // Act
+    auto obj = json_load(json_filename.c_str(), &parse_error, error_message, sizeof(error_message));
+    const char *actual_string = get_string(obj);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(actual_string, nullptr);
+}
+
+TEST_F(json_tests, json_string_value_correct_when_not_string)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string filename("y_number_negative_one.json");
+    std::string json_filename = json_directory + filename;
+    auto success_and_type = parse_json_filename(filename);
+
+    // Act
+    auto obj = json_load(json_filename.c_str(), &parse_error, error_message, sizeof(error_message));
+    const char *actual_string = json_string_value(obj);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(actual_string, nullptr);
+}
+
+TEST_F(json_tests, json_string_length_correct)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("[\"test_string\"]");
+    int expected_json_string_length = json_string.length()- 4; // []""
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    int actual_length = json_string_length(json_array_get(obj, 0));
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(actual_length, expected_json_string_length);
+}
+
+TEST_F(json_tests, json_string_length_correct_when_not_a_string)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("[\"test_string\"]");
+    int expected_json_string_length = 0;
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    int actual_length = json_string_length(obj);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(actual_length, expected_json_string_length);
+}
+
+TEST_F(json_tests, json_string_compare_with_equal_strings_returns_non_0)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("[\"test_string\"]");
+    std::string test_string("test_string");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    int actual = json_string_equals(json_array_get(obj, 0), test_string.c_str());
+    json_unref(obj);
+
+    //Assert
+    ASSERT_NE(actual, 0);
+}
+
+TEST_F(json_tests, json_string_compare_with_non_equal_strings_returns_0)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("[\"test_string\"]");
+    std::string json_compare_string("test_string_two");
+    int expected = 0;
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    int actual = json_string_equals(json_array_get(obj, 0), json_compare_string.c_str());
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(expected, actual);
+}
+
+TEST_F(json_tests, json_string_compare_with_non_string_returns_0)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("[1]");
+    std::string json_compare_string("test_string_two");
+    int expected = 0;
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    int actual = json_string_equals(json_array_get(obj, 0), json_compare_string.c_str());
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(expected, actual);
+}
+
+
+
 

@@ -72,217 +72,6 @@ static int file_input_read(void *ptr)
         return (c == EOF)? -1 : c;
 }
 
-/******************************************************************************/
-
-typedef struct _sexp_t sexp_t;
-
-struct _sexp_t {
-        char *name;
-        int index;
-        sexp_t *next;
-};
-
-sexp_t *new_sexp(const char *name, int index)
-{
-        sexp_t *e = r_new(sexp_t);
-        e->name = r_strdup(name);
-        e->index = index;
-        e->next = NULL;
-        return e;
-}
-
-void delete_sexp(sexp_t *e)
-{
-        if (e) {
-                r_free(e->name);
-                r_delete(e);
-        }
-}
-
-void delete_sexp_list(sexp_t *e)
-{
-        while (e) {
-                sexp_t *n = e->next;
-                delete_sexp(e);
-                e = n;
-        }
-}
-
-int _ischar(int c)
-{
-        return ((c >= 'a' && c <= 'z')
-                || (c >= 'A' && c <= 'Z')
-                || (c == '_')
-                || (c == '-'));
-}
-
-int _isdigit(int c)
-{
-        return (c >= '0' && c <= '9');
-}
-
-int _isdot(int c)
-{
-        return (c == '.') || (c == '/');
-}
-
-int _isopenbracket(int c)
-{
-        return (c == '[');
-}
-
-int _isclosebracket(int c)
-{
-        return (c == ']');
-}
-
-int _isend(int c)
-{
-        return (c == '\0');
-}
-
-enum {
-        k_exp_char,
-        k_exp_char_dot_bracket_or_end,
-        k_exp_digit,
-        k_exp_digit_or_bracket,
-        k_exp_dot_or_end
-};
-
-sexp_t *json_parse_exp(const char *s)
-{
-        int state = k_exp_char;
-        int index = 0;
-        char buffer[128];
-        int buflen = 128;
-        int bufindex = 0;
-        sexp_t *exp = NULL;
-        sexp_t *cur = NULL;
-        sexp_t *e;
-        int len = strlen(s);
-        int i;
-        
-        for (i = 0; i <= len; i++) {
-                int c = s[i];
-                switch (state) {
-                case k_exp_char:
-                        if (_ischar(c)) {
-                                buffer[bufindex++] = c;
-                                if (bufindex == buflen) {
-                                        r_err("json_parse_exp: name too long (> 128)");
-                                        delete_sexp_list(exp);
-                                        return NULL;
-                                }
-                                state = k_exp_char_dot_bracket_or_end;
-                        } else {
-                                r_err("json_parse_exp: expected character, "
-                                      "got '%c' (index %d)", c, i);
-                                delete_sexp_list(exp);
-                                return NULL;
-                        }
-                        break;
-                        
-                case k_exp_char_dot_bracket_or_end:
-                        if (_ischar(c)) {
-                                buffer[bufindex++] = c;
-                                if (bufindex == buflen) {
-                                        delete_sexp_list(exp);
-                                        return NULL;
-                                }
-                        } else if (_isdot(c)) {
-                                buffer[bufindex++] = 0;
-                                e = new_sexp(buffer, -1);
-                                if (exp == NULL) {
-                                        exp = e;
-                                        cur = e;
-                                } else {
-                                        cur->next = e;
-                                        cur = e;
-                                }
-                                bufindex = 0;
-                                state = k_exp_char;
-                        } else if (_isopenbracket(c)) {
-                                buffer[bufindex++] = 0;
-                                bufindex = 0;
-                                index = 0;
-                                state = k_exp_digit;
-                        } else if (_isend(c)) {
-                                buffer[bufindex++] = 0;
-                                e = new_sexp(buffer, -1);
-                                if (exp == NULL) {
-                                        exp = e;
-                                } else {
-                                        cur->next = e;
-                                }
-                                return exp;
-                        } else {
-                                r_err("json_parse_exp: expected character, dot, "
-                                      "bracket, or end. Got '%c' (index %d)", c, i);
-                                delete_sexp_list(exp);
-                                return NULL;
-                        }
-                        break;
-                        
-                case k_exp_digit:
-                        if (_isdigit(c)) {
-                                index = 10 * index + (c - '0');
-                                state = k_exp_digit_or_bracket;
-                        } else {
-                                r_err("json_parse_exp: expected digit. Got '%c' (index %d)", c, i);
-                                delete_sexp_list(exp);
-                                return NULL;
-                        }
-                        break;
-                        
-                case k_exp_digit_or_bracket:
-                        if (_isdigit(c)) {
-                                index = 10 * index + (c - '0');
-                        } else if (_isclosebracket(c)) {
-                                e = new_sexp(buffer, index);
-                                if (exp == NULL) {
-                                        exp = e;
-                                        cur = e;
-                                } else {
-                                        cur->next = e;
-                                        cur = e;
-                                }
-                                bufindex = 0;
-                                state = k_exp_dot_or_end;
-                        } else {
-                                r_err("json_parse_exp: expected digit or close bracket. Got '%c' (index %d)", c, i);
-                                delete_sexp_list(exp);
-                                return NULL;
-                        }
-                        break;
-                        
-                case k_exp_dot_or_end:
-                        if (_isdot(c)) {
-                                state = k_exp_char;
-                        } else if (_isend(c)) {
-                                return exp;
-                        } else {
-                                r_err("json_parse_exp: expected dot or end. Got '%c' (index %d)", c, i);
-                                delete_sexp_list(exp);
-                                return NULL;
-                        }
-                        break;
-                }
-        }
-        return NULL;
-}
-
-void json_print_exp(sexp_t *e)
-{
-        while (e) {
-                printf("%s", e->name);
-                if (e->index >= 0)
-                        printf("[%d]", e->index);
-                if (e->next)
-                        printf(".");
-                e = e->next;
-        }
-        printf("\n");
-}
 
 /******************************************************************************/
 
@@ -293,10 +82,6 @@ base_t* base_new(int type, int len)
         base->type = type;
         if (len > 0) {
                 base->value.data = JSON_NEW_ARRAY(char, len);
-                if (base->value.data == NULL) {
-                        JSON_FREE(base);
-                        return NULL;
-                }
         }
         return base;
 }
@@ -307,10 +92,6 @@ json_object_t json_null()
 {
         if (_null == NULL) {
                 _null = base_new(k_json_null, 0);
-                if (_null == NULL) {
-                        fprintf(stderr, "Failed to allocate the null object\n");
-                        exit(1);
-                }
                 _null->type = k_json_null;
         }
 
@@ -321,11 +102,7 @@ json_object_t json_true()
 {
         if (_true == NULL) {
                 _true = base_new(k_json_true, 0);
-                if (_true == NULL) {
-                        fprintf(stderr, "Failed to allocate the null object\n");
-                        exit(1);
-                }
-            _true->type = k_json_true;
+                _true->type = k_json_true;
         }
 
 	return _true;
@@ -335,11 +112,7 @@ json_object_t json_false()
 {
         if (_false == NULL) {
                 _false = base_new(k_json_false, 0);
-                if (_false == NULL) {
-                        fprintf(stderr, "Failed to allocate the null object\n");
-                        exit(1);
-                }
-            _false->type = k_json_false;
+                _false->type = k_json_false;
         }
 
 	return _false;
@@ -349,10 +122,6 @@ json_object_t json_undefined()
 {
         if (_undefined == NULL) {
                 _undefined = base_new(k_json_undefined, 0);
-                if (_undefined == NULL) {
-                        fprintf(stderr, "Failed to allocate the null object\n");
-                        exit(1);
-                }
                 _undefined->type = k_json_undefined;
         }
 
@@ -388,13 +157,11 @@ char* json_strdup(const char* s)
 
 json_object_t json_number_create(double value)
 {
-	base_t *base;
+        base_t *base;
         base = base_new(k_json_object, 0);
-        if (base == NULL)
-                return json_null();
-	base->type = k_json_number;
-	base->value.number = value;
-	return base;
+        base->type = k_json_number;
+        base->value.number = value;
+        return base;
 }
 
 static void delete_number(base_t* base __attribute__((unused)))
@@ -420,8 +187,6 @@ json_object_t json_string_create(const char* s)
        	int len = strlen(s);
 
         base = base_new(k_json_string, sizeof(string_t) + len + 1);
-        if (base == NULL)
-                return json_null();
         base->type = k_json_string;
 
 	string = base_get(base, string_t);
@@ -461,7 +226,9 @@ int32 json_string_compare(json_object_t obj1, const char* s)
 	if (base_type(obj1) != k_json_string)
 		return -1;
 	string_t* s1 = base_get(obj1, string_t);
-        return strcmp(s1->s, s);
+	int res = strcmp(s1->s, s);
+
+    return res;
 }
 
 int32 json_string_equals(json_object_t obj1, const char* s)
@@ -485,8 +252,6 @@ json_object_t json_array_create()
         int memlen = sizeof(array_t) + len * sizeof(json_object_t);
 
         base = base_new(k_json_array, memlen);
-        if (base == NULL)
-                return json_null();
         base->type = k_json_array;
 
 	array = base_get(base, array_t);
@@ -551,8 +316,8 @@ int32 json_array_set(json_object_t obj, json_object_t value, int32 index)
 			newlen *= 2;
 		} 
                 
-                int memlen = sizeof(array_t) + newlen * sizeof(json_object_t);
-                array_t *newarray = JSON_NEW_ARRAY(array_t, memlen);
+        int memlen = sizeof(array_t) + newlen * sizeof(json_object_t);
+        array_t *newarray = JSON_NEW_ARRAY(array_t, memlen);
 		for (int i = 0; i < array->datalen; i++)
 			newarray->data[i] = array->data[i];
 
@@ -565,7 +330,7 @@ int32 json_array_set(json_object_t obj, json_object_t value, int32 index)
                 array = newarray;
 	}
 
-        json_object_t old = array->data[index];
+	json_object_t old = array->data[index];
 	array->data[index] = value;  // FIXME: write barrier
 	if (index >= array->length) 
 		array->length = index + 1;
@@ -831,16 +596,14 @@ static void hashtable_resize(hashtable_t *hashtable)
 
 json_object_t json_object_create()
 {
-	base_t *base;
-	hashtable_t* hashtable;
+        base_t *base;
+        hashtable_t* hashtable;
 
         base = base_new(k_json_object, 0);
-        if (base == NULL)
-                return json_null();
-	base->type = k_json_object;
-	hashtable = new_hashtable();
-	base->value.data = hashtable;
-	return base;
+        base->type = k_json_object;
+        hashtable = new_hashtable();
+        base->value.data = hashtable;
+        return base;
 }
 
 static void delete_object(base_t* base)
@@ -867,36 +630,6 @@ int json_object_has(json_object_t object, const char* key)
         return json_isundefined(val)? 0 : 1;
 }
 
-static json_object_t _eval_exp(json_object_t object, sexp_t *e)
-{
-        if (!json_isobject(object)) {
-                r_err("json_object_get_exp: not an object");
-                return json_null();
-        }
-        json_object_t next = json_object_get(object, e->name);
-        if (e->index >= 0) {
-                if (!json_isarray(next)) {
-                        r_err("json_object_get_exp: not an array");
-                        return json_null();
-                }
-                if (e->index >= json_array_length(next)) {
-                        r_err("json_object_get_exp: index out of bounds");
-                        return json_null();
-                }
-                next = json_array_get(next, e->index);
-        }
-        return (e->next == NULL)? next : _eval_exp(next, e->next);
-}
-
-static json_object_t json_object_get_exp(json_object_t object, const char *exp)
-{
-        sexp_t *e = json_parse_exp(exp);
-        if (e == NULL) return json_null();
-        json_object_t r = _eval_exp(object, e);
-        delete_sexp_list(e);
-        return r;
-}
-
 static json_object_t json_object_get_key(json_object_t object, const char *key)
 {
 	if (object->type != k_json_object) {
@@ -908,12 +641,7 @@ static json_object_t json_object_get_key(json_object_t object, const char *key)
 
 json_object_t json_object_get(json_object_t object, const char* key)
 {
-        if (strchr(key, '.') == NULL
-            && strchr(key, '[') == NULL
-            && strchr(key, '/') == NULL)
-                return json_object_get_key(object, key);
-        else 
-                return json_object_get_exp(object, key);
+    return json_object_get_key(object, key);
 }
 
 double json_object_getnum(json_object_t object, const char* key)
@@ -1010,12 +738,9 @@ json_object_t variable_create(const char* s)
 	base_t *base;
 	variable_t *variable;
 
-        base = base_new(k_json_variable, sizeof(variable_t));
-        if (base == NULL)
-                return json_null();
-
+	base = base_new(k_json_variable, sizeof(variable_t));
 	variable = base_get(base, variable_t);
-        variable->name = json_string_create(s);
+	variable->name = json_string_create(s);
 
 	return base;
 }
@@ -1054,14 +779,12 @@ typedef struct _accessor_t {
 
 json_object_t accessor_create(json_object_t context, json_object_t variable)
 {
-	base_t *base;
-	accessor_t *accessor;
+        base_t *base;
+        accessor_t *accessor;
 
         base = base_new(k_json_accessor, sizeof(accessor_t));
-        if (base == NULL)
-                return json_null();
 
-	accessor = base_get(base, accessor_t);
+        accessor = base_get(base, accessor_t);
         accessor->context = context; 
         accessor->variable = variable;
         json_ref(accessor->context);
@@ -1105,14 +828,11 @@ typedef struct _array_element_t {
 
 json_object_t array_element_create(json_object_t accessor, json_object_t index)
 {
-	base_t *base;
-	array_element_t *array_element;
+        base_t *base;
+        array_element_t *array_element;
 
         base = base_new(k_json_array_element, sizeof(array_element_t));
-        if (base == NULL)
-                return json_null();
-
-	array_element = base_get(base, array_element_t);
+	    array_element = base_get(base, array_element_t);
         array_element->accessor = accessor;
         array_element->index = index;
         json_ref(array_element->accessor);
@@ -1123,7 +843,7 @@ json_object_t array_element_create(json_object_t accessor, json_object_t index)
 
 void delete_array_element(base_t* base)
 {
-	array_element_t* array_element = base_get(base, array_element_t);
+	    array_element_t* array_element = base_get(base, array_element_t);
         json_unref(array_element->accessor);
         json_unref(array_element->index);
         JSON_FREE(array_element);

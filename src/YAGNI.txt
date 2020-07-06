@@ -1,0 +1,253 @@
+Unused legacy code. Removed from code base and squirrelled away here for reference.
+/******************************************************************************/
+/* JSON Expression parser */
+typedef struct _sexp_t sexp_t;
+
+struct _sexp_t {
+        char *name;
+        int index;
+        sexp_t *next;
+};
+
+sexp_t *new_sexp(const char *name, int index)
+{
+        sexp_t *e = r_new(sexp_t);
+        e->name = r_strdup(name);
+        e->index = index;
+        e->next = NULL;
+        return e;
+}
+
+void delete_sexp(sexp_t *e)
+{
+        if (e) {
+                r_free(e->name);
+                r_delete(e);
+        }
+}
+
+void delete_sexp_list(sexp_t *e)
+{
+        while (e) {
+                sexp_t *n = e->next;
+                delete_sexp(e);
+                e = n;
+        }
+}
+
+int _ischar(int c)
+{
+        return ((c >= 'a' && c <= 'z')
+                || (c >= 'A' && c <= 'Z')
+                || (c == '_')
+                || (c == '-'));
+}
+
+int _isdigit(int c)
+{
+        return (c >= '0' && c <= '9');
+}
+
+int _isdot(int c)
+{
+        return (c == '.') || (c == '/');
+}
+
+int _isopenbracket(int c)
+{
+        return (c == '[');
+}
+
+int _isclosebracket(int c)
+{
+        return (c == ']');
+}
+
+int _isend(int c)
+{
+        return (c == '\0');
+}
+
+enum {
+        k_exp_char,
+        k_exp_char_dot_bracket_or_end,
+        k_exp_digit,
+        k_exp_digit_or_bracket,
+        k_exp_dot_or_end
+};
+
+sexp_t *json_parse_exp(const char *s)
+{
+        int state = k_exp_char;
+        int index = 0;
+        char buffer[128];
+        int buflen = 128;
+        int bufindex = 0;
+        sexp_t *exp = NULL;
+        sexp_t *cur = NULL;
+        sexp_t *e;
+        int len = strlen(s);
+        int i;
+
+        for (i = 0; i <= len; i++) {
+                int c = s[i];
+                switch (state) {
+                case k_exp_char:
+                        if (_ischar(c)) {
+                                buffer[bufindex++] = c;
+                                if (bufindex == buflen) {
+                                        r_err("json_parse_exp: name too long (> 128)");
+                                        delete_sexp_list(exp);
+                                        return NULL;
+                                }
+                                state = k_exp_char_dot_bracket_or_end;
+                        } else {
+                                r_err("json_parse_exp: expected character, "
+                                      "got '%c' (index %d)", c, i);
+                                delete_sexp_list(exp);
+                                return NULL;
+                        }
+                        break;
+
+                case k_exp_char_dot_bracket_or_end:
+                        if (_ischar(c)) {
+                                buffer[bufindex++] = c;
+                                if (bufindex == buflen) {
+                                        delete_sexp_list(exp);
+                                        return NULL;
+                                }
+                        } else if (_isdot(c)) {
+                                buffer[bufindex++] = 0;
+                                e = new_sexp(buffer, -1);
+                                if (exp == NULL) {
+                                        exp = e;
+                                        cur = e;
+                                } else {
+                                        cur->next = e;
+                                        cur = e;
+                                }
+                                bufindex = 0;
+                                state = k_exp_char;
+                        } else if (_isopenbracket(c)) {
+                                buffer[bufindex++] = 0;
+                                bufindex = 0;
+                                index = 0;
+                                state = k_exp_digit;
+                        } else if (_isend(c)) {
+                                buffer[bufindex++] = 0;
+                                e = new_sexp(buffer, -1);
+                                if (exp == NULL) {
+                                        exp = e;
+                                } else {
+                                        cur->next = e;
+                                }
+                                return exp;
+                        } else {
+                                r_err("json_parse_exp: expected character, dot, "
+                                      "bracket, or end. Got '%c' (index %d)", c, i);
+                                delete_sexp_list(exp);
+                                return NULL;
+                        }
+                        break;
+
+                case k_exp_digit:
+                        if (_isdigit(c)) {
+                                index = 10 * index + (c - '0');
+                                state = k_exp_digit_or_bracket;
+                        } else {
+                                r_err("json_parse_exp: expected digit. Got '%c' (index %d)", c, i);
+                                delete_sexp_list(exp);
+                                return NULL;
+                        }
+                        break;
+
+                case k_exp_digit_or_bracket:
+                        if (_isdigit(c)) {
+                                index = 10 * index + (c - '0');
+                        } else if (_isclosebracket(c)) {
+                                e = new_sexp(buffer, index);
+                                if (exp == NULL) {
+                                        exp = e;
+                                        cur = e;
+                                } else {
+                                        cur->next = e;
+                                        cur = e;
+                                }
+                                bufindex = 0;
+                                state = k_exp_dot_or_end;
+                        } else {
+                                r_err("json_parse_exp: expected digit or close bracket. Got '%c' (index %d)", c, i);
+                                delete_sexp_list(exp);
+                                return NULL;
+                        }
+                        break;
+
+                case k_exp_dot_or_end:
+                        if (_isdot(c)) {
+                                state = k_exp_char;
+                        } else if (_isend(c)) {
+                                return exp;
+                        } else {
+                                r_err("json_parse_exp: expected dot or end. Got '%c' (index %d)", c, i);
+                                delete_sexp_list(exp);
+                                return NULL;
+                        }
+                        break;
+                }
+        }
+        return NULL;
+}
+
+void json_print_exp(sexp_t *e)
+{
+        while (e) {
+                printf("%s", e->name);
+                if (e->index >= 0)
+                        printf("[%d]", e->index);
+                if (e->next)
+                        printf(".");
+                e = e->next;
+        }
+        printf("\n");
+}
+static json_object_t _eval_exp(json_object_t object, sexp_t *e)
+{
+        if (!json_isobject(object)) {
+                r_err("json_object_get_exp: not an object");
+                return json_null();
+        }
+        json_object_t next = json_object_get(object, e->name);
+        if (e->index >= 0) {
+                if (!json_isarray(next)) {
+                        r_err("json_object_get_exp: not an array");
+                        return json_null();
+                }
+                if (e->index >= json_array_length(next)) {
+                        r_err("json_object_get_exp: index out of bounds");
+                        return json_null();
+                }
+                next = json_array_get(next, e->index);
+        }
+        return (e->next == NULL)? next : _eval_exp(next, e->next);
+}
+
+static json_object_t json_object_get_exp(json_object_t object, const char *exp)
+{
+        sexp_t *e = json_parse_exp(exp);
+        if (e == NULL) return json_null();
+        json_object_t r = _eval_exp(object, e);
+        delete_sexp_list(e);
+        return r;
+}
+
+json_object_t json_object_get(json_object_t object, const char* key)
+{
+        if (strchr(key, '.') == NULL
+            && strchr(key, '[') == NULL
+            && strchr(key, '/') == NULL)
+                return json_object_get_key(object, key);
+        else
+                return json_object_get_exp(object, key);
+}
+
+/******************************************************************************/
