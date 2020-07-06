@@ -128,17 +128,6 @@ TEST_F(mem_tests, safe_free_frees_ptr_when_ptr)
     ASSERT_EQ(free_wrapper_fake.call_count, 1);
 }
 
-TEST_F(mem_tests, safe_free_warns_when_ptr_NULL)
-{
-    // Arrange
-    // Act
-    safe_free(nullptr);
-
-    // Assert
-    ASSERT_EQ(r_warn_fake.call_count, 1);
-    ASSERT_EQ(free_wrapper_fake.call_count, 0);
-}
-
 TEST_F(mem_tests, safe_calloc_calls_with_correct_size)
 {
     // Arrange
