@@ -33,7 +33,7 @@ typedef struct _thread_t thread_t;
 
 typedef void (*thread_run_t)(void* data);
 
-thread_t* new_thread(thread_run_t run, void *data, int realtime, int autodelete);
+thread_t* new_thread(thread_run_t run, void *data);
 void delete_thread(thread_t* thread);
 int thread_join(thread_t* thread);
 

@@ -167,10 +167,7 @@ void *safe_malloc(size_t size, int zero)
 
 void safe_free(void *ptr)
 {
-        if (ptr == NULL)
-                r_warn("safe_free: ptr == NULL");
-        else
-                free_wrapper(ptr);
+        free_wrapper(ptr);
 }
 
 void *safe_calloc(size_t nmemb, size_t size)
