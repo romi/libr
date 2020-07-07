@@ -29,17 +29,15 @@ struct _thread_t {
         pthread_t thread;
         thread_run_t run;
         void *data;
-        int autodelete;
 };
 
 static void* _run(void* data);
 
-thread_t* new_thread(thread_run_t run, void *data, int realtime __attribute__((unused)), int autodelete)
+thread_t* new_thread(thread_run_t run, void *data)
 {
         thread_t* thread = r_new(thread_t);
         thread->run = run;
         thread->data = data;
-        thread->autodelete = autodelete;
 
         int ret = pthread_create(&thread->thread, NULL, _run, (void*) thread);
         if (ret != 0) {
@@ -55,8 +53,6 @@ static void* _run(void* data)
 {
         thread_t* thread = (thread_t*) data;
         thread->run(thread->data);
-        if (thread->autodelete)
-                delete_thread(thread);
         return NULL;
 }
 

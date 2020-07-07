@@ -14,7 +14,6 @@ struct _thread_t {
     pthread_t thread;
     thread_run_t run;
     void *data;
-    int autodelete;
 };
 
 struct _mutex_t
@@ -93,7 +92,7 @@ TEST_F(thread_pthread_tests, thread_pthread_create_fails_deletes_thread_data)
     pthread_create_fake.return_val = -1;
 
     // Act
-    thread_t *test_thread = new_thread(test_run_function_mock, nullptr, 0, 0);
+    thread_t *test_thread = new_thread(test_run_function_mock, nullptr);
 
     //Assert
     ASSERT_EQ(nullptr, test_thread);
@@ -111,7 +110,7 @@ TEST_F(thread_pthread_tests, thread_pthread_create_succeeds_returns_thread)
     pthread_create_fake.return_val = 0;
 
     // Act
-    thread_t *test_thread = new_thread(test_run_function_mock, nullptr, 0, 0);
+    thread_t *test_thread = new_thread(test_run_function_mock, nullptr);
 
     //Assert
     ASSERT_EQ(&thread_data, test_thread);
@@ -126,16 +125,14 @@ TEST_F(thread_pthread_tests, thread_pthread_sets_correct_data_in_thread)
     pthread_create_fake.return_val = 0;
 
     int data = 10;
-    int autodelete = 1;
 
     // Act
-    thread_t *test_thread = new_thread(test_run_function_mock, &data, 0, autodelete);
+    thread_t *test_thread = new_thread(test_run_function_mock, &data);
 
     //Assert
     ASSERT_EQ(&thread_data, test_thread);
     ASSERT_EQ(safe_free_fake.call_count, 0);
     ASSERT_EQ(thread_data.data, &data);
-    ASSERT_EQ(thread_data.autodelete, autodelete);
     ASSERT_EQ(thread_data.run, test_run_function_mock);
 }
 
@@ -148,39 +145,14 @@ TEST_F(thread_pthread_tests, thread_run_runs_correct_function)
     pthread_create_fake.custom_fake = thread_pthread_tests::pthread_create_custom_fake;
 
     int data = 10;
-    int autodelete = 0;
 
     // Act
-    thread_t *test_thread = new_thread(test_run_function_mock, &data, 0, autodelete);
+    thread_t *test_thread = new_thread(test_run_function_mock, &data);
 
     //Assert
     ASSERT_EQ(&thread_data, test_thread);
     ASSERT_EQ(safe_free_fake.call_count, 0);
     ASSERT_EQ(thread_data.data, &data);
-    ASSERT_EQ(thread_data.autodelete, autodelete);
-    ASSERT_EQ(thread_data.run, test_run_function_mock);
-    ASSERT_EQ(test_run_function_mock_fake.call_count, 1);
-}
-
-TEST_F(thread_pthread_tests, thread_run_with_auto_delete_deletes)
-{
-    // Arrange
-    thread_t thread_data;
-    safe_malloc_fake.return_val = &thread_data;
-    pthread_create_fake.return_val = 0;
-    pthread_create_fake.custom_fake = thread_pthread_tests::pthread_create_custom_fake;
-
-    int data = 10;
-    int autodelete = 1;
-
-    // Act
-    thread_t *test_thread = new_thread(test_run_function_mock, &data, 0, autodelete);
-
-    //Assert
-    ASSERT_EQ(&thread_data, test_thread);
-    ASSERT_EQ(safe_free_fake.call_count, 1);
-    ASSERT_EQ(thread_data.data, &data);
-    ASSERT_EQ(thread_data.autodelete, autodelete);
     ASSERT_EQ(thread_data.run, test_run_function_mock);
     ASSERT_EQ(test_run_function_mock_fake.call_count, 1);
 }
