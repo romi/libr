@@ -399,5 +399,348 @@ TEST_F(json_tests, json_string_compare_with_non_string_returns_0)
 }
 
 
+TEST_F(json_tests, json_array_length_returns_correct_value)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("[1, 2, 3]");
+    int expected = 3;
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    int actual = json_array_length(obj);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(expected, actual);
+}
+
+TEST_F(json_tests, json_array_length_incorrect_type_returns_0)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("\"test_string\"");
+    int expected = 0;
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    int actual = json_array_length(obj);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(expected, actual);
+}
+
+TEST_F(json_tests, json_array_get_invalid_type_returns_json_null)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("\"test_string\"");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto actual = json_array_get(obj, 0);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_TRUE(json_isnull(actual));
+}
+
+TEST_F(json_tests, json_array_get_returns_correct_value)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("[7, 2, 3]");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto array_obj = json_array_get(obj, 1);
+    double actual = json_number_value(array_obj);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(actual, 2);
+}
+
+TEST_F(json_tests, json_array_get_invalid_index_returns_json_null)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    int index = 20;
+    std::string json_string("[7, 2, 3]");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto array_obj = json_array_get(obj, index);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_TRUE(json_isnull(array_obj));
+}
+
+TEST_F(json_tests, json_array_getnum_invalid_type_returns_NAN)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("\"test_string\"");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto actual = json_array_getnum(obj, 0);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_TRUE(isnan(actual));
+}
+
+TEST_F(json_tests, json_array_getnum_returns_correct_value)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+
+    std::string json_string("[7, 2, 3]");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto actual = json_array_getnum(obj, 1);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_EQ(actual, 2);
+}
+
+TEST_F(json_tests, json_array_getnum_invalid_index_returns_NAN)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    int index = 20;
+    std::string json_string("[7, 2, 3]");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto actual = json_array_getnum(obj, index);
+    json_unref(obj);
+
+    //Assert
+    ASSERT_TRUE(isnan(actual));
+}
 
 
+TEST_F(json_tests, json_array_set_invalid_type_returns_0)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    int index = 2;
+    int numbervalue = 100;
+    int expected = 0;
+
+    std::string json_string("\"test_string\"");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto numberobj = json_number_create(numbervalue);
+    auto actual = json_array_set(obj, numberobj, index);
+    json_unref(obj);
+    json_unref(numberobj);
+
+    //Assert
+    ASSERT_EQ(actual, expected);
+}
+
+TEST_F(json_tests, json_array_set_valid_index_returns_index)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    int index = 2;
+    int numbervalue = 100;
+    int expected = index;
+
+    std::string json_string("[7, 2, 3]");
+    std::string json_expected_string("[7, 2, 100]");
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto numberobj = json_number_create(numbervalue);
+    auto actual = json_array_set(obj, numberobj, index);
+    auto actual_number = json_array_getnum(obj, index);
+
+    char buffer[256];
+
+    json_tostring(obj, buffer, 256);
+    std::string actual_string(buffer);
+
+    json_unref(obj);
+    json_unref(numberobj);
+
+    // Assert
+    ASSERT_EQ(actual, expected);
+    ASSERT_EQ(actual_string, json_expected_string);
+    ASSERT_EQ(actual_number, numbervalue);
+}
+
+TEST_F(json_tests, json_array_set_outofrange_index_returns_index_sets_value)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    int index = 8;
+    int numbervalue = 100;
+    int expected = index;
+
+    std::string json_string("[7, 2, 3]");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto numberobj = json_number_create(numbervalue);
+    auto actual = json_array_set(obj, numberobj, index);
+    auto actual_number = json_array_getnum(obj, index);
+
+    json_unref(obj);
+    json_unref(numberobj);
+
+    // Assert
+    ASSERT_EQ(actual, expected);
+    ASSERT_EQ(actual_number, numbervalue);
+}
+
+TEST_F(json_tests, json_array_set_negative_leaves_array_unchanged)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    int index = -1;
+    int numbervalue = 100;
+    int expected = index;
+
+    std::string json_string("[7, 2, 3]");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto numberobj = json_number_create(numbervalue);
+    auto actual = json_array_set(obj, numberobj, index);
+
+    char buffer[256];
+    json_tostring(obj, buffer, 256);
+    std::string actual_string(buffer);
+
+    json_unref(obj);
+    json_unref(numberobj);
+
+    // Assert
+    ASSERT_EQ(actual, expected);
+    ASSERT_EQ(json_string, actual_string);
+}
+
+
+TEST_F(json_tests, json_array_push_invalid_type_returns_0)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    int numbervalue = 100;
+    int expected = 0;
+
+    std::string json_string("\"test_string\"");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto numberobj = json_number_create(numbervalue);
+    auto actual = json_array_push(obj, numberobj);
+
+    json_unref(obj);
+    json_unref(numberobj);
+
+    // Assert
+    ASSERT_EQ(actual, expected);
+}
+
+TEST_F(json_tests, json_array_push_adds_value_to_end)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    int numbervalue = 100;
+    int expected_index = 3;
+
+    std::string json_string("[7, 2, 3]");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto numberobj = json_number_create(numbervalue);
+    auto actual_index = json_array_push(obj, numberobj);
+    auto actual_number = json_array_getnum(obj, actual_index);
+
+    json_unref(obj);
+    json_unref(numberobj);
+
+    // Assert
+    ASSERT_EQ(actual_index, expected_index);
+    ASSERT_EQ(actual_number, numbervalue);
+}
+
+TEST_F(json_tests, json_setnum_sets_number)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    int numbervalue = 100;
+    int index = 3;
+
+    std::string json_string("[7, 2, 3]");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto numberobj = json_number_create(numbervalue);
+    auto actual_index = json_array_setnum(obj, numbervalue, index);
+    auto actual_number = json_array_getnum(obj, actual_index);
+
+    json_unref(obj);
+    json_unref(numberobj);
+
+    // Assert
+    ASSERT_EQ(actual_index, index);
+    ASSERT_EQ(actual_number, numbervalue);
+}
+
+TEST_F(json_tests, json_setstr_sets_string)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    std::string string_value("hundred");
+    int index = 2;
+
+    std::string json_string("[7, 2, 3]");
+    std::string json_expected_string("[7, 2, \"hundred\"]");
+
+    // Act
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto actual_index = json_array_setstr(obj, string_value.c_str(), index);
+    auto actual_chars = json_array_getstr(obj, actual_index);
+    std::string added_chars(actual_chars);
+
+    char buffer[256];
+    json_tostring(obj, buffer, 256);
+    std::string actual_string(buffer);
+
+    json_unref(obj);
+
+    // Assert
+    ASSERT_EQ(actual_index, index);
+    ASSERT_EQ(actual_string, json_expected_string);
+    ASSERT_EQ(added_chars, string_value);
+}

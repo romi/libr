@@ -308,13 +308,16 @@ int32 json_array_set(json_object_t obj, json_object_t value, int32 index)
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_array)
 		return 0;
+	if (index < 0)
+	    return index;
+
 	array_t *array = base_get(base, array_t);
         // LOCK
 	if (index >= array->datalen) {
 		int newlen = 8;
 		while (newlen <= index) {
 			newlen *= 2;
-		} 
+		}
                 
         int memlen = sizeof(array_t) + newlen * sizeof(json_object_t);
         array_t *newarray = JSON_NEW_ARRAY(array_t, memlen);
@@ -340,7 +343,7 @@ int32 json_array_set(json_object_t obj, json_object_t value, int32 index)
         json_ref(value);
         if (old) json_unref(old);
 
-	return 0;
+	return index;
 }
 
 int32 json_array_push(json_object_t obj, json_object_t value)
@@ -355,17 +358,17 @@ int32 json_array_push(json_object_t obj, json_object_t value)
 int32 json_array_setnum(json_object_t obj, real_t value, int32 index)
 {
         json_object_t num = json_number_create(value);
-        json_array_set(obj, num, index);	
+        int retval = json_array_set(obj, num, index);
         json_unref(num);
-        return 0;
+        return retval;
 }
 
 int32 json_array_setstr(json_object_t obj, const char* value, int32 index)
 {
         json_object_t s = json_string_create(value);
-        json_array_set(obj, s, index);	
+        int retval = json_array_set(obj, s, index);
         json_unref(s);
-        return 0;
+        return retval;
 }
 
 const char* json_array_getstr(json_object_t array, int32 index)
@@ -729,146 +732,6 @@ int32 json_object_length(json_object_t object)
 
 /******************************************************************************/
 
-typedef struct _variable_t {
-        json_object_t name;
-} variable_t;
-
-json_object_t variable_create(const char* s)
-{
-	base_t *base;
-	variable_t *variable;
-
-	base = base_new(k_json_variable, sizeof(variable_t));
-	variable = base_get(base, variable_t);
-	variable->name = json_string_create(s);
-
-	return base;
-}
-
-void delete_variable(base_t* base)
-{
-	variable_t* variable = base_get(base, variable_t);
-	json_unref(variable->name);
-	JSON_FREE(variable);
-}
-
-const char* variable_name(json_object_t obj)
-{
-	base_t* base = (base_t*) obj;
-	if (base_type(base) != k_json_variable)
-		return NULL;
-	variable_t* variable = base_get(base, variable_t);
-        return json_string_value(variable->name);
-}
-
-json_object_t variable_string_name(json_object_t obj)
-{
-	base_t* base = (base_t*) obj;
-	if (base_type(base) != k_json_variable)
-		return NULL;
-	variable_t* variable = base_get(base, variable_t);
-        return variable->name;
-}
-
-/******************************************************************************/
-
-typedef struct _accessor_t {
-	json_object_t context;
-	json_object_t variable;
-} accessor_t;
-
-json_object_t accessor_create(json_object_t context, json_object_t variable)
-{
-        base_t *base;
-        accessor_t *accessor;
-
-        base = base_new(k_json_accessor, sizeof(accessor_t));
-
-        accessor = base_get(base, accessor_t);
-        accessor->context = context; 
-        accessor->variable = variable;
-        json_ref(accessor->context);
-        json_ref(accessor->variable);
-
-	return base;
-}
-
-void delete_accessor(base_t* base)
-{
-	accessor_t* accessor = base_get(base, accessor_t);
-        json_unref(accessor->context);
-        json_unref(accessor->variable);
-        JSON_FREE(accessor);
-}
-
-json_object_t accessor_context(json_object_t obj)
-{
-	base_t* base = (base_t*) obj;
-	if (base_type(base) != k_json_accessor)
-		return json_null();
-	accessor_t* accessor = base_get(base, accessor_t);
-        return accessor->context;
-}
-
-json_object_t accessor_variable(json_object_t obj)
-{
-	base_t* base = (base_t*) obj;
-	if (base_type(base) != k_json_accessor)
-		return json_null();
-	accessor_t* accessor = base_get(base, accessor_t);
-        return accessor->variable;
-}
-
-/******************************************************************************/
-
-typedef struct _array_element_t {
-	json_object_t accessor;
-	json_object_t index;
-} array_element_t;
-
-json_object_t array_element_create(json_object_t accessor, json_object_t index)
-{
-        base_t *base;
-        array_element_t *array_element;
-
-        base = base_new(k_json_array_element, sizeof(array_element_t));
-	    array_element = base_get(base, array_element_t);
-        array_element->accessor = accessor;
-        array_element->index = index;
-        json_ref(array_element->accessor);
-        json_ref(array_element->index);
-
-	return base;
-}
-
-void delete_array_element(base_t* base)
-{
-	    array_element_t* array_element = base_get(base, array_element_t);
-        json_unref(array_element->accessor);
-        json_unref(array_element->index);
-        JSON_FREE(array_element);
-}
-
-json_object_t array_element_accessor(json_object_t obj)
-{
-	base_t* base = (base_t*) obj;
-	if (base_type(base) != k_json_array_element)
-		return json_null();
-	array_element_t* array_element = base_get(base, array_element_t);
-        return array_element->accessor;
-}
-
-json_object_t array_element_index(json_object_t obj)
-{
-	base_t* base = (base_t*) obj;
-	if (base_type(base) != k_json_array_element)
-		return json_null();
-	array_element_t* array_element = base_get(base, array_element_t);
-        return array_element->index;
-}
-
-/******************************************************************************/
-
 static void _delete(base_t *base)
 {
         if (base != NULL) {
@@ -877,9 +740,6 @@ static void _delete(base_t *base)
                 case k_json_string: delete_string(base); break;
                 case k_json_array: delete_array(base); break;
                 case k_json_object: delete_object(base); break;
-                case k_json_variable: delete_variable(base); break;
-                case k_json_accessor: delete_accessor(base); break;
-                case k_json_array_element: delete_array_element(base); break;
                 default: break;
                 }
 
@@ -1118,12 +978,6 @@ int32 json_serialise_text(json_serialise_t* serialise,
 		r = json_write(fun, userdata, "}");
 		if (r != 0) return r;
 	} break;
-	case k_json_variable:
-            break;
-	    case k_json_accessor:
-            break;
-	    case k_json_array_element:
-            break;
 
 	}
 
@@ -2312,403 +2166,6 @@ json_object_t json_parse(const char* buffer)
 }
 
 /******************************************************************************/
-
-enum {
-        k_tokenizer_continue,
-        k_tokenizer_newtoken,
-        k_tokenizer_error,
-        k_tokenizer_endofstring
-};
-
-typedef enum {
-	k_tokenizer_start = 0,
-	k_tokenizer_number,
-	k_tokenizer_variable
-} tokenizer_state_t;
-
-typedef enum {
-	k_token_dot,
-	k_token_number,
-	k_token_variable,
-	k_token_bracketopen,
-	k_token_bracketclose,
-	k_token_end
-} token_t;
-
-typedef struct _tokenizer_t {
-        char* s;
-        int index;
-	char buffer[256];
-	int buflen;
-	int bufindex;
-	int state;
-} tokenizer_t;
-
-void tokenizer_reset(tokenizer_t* tokenizer);
-
-tokenizer_t* new_tokenizer(const char* s)
-{
-        tokenizer_t* tokenizer = JSON_NEW(tokenizer_t);
-        tokenizer->s = json_strdup(s);
-        tokenizer->state = k_tokenizer_start;
-        tokenizer->index = 0;
-	tokenizer->bufindex = 0;
-	tokenizer->buflen = sizeof(tokenizer->buffer);
-        tokenizer_reset(tokenizer);
-
-        return tokenizer;
-}
-
-void delete_tokenizer(tokenizer_t* tokenizer)
-{
-        JSON_FREE(tokenizer);
-}
-
-static int tokenizer_append(tokenizer_t* tokenizer, char c)
-{
-	if (tokenizer->bufindex >= tokenizer->buflen - 1) {
-                return k_tokenizer_error;
-        }
-	tokenizer->buffer[tokenizer->bufindex++] = (char) (c & 0xff);
-	return k_tokenizer_continue;
-}
-
-void tokenizer_reset(tokenizer_t* tokenizer)
-{
-	tokenizer->state = k_tokenizer_start;
-	tokenizer->bufindex = 0;
-}
-
-static int tokenizer_getc(tokenizer_t* tokenizer)
-{
-        return tokenizer->s[tokenizer->index++];
-}
-
-static void tokenizer_ungetc(tokenizer_t* tokenizer)
-{
-        if(tokenizer->index > 0)
-                tokenizer->index--;
-}
-
-static void tokenizer_reset_buffer(tokenizer_t* tokenizer)
-{ 
-	tokenizer->bufindex = 0;
-}
-
-char* tokenizer_get_data(tokenizer_t* tokenizer)
-{
-	tokenizer->buffer[tokenizer->bufindex] = 0;
-        return tokenizer->buffer;
-}
-
-static int tokenizer_feed_number(tokenizer_t* tokenizer, int *token)
-{
-        int r;
-        int c = tokenizer_getc(tokenizer);
-        if (c == -1) {
-                r = k_token_end;
-                return k_tokenizer_endofstring;
-        }
-
-        if (('0' <= c) && (c <= '9')) { 
-		r = tokenizer_append(tokenizer, c);
-        } else {
-                r = tokenizer_append(tokenizer, 0);
-                tokenizer_ungetc(tokenizer);
-                r = k_tokenizer_newtoken;
-                *token = k_token_number;
-        }	
-
-	return r;
-}
-
-static inline int tokenizer_whitespace(int c)
-{
-	return ((c == ' ') || (c == '\r') || (c == '\n') || (c == '\t'));
-}
-
-static int tokenizer_feed_variable(tokenizer_t* tokenizer, 
-                                   int* token)
-{
-        int c = tokenizer_getc(tokenizer);
-        if (c == -1)  {
-                return k_tokenizer_endofstring;
-        }
-        if ((('a' <= c) && (c <= 'z')) 
-            || (('A' <= c) && (c <= 'Z')) 
-            || (('0' <= c) && (c <= '9')) 
-            || (c == '_')) {
-                int r = tokenizer_append(tokenizer, c);
-                if (r != k_tokenizer_continue) {
-                        return r;
-                }
-                return k_tokenizer_continue;
-
-        } else {
-                tokenizer_ungetc(tokenizer);
-                *token = k_token_variable;
-                return k_tokenizer_newtoken;
-        }
-	return k_tokenizer_error;
-}
-
-static int tokenizer_start(tokenizer_t* tokenizer, int* token)
-{
-	int r = k_tokenizer_continue;
-
-        int c = tokenizer_getc(tokenizer);
-        if (c == -1)
-                return k_tokenizer_endofstring;
-        
-	if (tokenizer_whitespace(c))
-		return k_tokenizer_continue;
-
-	switch (c) {
-	case '[': 
-		*token = k_token_bracketopen;
-		r = k_tokenizer_newtoken;
-		break;
-
-	case ']': 
-		*token = k_token_bracketclose;
-		r = k_tokenizer_newtoken;
-		break;
-
-	case '.': 
-		*token = k_token_dot;
-		r = k_tokenizer_newtoken;
-		break;
-				
-	case '0': case '1': case '2': case '3': case '4': 
-        case '5': case '6': case '7': case '8': case '9': 
-		tokenizer->state = k_tokenizer_number;
-                tokenizer_ungetc(tokenizer);
-                r = tokenizer_feed_number(tokenizer, token);
-		break;
-
-	case '\0':
-		r = k_tokenizer_endofstring;
-		break;
-
-	default: 
-                if ((('a' <= c) && (c <= 'z'))
-                    || (('A' <= c) && (c <= 'Z'))
-                    || (c == '_')) {
-                        tokenizer->state = k_tokenizer_variable;
-                        tokenizer_ungetc(tokenizer);
-                        r = tokenizer_feed_variable(tokenizer, token);
-                } else {
-                        r = k_tokenizer_error;
-                }
-                break;
-	}
-
-	return r;
-}
-
-int tokenizer_advance(tokenizer_t* tokenizer, int* token)
-{
-        int r = k_tokenizer_error;
-
-	switch (tokenizer->state) {
-	case k_tokenizer_start: 
-                tokenizer_reset_buffer(tokenizer);
-		r = tokenizer_start(tokenizer, token);
-                break;
-
-	case k_tokenizer_number:
-		r = tokenizer_feed_number(tokenizer, token);
-                break;
-
-	case k_tokenizer_variable: 
-		r = tokenizer_feed_variable(tokenizer, token);
-                break;
-	}
-        if (r == k_tokenizer_newtoken)
-		tokenizer->state = k_tokenizer_start;
-
-	return r;
-}
-
-int tokenizer_get(tokenizer_t* tokenizer, int* token)
-{
-        while (1) {
-                int ret = tokenizer_advance(tokenizer, token);
-                if (ret == k_tokenizer_continue) 
-                        continue;
-                return ret;
-        }
-}
-
-/******************************************************************************/
-
-// expression: accessor
-//           | array_element
-
-// accessor:   variable                       # "foo"
-//           | expression DOT variable        # "foo.bar", "foo.bar[1].x"
-
-// array_element: "[" number "]"              # "foo.bar[1]"
-//              | expression "[" number "]"   # "foo.bar[1]"
-
-/*
-
-0 [var,bracketopen]     --var----------> 1 [dot,end]              + object_get
-                        --bracketopen--> 2 [number]
-1 [dot,end]             --dot----------> 4 [var]
-                        --end----------> 6 [DONE]
-2 [number]              --number-------> 5 [bracketclose]
-3 [dot,bracketopen,end] --dot----------> 4 [var]
-                        --bracketopen--> 2 [number]
-                        --end----------> 6 [DONE]
-4 [var]                 --var----------> 3 [dot,bracketopen,end] + object_get
-5 [bracketclose]        --bracketclose-> 3 [dot,bracketopen,end] + array_get
-6 [DONE]
-
-*/
-
-typedef enum _evaluator_state_t {
-        evaluator_state_0,
-        evaluator_state_1,
-        evaluator_state_2,
-        evaluator_state_3,
-        evaluator_state_4,
-        evaluator_state_5,
-        evaluator_state_6
-} evaluator_state_t;
-
-typedef struct _evaluator_t {
-        tokenizer_t* tokenizer;
-        evaluator_state_t state;
-} evaluator_t;
-
-void evaluator_reset(evaluator_t* evaluator);
-
-evaluator_t* new_evaluator(const char* s)
-{
-        evaluator_t* evaluator = JSON_NEW(evaluator_t);
-        evaluator->tokenizer = new_tokenizer(s);
-        evaluator->state = evaluator_state_0;
-        return evaluator;
-}
-
-void delete_evaluator(evaluator_t* evaluator)
-{
-        delete_tokenizer(evaluator->tokenizer);
-        JSON_FREE(evaluator);
-}
-
-json_object_t evaluator_do(evaluator_t* evaluator, json_object_t x)
-{
-        int token;
-
-        while (1) {
-
-                if (json_isnull(x))
-                        return x;
-
-                int r = tokenizer_get(evaluator->tokenizer, &token);
-                if (r == k_tokenizer_error) 
-                        return json_null();
-
-                if (r == k_tokenizer_endofstring) { 
-                        switch (evaluator->state) {
-                        case evaluator_state_1:
-                        case evaluator_state_3:
-                                return x;
-                        default:
-                                return json_null();
-                        }
-                }
-
-                switch (evaluator->state) {
-                case evaluator_state_0:
-                        if (token == k_token_variable) {
-                                x = json_object_get(x, tokenizer_get_data(evaluator->tokenizer));
-                                evaluator->state = evaluator_state_1;
-                        } else if (token == k_token_bracketopen) {
-                                evaluator->state = evaluator_state_2;
-                        } else {
-                                return json_null();
-                        }
-                        break;
-
-                case evaluator_state_1:
-                        if (token == k_token_dot) {
-                                evaluator->state = evaluator_state_4;
-                        } else {
-                                return json_null();
-                        }
-                        break;
-
-                case evaluator_state_2:
-                        if (token == k_token_number) {
-                                int index = atoi(tokenizer_get_data(evaluator->tokenizer));
-                                x = json_array_get(x, index);
-                                evaluator->state = evaluator_state_5;
-                        } else {
-                                return json_null();
-                        }
-                        break;
-
-                case evaluator_state_3:
-                        if (token == k_token_dot) {
-                                evaluator->state = evaluator_state_4;
-                        } else if (token == k_token_bracketopen) {
-                                evaluator->state = evaluator_state_2;
-                        } else {
-                                return json_null();
-                        }
-                        break;
-
-                case evaluator_state_4:
-                        if (token == k_token_variable) {
-                                x = json_object_get(x, tokenizer_get_data(evaluator->tokenizer));
-                                evaluator->state = evaluator_state_1;
-                        } else {
-                                return json_null();
-                        }
-                        break;
-
-                case evaluator_state_5:
-                        if (token == k_token_bracketclose) {
-                                evaluator->state = evaluator_state_3;
-                        } else {
-                                return json_null();
-                        }
-                        break;
-
-                case evaluator_state_6:
-                        break;
-                }
-        }
-}
-
-json_object_t json_get(json_object_t obj, const char* expression)
-{
-        evaluator_t* e = new_evaluator(expression);
-        json_object_t r = evaluator_do(e, obj);
-        delete_evaluator(e);
-        return r;
-}
-
-const char* json_getstr(json_object_t obj, const char* expression)
-{
-        json_object_t s = json_get(obj, expression);
-        return json_string_value(s);
-}
-
-double json_getnum(json_object_t obj, const char* expression)
-{
-        json_object_t v = json_get(obj, expression);
-        return json_number_value(v);
-}
-
-int json_streq(json_object_t obj, const char* expression, const char* value)
-{
-        const char* v = json_getstr(obj, expression);
-        return ((v != NULL) && (strcmp(v, value) == 0));
-}
 
 void json_cleanup()
 {
