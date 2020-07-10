@@ -398,12 +398,7 @@ uint32 json_strhash(const char* v);
 static hashnode_t* new_json_hashnode(const char* key, json_object_t* value)
 {
 	hashnode_t *hash_node = JSON_NEW(hashnode_t);
-
 	hash_node->key = json_strdup(key);
-	if (hash_node->key == NULL) {
-		JSON_FREE(hash_node);
-		return NULL;
-	}
 	hash_node->value = *value;
 	json_ref(hash_node->value);
 	hash_node->next = NULL;
@@ -508,9 +503,6 @@ static int32 hashtable_set(hashtable_t *hashtable, const char* key, json_object_
 
 	} else {
 		*node = new_json_hashnode(key, &value);
-		if (*node == NULL) {
-			return -1;
-		}
 		hashtable->num_nodes++;
 
 		if ((3 * hashtable->size <= hashtable->num_nodes)
