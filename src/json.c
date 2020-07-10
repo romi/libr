@@ -1039,7 +1039,7 @@ struct _json_parser_t {
 	int32 numstate;
 	int32 error_code;
 	char* error_message;
-        char quote;
+        int quote;
 
         int linenum;
         int colnum;
@@ -1052,7 +1052,7 @@ struct _json_parser_t {
 
 	json_parser_switch_t parser_switch;
         json_token_t token;
-        signed char unwind_char;
+        int unwind_char;
 };
 
 static inline int32 whitespace(int32 c)
@@ -1110,7 +1110,7 @@ static void json_parser_set_error(json_parser_t* parser, int32 error, const char
 	parser->error_message = json_strdup(message);
 }
 
-static int32 json_parser_append(json_parser_t* parser, char c)
+static int32 json_parser_append(json_parser_t* parser, int c)
 {
 	if (parser->bufindex >= parser->buflen) {
 		int32 newlen = 2 * parser->buflen;
@@ -1157,7 +1157,7 @@ void json_parser_reset_buffer(json_parser_t* parser)
 	parser->bufindex = 0;
 }
 
-void json_parser_unwind(json_parser_t* parser, char c)
+void json_parser_unwind(json_parser_t* parser, int c)
 {
         parser->unwind_char = c;
 }
@@ -1523,7 +1523,7 @@ static int32 json_parser_token(json_parser_t* parser, int32 token)
 	return r;
 }
 
-static int32 json_parser_unicode(json_parser_t* parser, char c)
+static int32 json_parser_unicode(json_parser_t* parser, int c)
 {
 	int32 r = k_continue;
 	char v = 0;
@@ -1552,37 +1552,37 @@ static int32 json_parser_unicode(json_parser_t* parser, char c)
 
 	case 4: parser->unihex = (parser->unihex << 4) | (v & 0x0f); 
 		if ((0 <= parser->unihex) && (parser->unihex <= 0x007f)) {
-			r = json_parser_append(parser, (char) (parser->unihex & 0x007f));
+			r = json_parser_append(parser, (int) (parser->unihex & 0x007f));
 		} else if (parser->unihex <= 0x07ff) {
 			uint8 b1 = 0xc0 | (parser->unihex & 0x07c0) >> 6;
 			uint8 b2 = 0x80 | (parser->unihex & 0x003f);
-			r = json_parser_append(parser, (char) b1);
+			r = json_parser_append(parser, (int) b1);
 			if (r != k_continue) return r;
-			r = json_parser_append(parser, (char) b2);
+			r = json_parser_append(parser, (int) b2);
 		} else if (parser->unihex <= 0xffff) {
 			uint8 b1 = 0xe0 | (parser->unihex & 0xf000) >> 12;
 			uint8 b2 = 0x80 | (parser->unihex & 0x0fc0) >> 6;
 			uint8 b3 = 0x80 | (parser->unihex & 0x003f);
-			r = json_parser_append(parser, (char) b1);
+			r = json_parser_append(parser, (int) b1);
 			if (r != k_continue) return r;
-			r = json_parser_append(parser, (char) b2);
+			r = json_parser_append(parser, (int) b2);
 			if (r != k_continue) return r;
-			r = json_parser_append(parser, (char) b3);
+			r = json_parser_append(parser, (int) b3);
 		} 
 		break;		
 	}
 	return r;
 }
 
-static int json_invalid_string_char(char c)
+static int json_invalid_string_char(int c)
 {
         // Control characters must be escaped
-        if (c >= 0x00 && c <= 0x1f)
+        if (c >= 0 && c <= 0x1f)
                 return 1;
         return 0;
 }
 
-static int32 json_parser_feed_string(json_parser_t* parser, char c)
+static int32 json_parser_feed_string(json_parser_t* parser, int c)
 {
 	int32 r = k_continue;
 
@@ -1717,7 +1717,7 @@ char _numtrans[_state_last][_input_last] = {
 
 char _endstate[_state_last] = { 0, 0, 0, 1, 1, 0, 0, 1, 0, 1 };
 
-static inline int32 json_numinput(json_parser_t* parser, char c)
+static inline int32 json_numinput(json_parser_t* parser, int c)
 {
         (void) parser;
 	if (('1' <= c) && (c <= '9')) return _d19;
@@ -1730,7 +1730,7 @@ static inline int32 json_numinput(json_parser_t* parser, char c)
 	return _other;
 }
 
-static int32 json_parser_feed_number(json_parser_t* parser, char c)
+static int32 json_parser_feed_number(json_parser_t* parser, int c)
 {
 	int32 r = k_token_error;
 	
@@ -1759,7 +1759,7 @@ static int32 json_parser_feed_number(json_parser_t* parser, char c)
 	return r;
 }
 
-static int32 json_parser_feed_true(json_parser_t* parser, char c)
+static int32 json_parser_feed_true(json_parser_t* parser, int c)
 {
 	int32 r = json_parser_append(parser, c);
 	if (r != k_continue)
@@ -1786,7 +1786,7 @@ static int32 json_parser_feed_true(json_parser_t* parser, char c)
 	return k_continue;
 }
 
-static int32 json_parser_feed_false(json_parser_t* parser, char c)
+static int32 json_parser_feed_false(json_parser_t* parser, int c)
 {
 	int32 r = json_parser_append(parser, c);
 	if (r != k_continue)
@@ -1814,7 +1814,7 @@ static int32 json_parser_feed_false(json_parser_t* parser, char c)
 	return k_continue;
 }
 
-static int32 json_parser_feed_null(json_parser_t* parser, char c)
+static int32 json_parser_feed_null(json_parser_t* parser, int c)
 {
 	int32 r = json_parser_append(parser, c);
 	if (r != k_continue)
@@ -1842,7 +1842,7 @@ static int32 json_parser_feed_null(json_parser_t* parser, char c)
 	return k_continue;
 }
 
-static int32 json_parser_feed_json(json_parser_t* parser, char c)
+static int32 json_parser_feed_json(json_parser_t* parser, int c)
 {
 	int32 r = k_continue;
 
@@ -1928,7 +1928,7 @@ static int32 json_parser_feed_json(json_parser_t* parser, char c)
 	return r;
 }
 
-static int32 json_parser_feed_one(json_parser_t* parser, char c)
+static int32 json_parser_feed_one(json_parser_t* parser, int c)
 {
         int32 ret = k_token_error;
 
