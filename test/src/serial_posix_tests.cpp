@@ -615,7 +615,7 @@ TEST_F(serial_posix_tests, serial_get_reads_multiple_characters_retries_until_on
     SET_RETURN_SEQ(read, read_return_values, read_read_count);
 
     // Act
-    char actual = (char)serial_get(expected_serial);
+    int actual = serial_get(expected_serial);
 
     //Assert
     ASSERT_NE(actual, ERROR);
@@ -634,7 +634,7 @@ TEST_F(serial_posix_tests, serial_get_read_error_returns_error)
     read_fake.return_val = ERROR;
 
     // Act
-    char actual = (char)serial_get(expected_serial);
+    int actual = serial_get(expected_serial);
 
     //Assert
     ASSERT_EQ(actual, ERROR);
@@ -656,7 +656,7 @@ TEST_F(serial_posix_tests, serial_read_fd_not_set_quits)
     char buffer[buffer_size];
 
     // Act
-    char actual = (char)serial_read(expected_serial, buffer, buffer_size);
+    int actual = serial_read(expected_serial, buffer, buffer_size);
 
     //Assert
     ASSERT_EQ(actual, ERROR);
@@ -677,7 +677,7 @@ TEST_F(serial_posix_tests, serial_read_quit_set_quits)
     char buffer[buffer_size];
 
     // Act
-    char actual = (char)serial_read(expected_serial, buffer, buffer_size);
+    int actual = serial_read(expected_serial, buffer, buffer_size);
 
     //Assert
     ASSERT_EQ(actual, ERROR);
@@ -698,7 +698,7 @@ TEST_F(serial_posix_tests, serial_read_read_fails_returns_error)
     char buffer[buffer_size];
 
     // Act
-    char actual = (char)serial_read(expected_serial, buffer, buffer_size);
+    int actual = serial_read(expected_serial, buffer, buffer_size);
 
     //Assert
     ASSERT_EQ(actual, ERROR);
@@ -726,7 +726,7 @@ TEST_F(serial_posix_tests, serial_read_read_succeeds_returns_correct_data)
     read_data = "4cha";
 
     // Act
-    char actual = (char)serial_read(expected_serial, buffer, num__to_read);
+    int actual = serial_read(expected_serial, buffer, num__to_read);
 
     std::string buffer_string(buffer);
     //Assert
@@ -759,7 +759,7 @@ TEST_F(serial_posix_tests, serial_read_read_succeeds_multiple_times_returns_corr
     read_data = "twelve_chars";
 
     // Act
-    char actual = (char)serial_read(expected_serial, buffer, num__to_read);
+    int actual = serial_read(expected_serial, buffer, num__to_read);
 
     std::string buffer_string(buffer);
     //Assert
@@ -997,7 +997,7 @@ TEST_F(serial_posix_tests, serial_put_write_0_retries_returns_error)
     serial_data.quit = 0;
     serial_data.nextchar = ERROR;
 
-    long write_return_values[3] = { 0, 0, 1 };
+    ssize_t write_return_values[3] = { 0, 0, 1 };
     SET_RETURN_SEQ(write, write_return_values, 3);
 
     // Act
@@ -1082,7 +1082,7 @@ TEST_F(serial_posix_tests, serial_write_called_correct_number_of_times)
     std::string bufferstring(buffer);
     write_fake.return_val = bufferstring.length();
 
-    long write_return_values[3] = { 0, 3, 3 };
+    ssize_t write_return_values[3] = { 0, 3, 3 };
     SET_RETURN_SEQ(write, write_return_values, 3);
 
     // Act
