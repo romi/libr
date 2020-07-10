@@ -55,11 +55,7 @@ extern "C" {
         k_json_object = 100,
         k_json_array = 101,
         k_json_string = 102,
-        k_json_number = 103,
-
-        k_json_variable = 200,
-        k_json_accessor = 201,
-        k_json_array_element = 202
+        k_json_number = 103
 }json_type_t;
 
 typedef struct _base_t {
