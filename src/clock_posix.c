@@ -35,7 +35,7 @@ uint64_t clock_timestamp()
         uint64_t t;
         struct timeval tv;
         gettimeofday_wrapper(&tv, NULL);
-        t = tv.tv_sec * (long)MICROSECONDS_IN_SECOND + tv.tv_usec;
+        t = (uint64_t)tv.tv_sec * (uint64_t)MICROSECONDS_IN_SECOND + (uint64_t)tv.tv_usec;
         return t;
 }
 
