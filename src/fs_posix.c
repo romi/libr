@@ -84,7 +84,7 @@ int path_make_absolute(const char *path, char *buffer, int len)
                 char *wd = getcwd_wrapper(NULL, 0);
                 if (wd == NULL) return -1;
                 r = snprintf(buffer, len, "%s/%s", wd, path);
-                free(wd);
+                free_wrapper(wd);
         }
         
         buffer[len-1] = 0;

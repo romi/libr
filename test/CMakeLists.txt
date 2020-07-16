@@ -2,12 +2,6 @@
 # This is not integrated with the rest of the romi build, and will only build on the current, experimental, build system in-house.
 cmake_minimum_required(VERSION 3.10)
 
-#project(libr_tests)
-#
-#set(CMAKE_CXX_STANDARD 17)
-#set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_EXTENSIONS OFF)
-
 set(SRCS_OS
         src/tests_main.cpp
         src/mem_tests.cpp
@@ -22,6 +16,7 @@ set(SRCS_FS
         src/tests_main.cpp
         src/fs_posix_tests.cpp
         src/utils_tests.cpp
+        src/wrapper_tests_coverage.cpp
         support/test_file_utils.h
         support/test_file_utils.cpp
         mocks/log.mock.h
@@ -174,11 +169,6 @@ add_test(
         COMMAND r_unit_tests_fs
 )
 
-#add_test(
-#        NAME r_unit_tests_log_json
-#        COMMAND r_unit_tests_log_json
-#)
-
 add_test(NAME r_unit_tests_log_json
         COMMAND r_unit_tests_log_json
         )
@@ -195,34 +185,35 @@ add_test(
 
 if(BUILD_COVERAGE)
     SETUP_TARGET_FOR_COVERAGE_LCOV(
-            NAME r_unit_tests_common_coverage
+            NAME r_unit_tests_coverage
             EXECUTABLE ctest -V ${n_cores}
-            DEPENDENCIES r_unit_tests_common)
+            EXCLUDE '*wrapper*'
+            DEPENDENCIES r_unit_tests_common r_unit_tests_os r_unit_tests_fs r_unit_tests_log_json r_unit_tests_thread r_unit_tests_serial)
 
-    SETUP_TARGET_FOR_COVERAGE_LCOV(
-            NAME r_unit_tests_os_coverage
-            EXECUTABLE ctest -V ${n_cores}
-            DEPENDENCIES r_unit_tests_os)
-
-    SETUP_TARGET_FOR_COVERAGE_LCOV(
-            NAME r_unit_tests_fs_coverage
-            EXECUTABLE ctest -V ${n_cores}
-            DEPENDENCIES r_unit_tests_fs)
-
-    SETUP_TARGET_FOR_COVERAGE_LCOV(
-            NAME r_unit_tests_log_json_coverage
-            EXECUTABLE ctest -V ${n_cores}
-            DEPENDENCIES r_unit_tests_log_json)
-
-    SETUP_TARGET_FOR_COVERAGE_LCOV(
-            NAME r_unit_tests_thread_coverage
-            EXECUTABLE ctest -V ${n_cores}
-            DEPENDENCIES r_unit_tests_thread)
-
-    SETUP_TARGET_FOR_COVERAGE_LCOV(
-            NAME r_unit_tests_serial_coverage
-            EXECUTABLE ctest -V ${n_cores}
-            DEPENDENCIES r_unit_tests_serial)
+#    SETUP_TARGET_FOR_COVERAGE_LCOV(
+#            NAME r_unit_tests_os_coverage
+#            EXECUTABLE ctest -V ${n_cores}
+#            DEPENDENCIES r_unit_tests_os)
+#
+#    SETUP_TARGET_FOR_COVERAGE_LCOV(
+#            NAME r_unit_tests_fs_coverage
+#            EXECUTABLE ctest -V ${n_cores}
+#            DEPENDENCIES r_unit_tests_fs)
+#
+#    SETUP_TARGET_FOR_COVERAGE_LCOV(
+#            NAME r_unit_tests_log_json_coverage
+#            EXECUTABLE ctest -V ${n_cores}
+#            DEPENDENCIES r_unit_tests_log_json)
+#
+#    SETUP_TARGET_FOR_COVERAGE_LCOV(
+#            NAME r_unit_tests_thread_coverage
+#            EXECUTABLE ctest -V ${n_cores}
+#            DEPENDENCIES r_unit_tests_thread)
+#
+#    SETUP_TARGET_FOR_COVERAGE_LCOV(
+#            NAME r_unit_tests_serial_coverage
+#            EXECUTABLE ctest -V ${n_cores}
+#            DEPENDENCIES r_unit_tests_serial)
 endif()
 
 SET(JSON_INPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_data)

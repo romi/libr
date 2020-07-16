@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <strings.h>
+#include <r.h>
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
@@ -52,6 +53,17 @@ protected:
 
     _membuf_t membuffer;
 };
+
+TEST_F(membuf_tests, r_init_init__cleanup_COVERAGE)
+{
+    // Arrange
+    // Act
+    int actual = r_init(NULL, NULL);
+    r_cleanup();
+    // Assert
+    ASSERT_EQ(actual, 0);
+}
+
 
 TEST_F(membuf_tests, new_membuf_when_new_succeeds_creates_mutex_returns_buffer)
 {

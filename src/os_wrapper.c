@@ -27,12 +27,12 @@ void * realloc_wrapper (void *ptr, size_t size)
 }
 
 // Time
-int gettimeofday_wrapper(struct timeval *__restrict __tv, __timezone_ptr_t __tz)
+int gettimeofday_wrapper(struct timeval * __tv, __timezone_ptr_t __tz)
 {
     return gettimeofday( __tv, __tz);
 }
 
-struct tm * localtime_r_wrapper(const time_t *__restrict __timer, struct tm *__restrict __tp)
+struct tm * localtime_r_wrapper(const time_t * __timer, struct tm * __tp)
 {
     return localtime_r(__timer, __tp);
 }
