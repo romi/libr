@@ -25,6 +25,7 @@
 #ifndef _R_SERIAL_H_
 #define _R_SERIAL_H_
 
+#include <termios.h>
 #include "membuf.h"
 
 #ifdef __cplusplus
@@ -35,6 +36,8 @@ typedef struct _serial_t serial_t;
 
 serial_t *new_serial(const char *device, int speed, int reset);
 void delete_serial(serial_t *s);
+int get_termios(serial_t *s, struct termios *tty);
+int set_termios(serial_t *s, struct termios myTermios);
 
 int serial_get(serial_t *s);
 int serial_read(serial_t *s, char *buf, int len);

@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <termios.h>
 #include <string.h>
 #include <errno.h>
 
@@ -43,7 +42,7 @@ struct _serial_t
         int quit;
 };
 
-static int open_serial(const char *device, int speed, int reset);
+static int open_serial(const char *device);
 
 // See also:
 //   http://www.delorie.com/gnu/docs/glibc/libc_364.html
@@ -52,23 +51,9 @@ static int open_serial(const char *device, int speed, int reset);
 //   https://stackoverflow.com/questions/6947413/how-to-open-read-and-write-from-serial-port-in-c
 //   https://stackoverflow.com/questions/41224496/working-with-linux-serial-port-in-c-not-able-to-get-full-data/41252962#41252962
 //   https://forum.arduino.cc/index.php/topic,28167.0.html
-static int open_serial(const char *device, int speed, int reset)
+static int open_serial(const char *device)
 {
-        struct termios tty;
         int fd;
-        int speed_constant;
-
-        switch (speed) {
-        case 9600: speed_constant = B9600; break;
-        case 19200: speed_constant = B19200; break;
-        case 38400: speed_constant = B38400; break;
-        case 57600: speed_constant = B57600; break;
-        case 115200: speed_constant = B115200; break;
-        default:
-                r_err("open_serial: only the following speeds are valid: "
-                        "9600, 19200, 38400, 57600, 115200");
-                return -1;                
-        }
 
         fd = open_wrapper(device, O_RDWR | O_NOCTTY | O_SYNC);
         if (fd < 0) {
@@ -76,59 +61,95 @@ static int open_serial(const char *device, int speed, int reset)
                         errno, device, strerror(errno));
                 return -1;
         }
-
-        memset(&tty, 0, sizeof(tty));
-        if (tcgetattr(fd, &tty) != 0) {
-                r_err("open_serial: error %d from tcgetattr", errno);
-                close_wrapper(fd);
-                return -1;
-        }
-
-        // cflag        
-        // 8n1 (8bit, no parity, 1 stopbit)
-        // CLOCAL: ignore modem controls
-        // CREAD: enable reading
-        // CS8: 8-bit characters
-    // ToDo: Whats going on here? Should thie or in these values? HUPCL
-        tty.c_cflag = CLOCAL | CREAD | CS8;
-        if (!reset)
-                tty.c_cflag &= ~HUPCL;   // disable hang-up-on-close to avoid reset
-
-        // lflag
-        // no signaling chars; no echo; ...
-        tty.c_lflag = ICANON;    // enable canonical processing
-        
-        // iflag
-        // no parity check; no break processing; don't map NL to CR,
-        // CR to NL, uppercase to lowercase; ring bell; shut off
-        // xon/xoff ctrl; ...
-        tty.c_iflag = IGNCR;    // ignore carriage-return '\r'
-        
-        // oflag
-        // no remapping; no delays; no post-processing
-        tty.c_oflag = 0;                
-
-        // Use for non-canonical input
-        /* tty.c_cc[VMIN]  = 0; */
-        /* tty.c_cc[VTIME] = 5; */
-        
-        cfsetspeed(&tty, speed_constant);
-        tcflush(fd, TCIOFLUSH);
-
-        if (tcsetattr(fd, TCSANOW, &tty) != 0) {
-                r_err("open_serial: error %d from tcsetattr", errno);
-                close_wrapper(fd);
-                return -1;
-        }
         return fd;
 }
+
+static int configure_termios(serial_t *s, int reset)
+{
+    struct termios tty;
+    int speed_constant;
+
+    switch (s->speed) {
+        case 9600: speed_constant = B9600; break;
+        case 19200: speed_constant = B19200; break;
+        case 38400: speed_constant = B38400; break;
+        case 57600: speed_constant = B57600; break;
+        case 115200: speed_constant = B115200; break;
+        default:
+            r_err("open_serial: only the following speeds are valid: "
+                  "9600, 19200, 38400, 57600, 115200");
+            return -1;
+    }
+
+    if (get_termios(s, &tty) != 0)
+    {
+        return -1;
+    }
+
+    tty.c_cflag |= CLOCAL | CREAD;
+    tty.c_cflag &= ~CSIZE;
+    tty.c_cflag |= CS8;         /* 8-bit characters */
+    tty.c_cflag &= ~PARENB;     /* no parity bit */
+    tty.c_cflag &= ~CSTOPB;     /* only need 1 stop bit */
+    tty.c_cflag &= ~CRTSCTS;    /* no hardware flowcontrol */
+    tty.c_cflag &= ~HUPCL;
+    if(reset)
+        tty.c_cflag |= HUPCL;
+
+    tty.c_lflag |= ICANON | ISIG;  /* canonical input */
+    tty.c_lflag &= ~(ECHO | ECHOE | ECHONL | IEXTEN);
+
+    tty.c_iflag &= ~IGNCR;  /* preserve carriage return */
+    tty.c_iflag |= IGNCR;  /* preserve carriage return */
+    tty.c_iflag &= ~INPCK;
+    tty.c_iflag &= ~(INLCR | ICRNL | IUCLC | IMAXBEL);
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY);   /* no SW flowcontrol */
+
+//    tty.c_oflag &= ~OPOST;
+    tty.c_oflag = 0;
+
+//
+//    // ToDo: Whats going on here, Shhouldn't these values be != into the c_cflag?
+//    // cflag: 8n1 (8bit, no parity, 1 stopbit) CLOCAL: ignore modem controls CREAD: enable reading CS8: 8-bit characters
+//    tty.c_cflag = CLOCAL | CREAD | CS8;
+//
+//    // disable hang-up-on-close to avoid reset
+//    if(reset)
+//        tty.c_cflag |= HUPCL;
+////    tty.c_cflag &= ~HUPCL;
+//
+//    // lflag: no signaling chars; no echo; ...
+//    tty.c_lflag = ICANON;    // enable canonical processing
+//
+//    // iflag
+//    // no parity check; no break processing; don't map NL to CR,
+//    // CR to NL, uppercase to lowercase; ring bell; shut off
+//    // xon/xoff ctrl; ...
+//    tty.c_iflag = IGNCR;    // ignore carriage-return '\r'
+//
+//    // oflag: no remapping; no delays; no post-processing
+//    tty.c_oflag = 0;
+
+    // Use for non-canonical input
+    /* tty.c_cc[VMIN]  = 0; */
+    /* tty.c_cc[VTIME] = 5; */
+
+    cfsetspeed(&tty, speed_constant);
+
+    if (set_termios(s, tty) != 0)
+    {
+        return -1;
+    }
+    return 0;
+}
+
 
 serial_t *new_serial(const char *device, int speed, int reset)
 {
         serial_t *s;
 
         // First check whether we can open the serial connection.
-        int fd = open_serial(device, speed, reset);
+        int fd = open_serial(device);
         if (fd == -1) return NULL;
         
         // Create the object
@@ -143,6 +164,11 @@ serial_t *new_serial(const char *device, int speed, int reset)
         s->quit = 0;
         s->mutex = new_mutex();
 
+        if (configure_termios(s, reset) != 0)
+        {
+            delete_serial(s);
+            s = NULL;
+        }
         return s;
 }
 
@@ -159,6 +185,37 @@ void delete_serial(serial_t *s)
                 delete_mutex(s->mutex);
                 r_delete(s);
         }
+}
+
+int get_termios(serial_t *s, struct termios *tty) {
+    int retval = -1;
+    memset(tty, 0, sizeof(struct termios));
+    if(s && s->fd != -1)
+    {
+        // Get current settings (will be stored in termios structure)
+        if(tcgetattr(s->fd, tty) != 0)
+        {
+            r_err("could not get terminal attributes for %s", s->device);
+        } else{
+            retval = 0;
+        }
+    }
+    return retval;
+}
+
+int set_termios(serial_t *s, struct termios myTermios)
+{
+    int ret = 0;
+    if(s && s->fd != -1) {
+        // Flush port, then apply attributes
+        tcflush(s->fd, TCIOFLUSH);
+
+        if (tcsetattr(s->fd, TCSANOW, &myTermios) != 0) {
+            r_err("could not set terminal attributes for %s", s->device);
+            ret = -1;
+        }
+    }
+    return ret;
 }
 
 static int serial_peek(serial_t *s)
