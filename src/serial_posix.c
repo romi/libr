@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/poll.h>
 
 #include "r.h"
 
@@ -109,7 +110,7 @@ static int configure_termios(serial_t *s, int reset)
     tty.c_oflag = 0;
 
 //
-//    // ToDo: Whats going on here, Shhouldn't these values be != into the c_cflag?
+//    // ToDo: Whats going on here, Shouldn't these values be != into the c_cflag?
 //    // cflag: 8n1 (8bit, no parity, 1 stopbit) CLOCAL: ignore modem controls CREAD: enable reading CS8: 8-bit characters
 //    tty.c_cflag = CLOCAL | CREAD | CS8;
 //
@@ -270,6 +271,37 @@ int serial_read(serial_t *s, char *buf, int len)
                 n += m;
         }
         return 0;
+}
+
+int serial_read_timeout(serial_t *s, char *buf, int len, int timeout_ms)
+{
+    if ((s==NULL) || (buf == NULL) || (s->fd == -1))
+        return -1;
+
+    int retval = -1;
+    struct pollfd fds[1];
+    fds[0].fd = s->fd;
+    fds[0].events = POLLIN ;
+    r_debug("serial_read_timeout");
+    int pollrc = poll( fds, 1, timeout_ms);
+    if (pollrc < 0)
+    {
+        r_err("serial_read_timeout poll error %d", errno);
+    }
+    else if( pollrc > 0)
+    {
+        if( fds[0].revents & POLLIN )
+        {
+            ssize_t rc = read(s->fd, buf, len );
+            if (rc > 0)
+            {
+                retval = 0;
+            }
+        }
+    } else{
+        r_warn("serial_read_timeout poll timed out.");
+    }
+    return retval;
 }
 
 static int arduino_debug_string(membuf_t *buffer)

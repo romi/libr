@@ -41,6 +41,8 @@ double clock_time();
 
 // Return date-time as string in the form of "2018-11-14 17:52:38"
 char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3);
+// Millisecond resolution.
+char *clock_log_datetime(char *buf, int len, char sep1, char sep2, char sep3);
 
 void clock_sleep(double seconds);
         

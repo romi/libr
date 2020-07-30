@@ -42,6 +42,7 @@ int set_termios(serial_t *s, struct termios myTermios);
 int serial_get(serial_t *s);
 int serial_read(serial_t *s, char *buf, int len);
 const char *serial_readline(serial_t *s, membuf_t *buffer);
+int serial_read_timeout(serial_t *s, char *buf, int len, int timeout_ms);
 
 // returns 0: no error, -1: error
 // These functions are not protected by a mutex. 

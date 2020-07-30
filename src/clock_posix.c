@@ -60,6 +60,21 @@ char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3)
         return buf;
 }
 
+char *clock_log_datetime(char *buf, int len, char sep1, char sep2, char sep3)
+{
+    struct timeval tv;
+    struct tm r;
+    gettimeofday_wrapper(&tv, NULL);
+    localtime_r_wrapper(&tv.tv_sec, &r);
+    int milliseconds = tv.tv_usec/1000;
+
+    snprintf(buf, len, "%04d%c%02d%c%02d%c%02d%c%02d%c%02d%c%03d",
+             1900 + r.tm_year, sep1, 1 + r.tm_mon, sep1, r.tm_mday,
+             sep2,
+             r.tm_hour, sep3, r.tm_min, sep3, r.tm_sec, sep3, milliseconds);
+    return buf;
+}
+
 void clock_sleep(double seconds)
 {
         useconds_t usec = (useconds_t) (MICROSECONDS_IN_SECOND * seconds);
