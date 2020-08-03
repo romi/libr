@@ -28,7 +28,7 @@
 #include "r.h"
 
 #define ONE_KB_BUFFER (1024)
-#define LOG_INFO_SIZE (32) // Time, Type, Name
+#define LOG_INFO_SIZE (36) // Time, Type, Name
 
 static int _log_level = R_DEBUG;
 static FILE* _log_file = NULL;
@@ -191,7 +191,7 @@ static void log_(int level, const char* s)
 
         static char buffer[ONE_KB_BUFFER + LOG_INFO_SIZE];
         static char timestamp[256];
-        const char* time = clock_datetime(timestamp, sizeof(timestamp), '-', ' ', ':');
+        const char* time = clock_log_datetime(timestamp, sizeof(timestamp), '-', ' ', ':');
         const char* type;
         const char* name = _log_app? _log_app : "?";
         switch (level) {

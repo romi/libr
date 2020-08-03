@@ -352,52 +352,42 @@ TEST_F(serial_posix_tests, new_serial_115200_speed_is_set_correctly)
 }
 
 
-TEST_F(serial_posix_tests, new_serial_if_reset_clear_HUPCL_flag_cleared)
+TEST_F(serial_posix_tests, new_serial_if_reset_HUPCL_flag_cleared)
 {
     // Arrange
     port_speed = 115200;
-    serial_t *expected_serial = nullptr;
 
     tcgetattr_fake.return_val = 0;
     cfsetspeed_fake.custom_fake = cfsetspeed_custom_fake;
-    tcsetattr_fake.return_val = ERROR;
+    tcsetattr_fake.custom_fake = tcsetattr_custom_fake;
 
     // Act
     actual_serial =  new_serial(device.c_str(), port_speed, reset_flag);
-    unsigned int HUPCL_flag = cflags_data & HUPCL;
+    unsigned int HUPCL_flag = termios_data.c_cflag & HUPCL;
 
     //Assert
-    ASSERT_EQ(actual_serial, expected_serial);
-    ASSERT_EQ(cfsetspeed_fake.arg1_val, B115200);
     ASSERT_EQ(HUPCL_flag, 0);
 }
 
 
 ///// NOT WORKING
-TEST_F(serial_posix_tests, new_serial_if_reset_set_HUPCL_flag_set)
+TEST_F(serial_posix_tests, new_serial_if_reset_clear_HUPCL_flag_set)
 {
     // Arrange
-    std::string device = "/dev/ttys1";
+//    std::string device = "/dev/ttys1";
     port_speed = 115200;
     reset_flag = 1;
-    serial_t *expected_serial = nullptr;
 
-//    int fd = 1;
-//    open_wrapper_fake.return_val = fd;
-    cflags_data = HUPCL;
-
+    tcsetattr_fake.custom_fake = tcsetattr_custom_fake;
     tcgetattr_fake.custom_fake = tcgetattr_custom_fake;
     cfsetspeed_fake.custom_fake = cfsetspeed_custom_fake;
-    tcsetattr_fake.return_val = ERROR;
+
     // Act
     actual_serial =  new_serial(device.c_str(), port_speed, reset_flag);
- //   unsigned int HUPCL_flag = cflags_data & HUPCL;
+    unsigned int HUPCL_flag = termios_data.c_cflag & HUPCL;
 
     //Assert
-    ASSERT_EQ(actual_serial, expected_serial);
-    ASSERT_EQ(cfsetspeed_fake.arg1_val, B115200);
-    // ToDo: This test doesn't work. Code needs to be looked at.
-    //ASSERT_EQ(HUPCL_flag, HUPCL);
+    ASSERT_EQ(HUPCL_flag, HUPCL);
 }
 
 TEST_F(serial_posix_tests, new_serial_port_is_flushed)
@@ -426,6 +416,7 @@ TEST_F(serial_posix_tests, new_serial_setattr_sets_correct_attributes)
     open_wrapper_fake.return_val = fd;
     tcgetattr_fake.custom_fake = tcgetattr_custom_fake;
     tcsetattr_fake.custom_fake = tcsetattr_custom_fake;
+    cflags_data = 0;
 
     // Act
     actual_serial =  new_serial(device.c_str(), port_speed, reset_flag);
@@ -435,7 +426,7 @@ TEST_F(serial_posix_tests, new_serial_setattr_sets_correct_attributes)
     ASSERT_EQ(tcsetattr_fake.arg0_val, fd);
     ASSERT_EQ(tcsetattr_fake.arg1_val, TCSANOW);
     ASSERT_EQ(termios_data.c_cflag, (CLOCAL | CREAD | CS8) );
-    ASSERT_EQ(termios_data.c_lflag, (ICANON) );
+    ASSERT_EQ(termios_data.c_lflag, (ICANON | ISIG) );
     ASSERT_EQ(termios_data.c_iflag, (IGNCR) );
     ASSERT_EQ(termios_data.c_oflag, (0) );
 }

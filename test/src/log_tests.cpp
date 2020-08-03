@@ -38,11 +38,11 @@ protected:
 
         // 20 seconds into 1970.  01/01/1970 00:00:20
         fake_time.tv_sec = 20;
-        fake_time.tv_usec = 1;
+        fake_time.tv_usec = 30000;
         gettimeofday_wrapper_fake.custom_fake = log_tests::gettimeofday_wrapper_custom_fake;
         localtime_r_wrapper_fake.custom_fake = log_tests::localtime_r_wrapper_custom_fake;
 
-        log_time = "1970-01-01 00:00:20";
+        log_time = "1970-01-01 00:00:20:030";
         log_app_name = "?";
 
         CreateChangingLogFile(logfilepath);
