@@ -1,23 +1,22 @@
 dist: bionic
 
+addons:
+  apt:
+    packages:
+      - socat
+
 language: cpp
 
 compiler:
   - gcc
 
 before_script:
-  # create a build folder for the out-of-source build
-  - mkdir build_tests_coverage
-  # switch to build directory
-  - cd build_tests_coverage
-  # run cmake; here we assume that the project's
-  # top-level CMakeLists.txt is located at '..' Coverage is on by default.
-  - cmake -DCMAKE_BUILD_TYPE=Debug ..
+  - mkdir build_tests
+  - cd build_tests
+  - cmake ..
 
 script:
-  # once CMake has done its job we just build using make as usual
-  - make
-  # if the project uses ctest we can run the tests like this
+  - make -j4
   - ctest -V -R r_unit*
 
 after_success:
