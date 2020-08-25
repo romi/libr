@@ -282,11 +282,10 @@ int serial_read_timeout(serial_t *s, char *buf, int len, int timeout_ms)
     struct pollfd fds[1];
     fds[0].fd = s->fd;
     fds[0].events = POLLIN ;
-    r_debug("serial_read_timeout");
     int pollrc = poll( fds, 1, timeout_ms);
     if (pollrc < 0)
     {
-        r_err("serial_read_timeout poll error %d", errno);
+        r_err("serial_read_timeout poll error %d on %s", errno, s->device);
     }
     else if( pollrc > 0)
     {
@@ -299,7 +298,7 @@ int serial_read_timeout(serial_t *s, char *buf, int len, int timeout_ms)
             }
         }
     } else{
-        r_warn("serial_read_timeout poll timed out.");
+        r_warn("serial_read_timeout poll timed out on %s", s->device);
     }
     return retval;
 }
