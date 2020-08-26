@@ -189,57 +189,17 @@ if(BUILD_COVERAGE)
             EXECUTABLE ctest -V ${n_cores}
             EXCLUDE '*wrapper*'
             DEPENDENCIES r_unit_tests_common r_unit_tests_os r_unit_tests_fs r_unit_tests_log_json r_unit_tests_thread r_unit_tests_serial)
-
-#    SETUP_TARGET_FOR_COVERAGE_LCOV(
-#            NAME r_unit_tests_os_coverage
-#            EXECUTABLE ctest -V ${n_cores}
-#            DEPENDENCIES r_unit_tests_os)
-#
-#    SETUP_TARGET_FOR_COVERAGE_LCOV(
-#            NAME r_unit_tests_fs_coverage
-#            EXECUTABLE ctest -V ${n_cores}
-#            DEPENDENCIES r_unit_tests_fs)
-#
-#    SETUP_TARGET_FOR_COVERAGE_LCOV(
-#            NAME r_unit_tests_log_json_coverage
-#            EXECUTABLE ctest -V ${n_cores}
-#            DEPENDENCIES r_unit_tests_log_json)
-#
-#    SETUP_TARGET_FOR_COVERAGE_LCOV(
-#            NAME r_unit_tests_thread_coverage
-#            EXECUTABLE ctest -V ${n_cores}
-#            DEPENDENCIES r_unit_tests_thread)
-#
-#    SETUP_TARGET_FOR_COVERAGE_LCOV(
-#            NAME r_unit_tests_serial_coverage
-#            EXECUTABLE ctest -V ${n_cores}
-#            DEPENDENCIES r_unit_tests_serial)
 endif()
 
 SET(JSON_INPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_data)
 
-#add_custom_target(build-time-make-directory ALL
-#        COMMAND ${CMAKE_COMMAND} -E make_directory ${JSON_INPUT_DIR})
-
 add_custom_command(TARGET r_unit_tests_log_json POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${JSON_INPUT_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy json_data/*.json ${JSON_INPUT_DIR}
         WORKING_DIRECTORY
             ${CMAKE_CURRENT_SOURCE_DIR}
         DEPENDS
             r_unit_tests_log_json
         COMMENT
-        "Making directory ${JSON_INPUT_DIR}"
-        )
-
-add_custom_command(TARGET r_unit_tests_log_json POST_BUILD
-        COMMAND
-        ${CMAKE_COMMAND} -E copy
-        json_data/*.json
-            ${JSON_INPUT_DIR}
-        WORKING_DIRECTORY
-            ${CMAKE_CURRENT_SOURCE_DIR}
-        DEPENDS
-            r_unit_tests_log_json
-        COMMENT
-        "Copying json test data to ${JSON_INPUT_DIR}"
+        "Making directory ${JSON_INPUT_DIR} and copying JSON test files."
         )
