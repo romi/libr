@@ -132,6 +132,7 @@ int32 json_serialise(json_object_t object,
                      json_writer_t fun, 
                      void* userdata);
 int32 json_tostring(json_object_t object, char* buffer, int32 buflen);
+int32 json_tostring_pretty(json_object_t object, char* buffer, int32 buflen);
 void json_print(json_object_t object, int32 flags);
 
 #if !defined(JSON_EMBEDDED)

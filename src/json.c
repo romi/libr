@@ -788,6 +788,15 @@ int32 json_tostring(json_object_t object, char* buffer, int32 buflen)
         return r;
 }
 
+int32 json_tostring_pretty(json_object_t object, char* buffer, int32 buflen)
+{
+    json_strbuf_t strbuf = { buffer, buflen, 0 };
+
+    int32 r = json_serialise(object, k_json_pretty, json_strwriter, (void*) &strbuf);
+    strbuf.s[strbuf.index] = 0;
+    return r;
+}
+
 static int32 json_file_writer(void* userdata, const char* s, int32 len)
 {
         if (len == 0) return 0;
