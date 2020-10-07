@@ -1,4 +1,5 @@
 #include <string>
+#include <time.h>
 #include "gtest/gtest.h"
 
 #include "clock.h"
@@ -17,13 +18,13 @@ protected:
 
     void SetUp() override
     {
-        RESET_FAKE(gettimeofday_wrapper);
+        RESET_FAKE(clock_gettime_wrapper);
         RESET_FAKE(localtime_r_wrapper);
         RESET_FAKE(usleep_wrapper);
 
         fake_time_return_value = 0;
         fake_time.tv_sec = 0;
-        fake_time.tv_usec = 0;
+        fake_time.tv_nsec = 0;
 
     }
 
@@ -31,10 +32,11 @@ protected:
     {
     }
 
-    static int gettimeofday_wrapper_custom_fake(struct timeval *__restrict tv, __timezone_ptr_t tz __attribute__((unused)) )
+    static int clock_gettime_wrapper_custom_fake(clockid_t clockId __attribute__((unused)), struct timespec *ts )
     {
-        tv->tv_sec = fake_time.tv_sec;
-        tv->tv_usec = fake_time.tv_usec;
+
+        ts->tv_sec = fake_time.tv_sec;
+        ts->tv_nsec = fake_time.tv_nsec;
         return fake_time_return_value;
     }
 
@@ -46,12 +48,12 @@ protected:
         return timeout;
     }
 
-    static struct timeval fake_time;
-    static int            fake_time_return_value;
+    static struct timespec fake_time;
+    static int             fake_time_return_value;
 
 };
 
-struct timeval clock_posix_tests::fake_time;
+struct timespec clock_posix_tests::fake_time;
 int    clock_posix_tests::fake_time_return_value;
 
 
@@ -59,17 +61,18 @@ TEST_F(clock_posix_tests, clock_timestamp_is_correct)
 {
     // Arrange
     fake_time.tv_sec = 1;
-    fake_time.tv_usec = 1;
-    gettimeofday_wrapper_fake.return_val = 0;
-    gettimeofday_wrapper_fake.custom_fake = clock_posix_tests::gettimeofday_wrapper_custom_fake;
+    //fake_time.tv_nsec = 1;
+    fake_time.tv_nsec = 1000;
+    clock_gettime_wrapper_fake.return_val = 0;
+    clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
 
-    uint64_t expected = (fake_time.tv_sec * MICROSECONDS_IN_SECOND) + fake_time.tv_usec;
+    uint64_t expected = (fake_time.tv_sec * NANOSECONDS_IN_SECOND) + fake_time.tv_nsec;
 
     // Act
     uint64_t actual = clock_timestamp();
 
     //Assert
-    ASSERT_EQ(gettimeofday_wrapper_fake.call_count, 1);
+    ASSERT_EQ(clock_gettime_wrapper_fake.call_count, 1);
     ASSERT_EQ(actual, expected);
 }
 
@@ -77,17 +80,17 @@ TEST_F(clock_posix_tests, clock_times_is_correct)
 {
     // Arrange
     fake_time.tv_sec = 1;
-    fake_time.tv_usec = 1;
-    gettimeofday_wrapper_fake.return_val = 0;
-    gettimeofday_wrapper_fake.custom_fake = clock_posix_tests::gettimeofday_wrapper_custom_fake;
+    fake_time.tv_nsec = 1000;
+    clock_gettime_wrapper_fake.return_val = 0;
+    clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
 
-    double expected = (double) fake_time.tv_sec + ((double) fake_time.tv_usec / MICROSECONDS_IN_SECOND);
+    double expected = (double) fake_time.tv_sec + ((double) fake_time.tv_nsec / NANOSECONDS_IN_SECOND);
 
     // Act
    double actual = clock_time();
 
     //Assert
-    ASSERT_EQ(gettimeofday_wrapper_fake.call_count, 1);
+    ASSERT_EQ(clock_gettime_wrapper_fake.call_count, 1);
     ASSERT_EQ(actual, expected);
 }
 
@@ -97,8 +100,8 @@ TEST_F(clock_posix_tests, clock_datetime_format_is_correct)
     char buffer[64];
     // 20 seconds into 1970.  01/01/1970 00:00:20
     fake_time.tv_sec = 20;
-    fake_time.tv_usec = 1;
-    gettimeofday_wrapper_fake.custom_fake = clock_posix_tests::gettimeofday_wrapper_custom_fake;
+    fake_time.tv_nsec = 1000;
+    clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
     localtime_r_wrapper_fake.custom_fake = clock_posix_tests::localtime_r_wrapper_custom_fake;
     std::string expected("1970/01/01 00:00:20");
 
@@ -107,7 +110,7 @@ TEST_F(clock_posix_tests, clock_datetime_format_is_correct)
     std::string actual(datetime);
 
     //Assert
-    ASSERT_EQ(gettimeofday_wrapper_fake.call_count, 1);
+    ASSERT_EQ(clock_gettime_wrapper_fake.call_count, 1);
     ASSERT_EQ(localtime_r_wrapper_fake.call_count, 1);
     ASSERT_EQ(actual, expected);
 }
@@ -117,8 +120,8 @@ TEST_F(clock_posix_tests, clock_datetime_format_is_correct_when_short_buffer)
     // Arrange
     char buffer[64];
     fake_time.tv_sec = 20;
-    fake_time.tv_usec = 1;
-    gettimeofday_wrapper_fake.custom_fake = clock_posix_tests::gettimeofday_wrapper_custom_fake;
+    fake_time.tv_nsec = 1000;
+    clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
     localtime_r_wrapper_fake.custom_fake = clock_posix_tests::localtime_r_wrapper_custom_fake;
 
     int buffsize = 8;
@@ -129,7 +132,7 @@ TEST_F(clock_posix_tests, clock_datetime_format_is_correct_when_short_buffer)
     std::string actual(datetime);
 
     //Assert
-    ASSERT_EQ(gettimeofday_wrapper_fake.call_count, 1);
+    ASSERT_EQ(clock_gettime_wrapper_fake.call_count, 1);
     ASSERT_EQ(localtime_r_wrapper_fake.call_count, 1);
     ASSERT_EQ(actual, expected);
 }
@@ -140,8 +143,8 @@ TEST_F(clock_posix_tests, clock_log_datetime_format_is_correct)
     char buffer[64];
     // 20 seconds into 1970.  01/01/1970 00:00:20
     fake_time.tv_sec = 20;
-    fake_time.tv_usec = 30000;
-    gettimeofday_wrapper_fake.custom_fake = clock_posix_tests::gettimeofday_wrapper_custom_fake;
+    fake_time.tv_nsec = 30000 * 1000;
+    clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
     localtime_r_wrapper_fake.custom_fake = clock_posix_tests::localtime_r_wrapper_custom_fake;
     std::string expected("1970/01/01 00:00:20:030");
 
@@ -150,7 +153,7 @@ TEST_F(clock_posix_tests, clock_log_datetime_format_is_correct)
     std::string actual(datetime);
 
     //Assert
-    ASSERT_EQ(gettimeofday_wrapper_fake.call_count, 1);
+    ASSERT_EQ(clock_gettime_wrapper_fake.call_count, 1);
     ASSERT_EQ(localtime_r_wrapper_fake.call_count, 1);
     ASSERT_EQ(actual, expected);
 }
@@ -160,8 +163,8 @@ TEST_F(clock_posix_tests, clock_log_datetime_format_is_correct_when_short_buffer
     // Arrange
     char buffer[64];
     fake_time.tv_sec = 20;
-    fake_time.tv_usec = 30000;
-    gettimeofday_wrapper_fake.custom_fake = clock_posix_tests::gettimeofday_wrapper_custom_fake;
+    fake_time.tv_nsec = 30000 * 1000;
+    clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
     localtime_r_wrapper_fake.custom_fake = clock_posix_tests::localtime_r_wrapper_custom_fake;
 
     int buffsize = 8;
@@ -172,7 +175,7 @@ TEST_F(clock_posix_tests, clock_log_datetime_format_is_correct_when_short_buffer
     std::string actual(datetime);
 
     //Assert
-    ASSERT_EQ(gettimeofday_wrapper_fake.call_count, 1);
+    ASSERT_EQ(clock_gettime_wrapper_fake.call_count, 1);
     ASSERT_EQ(localtime_r_wrapper_fake.call_count, 1);
     ASSERT_EQ(actual, expected);
 }

@@ -12,7 +12,7 @@ extern "C" {
 #include <sys/time.h>
 }
 
-FAKE_VALUE_FUNC(int, gettimeofday_wrapper, struct timeval *, __timezone_ptr_t)
+FAKE_VALUE_FUNC(int, clock_gettime_wrapper, clockid_t, struct timespec *)
 FAKE_VALUE_FUNC(struct tm * , localtime_r_wrapper, const time_t *, struct tm *)
 
 namespace fs = std::experimental::filesystem;
@@ -26,7 +26,7 @@ protected:
 
     void SetUp() override
     {
-        RESET_FAKE(gettimeofday_wrapper);
+        RESET_FAKE(clock_gettime_wrapper);
         RESET_FAKE(localtime_r_wrapper);
 
         RemoveLogDirectory();
@@ -38,8 +38,8 @@ protected:
 
         // 20 seconds into 1970.  01/01/1970 00:00:20
         fake_time.tv_sec = 20;
-        fake_time.tv_usec = 30000;
-        gettimeofday_wrapper_fake.custom_fake = log_tests::gettimeofday_wrapper_custom_fake;
+        fake_time.tv_nsec = 30000 * 1000;
+        clock_gettime_wrapper_fake.custom_fake = log_tests::clock_gettime_wrapper_custom_fake;
         localtime_r_wrapper_fake.custom_fake = log_tests::localtime_r_wrapper_custom_fake;
 
         log_time = "1970-01-01 00:00:20:030";
@@ -76,10 +76,18 @@ protected:
         return changing_log_file_entry;
     }
 
-    static int gettimeofday_wrapper_custom_fake(struct timeval *__restrict tv, __timezone_ptr_t tz __attribute__((unused)) )
+//    static int gettimeofday_wrapper_custom_fake(struct timeval *__restrict tv, __timezone_ptr_t tz __attribute__((unused)) )
+//    {
+//        tv->tv_sec = fake_time.tv_sec;
+//        tv->tv_usec = fake_time.tv_usec;
+//        return fake_time_return_value;
+//    }
+
+    static int clock_gettime_wrapper_custom_fake(clockid_t clockId __attribute__((unused)), struct timespec *ts )
     {
-        tv->tv_sec = fake_time.tv_sec;
-        tv->tv_usec = fake_time.tv_usec;
+
+        ts->tv_sec = fake_time.tv_sec;
+        ts->tv_nsec = fake_time.tv_nsec;
         return fake_time_return_value;
     }
 
@@ -91,7 +99,7 @@ protected:
         return timeout;
     }
 
-    static struct timeval fake_time;
+    static struct timespec fake_time;
     static int            fake_time_return_value;
 
     const std::string logDirectory = "./logDirectory/";
@@ -116,7 +124,7 @@ public:
     }
 };
 
-struct timeval log_tests::fake_time;
+struct timespec log_tests::fake_time;
 int    log_tests::fake_time_return_value;
 
 TEST_F(log_tests, log_set_file_opens_log_file_writes_to_std_out)

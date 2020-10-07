@@ -23,7 +23,8 @@ void *      memcpy_wrapper (void *dest, const void *src, size_t n);
 void *      memset_wrapper (void *source, int value, size_t size);
 void *      realloc_wrapper (void *__ptr, size_t __size);
 
-int         gettimeofday_wrapper (struct timeval * __tv, __timezone_ptr_t __tz);
+int         clock_gettime_wrapper (clockid_t clk_id, struct timespec *tp);
+
 struct tm * localtime_r_wrapper (const time_t * __timer, struct tm * __tp);
 
 char *      getcwd_wrapper (char *__buf, size_t __size);
