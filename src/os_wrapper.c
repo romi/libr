@@ -27,9 +27,9 @@ void * realloc_wrapper (void *ptr, size_t size)
 }
 
 // Time
-int gettimeofday_wrapper(struct timeval * __tv, __timezone_ptr_t __tz)
+int clock_gettime_wrapper (clockid_t clk_id, struct timespec *tp)
 {
-    return gettimeofday( __tv, __tz);
+    return clock_gettime( clk_id, tp);
 }
 
 struct tm * localtime_r_wrapper(const time_t * __timer, struct tm * __tp)

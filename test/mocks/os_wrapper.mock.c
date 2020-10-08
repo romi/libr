@@ -1,6 +1,6 @@
 #include "os_wrapper.mock.h"
 
-DEFINE_FAKE_VALUE_FUNC(int, gettimeofday_wrapper, struct timeval *, __timezone_ptr_t)
+DEFINE_FAKE_VALUE_FUNC(int, clock_gettime_wrapper, clockid_t, struct timespec *)
 DEFINE_FAKE_VALUE_FUNC(struct tm * , localtime_r_wrapper, const time_t *, struct tm *)
 
 DEFINE_FAKE_VALUE_FUNC(int, usleep_wrapper, __useconds_t)

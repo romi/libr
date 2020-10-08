@@ -33,24 +33,30 @@
 uint64_t clock_timestamp()
 {
         uint64_t t;
-        struct timeval tv;
-        gettimeofday_wrapper(&tv, NULL);
-        t = (uint64_t)tv.tv_sec * (uint64_t)MICROSECONDS_IN_SECOND + (uint64_t)tv.tv_usec;
+        struct timespec ts;
+        clock_gettime_wrapper(CLOCK_MONOTONIC, &ts);
+        t = (uint64_t)ts.tv_sec * (uint64_t)NANOSECONDS_IN_SECOND + (uint64_t)ts.tv_nsec;
         return t;
 }
 
 double clock_time()
 {
-        struct timeval tv;
-        gettimeofday_wrapper(&tv, NULL);
-        return (double) tv.tv_sec + (double) tv.tv_usec / MICROSECONDS_IN_SECOND;
+        struct timespec ts;
+        clock_gettime_wrapper(CLOCK_MONOTONIC, &ts);
+        return (double) ts.tv_sec + (double) ts.tv_nsec / NANOSECONDS_IN_SECOND;
 }
 
 char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3)
 {
-        struct timeval tv;
+
         struct tm r;
-        gettimeofday_wrapper(&tv, NULL);
+        struct timeval tv;
+        struct timespec ts;
+        clock_gettime_wrapper(CLOCK_MONOTONIC, &ts);
+
+        tv.tv_sec = ts.tv_sec;                                    \
+	    tv.tv_usec =ts.tv_nsec / 1000;
+
         localtime_r_wrapper(&tv.tv_sec, &r);
 
         snprintf(buf, len, "%04d%c%02d%c%02d%c%02d%c%02d%c%02d",
@@ -62,10 +68,16 @@ char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3)
 
 char *clock_log_datetime(char *buf, int len, char sep1, char sep2, char sep3)
 {
-    struct timeval tv;
     struct tm r;
-    gettimeofday_wrapper(&tv, NULL);
+    struct timeval tv;
+    struct timespec ts;
+    clock_gettime_wrapper(CLOCK_MONOTONIC, &ts);
+
+    tv.tv_sec = ts.tv_sec;                                    \
+    tv.tv_usec =ts.tv_nsec / 1000;
+
     localtime_r_wrapper(&tv.tv_sec, &r);
+
     int milliseconds = tv.tv_usec/1000;
 
     snprintf(buf, len, "%04d%c%02d%c%02d%c%02d%c%02d%c%02d%c%03d",
