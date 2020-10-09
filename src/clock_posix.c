@@ -34,7 +34,7 @@ uint64_t clock_timestamp()
 {
         uint64_t t;
         struct timespec ts;
-        clock_gettime_wrapper(CLOCK_MONOTONIC, &ts);
+        clock_gettime_wrapper(CLOCK_REALTIME, &ts);
         t = (uint64_t)ts.tv_sec * (uint64_t)NANOSECONDS_IN_SECOND + (uint64_t)ts.tv_nsec;
         return t;
 }
@@ -42,7 +42,7 @@ uint64_t clock_timestamp()
 double clock_time()
 {
         struct timespec ts;
-        clock_gettime_wrapper(CLOCK_MONOTONIC, &ts);
+        clock_gettime_wrapper(CLOCK_REALTIME, &ts);
         return (double) ts.tv_sec + (double) ts.tv_nsec / NANOSECONDS_IN_SECOND;
 }
 
@@ -52,7 +52,7 @@ char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3)
         struct tm r;
         struct timeval tv;
         struct timespec ts;
-        clock_gettime_wrapper(CLOCK_MONOTONIC, &ts);
+        clock_gettime_wrapper(CLOCK_REALTIME, &ts);
 
         tv.tv_sec = ts.tv_sec;                                    \
 	    tv.tv_usec =ts.tv_nsec / 1000;
@@ -71,7 +71,7 @@ char *clock_log_datetime(char *buf, int len, char sep1, char sep2, char sep3)
     struct tm r;
     struct timeval tv;
     struct timespec ts;
-    clock_gettime_wrapper(CLOCK_MONOTONIC, &ts);
+    clock_gettime_wrapper(CLOCK_REALTIME, &ts);
 
     tv.tv_sec = ts.tv_sec;                                    \
     tv.tv_usec =ts.tv_nsec / 1000;
