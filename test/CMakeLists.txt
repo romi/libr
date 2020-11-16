@@ -125,32 +125,32 @@ target_link_libraries( r_unit_tests_serial
         stdc++fs)
 
 target_include_directories(r_unit_tests_common
-        PUBLIC
+        PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
 
 target_include_directories(r_unit_tests_os
-        PUBLIC
+        PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
 
 target_include_directories(r_unit_tests_fs
-        PUBLIC
+        PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
 
 target_include_directories(r_unit_tests_log_json
-        PUBLIC
+        PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
 
 target_include_directories(r_unit_tests_thread
-        PUBLIC
+        PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
 
 target_include_directories(r_unit_tests_serial
-        PUBLIC
+        PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
 
