@@ -17,7 +17,7 @@ before_script:
 
 script:
   - make -j4
-  - ctest -V -R r_unit*
+  - ctest -V -R r_unit
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
