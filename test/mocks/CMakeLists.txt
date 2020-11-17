@@ -32,7 +32,7 @@ include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/../../include"
 
 add_library(rmocks SHARED ${SOURCES})
 
-target_include_directories(r
+target_include_directories(rmocks
         PUBLIC
             "${CMAKE_CURRENT_SOURCE_DIR}"
         )
