@@ -136,9 +136,9 @@ else(WITH_SGC)
   target_link_libraries(r pthread m)
 endif(WITH_SGC)
 
-#if(BUILD_TESTS AND LOCAL_LIBR_BUILD)
+# Always build the mocks library.
+add_subdirectory(test/mocks)
 if(BUILD_TESTS)
-    add_subdirectory(test/mocks)
     add_subdirectory(test)
 endif()
 
