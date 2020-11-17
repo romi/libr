@@ -186,7 +186,7 @@ add_test(
 if(BUILD_COVERAGE)
     SETUP_TARGET_FOR_COVERAGE_LCOV(
             NAME r_unit_tests_coverage
-            EXECUTABLE ctest -V ${n_cores}
+            EXECUTABLE ctest -V ${n_cores} -R "r_unit"
             EXCLUDE '*wrapper*'
             DEPENDENCIES r_unit_tests_common r_unit_tests_os r_unit_tests_fs r_unit_tests_log_json r_unit_tests_thread r_unit_tests_serial)
 endif()
