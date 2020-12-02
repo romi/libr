@@ -3,15 +3,19 @@ project(rmocks)
 #
 set(SOURCES
         mem.mock.h
-        mem.mock.c)
+        mem.mock.c
+        log.mock.h
+        log.mock.c
+        json.mock.h
+        json.mock.c
+        clock_posix.mock.h
+        clock_posix.mock.c)
 
 #set(SOURCES
 #        fcntl.mock.h
 #        fcntl.mock.c
 #        list.mock.h
 #        list.mock.c
-#        log.mock.h
-#        log.mock.c
 #        mem.mock.h
 #        mem.mock.c
 #        membuf.mock.h

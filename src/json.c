@@ -131,10 +131,10 @@ json_object_t json_undefined()
 /******************************************************************************/
 
 /* 31 bit hash function */
-uint32 json_strhash(const char* key)
+uint32_t json_strhash(const char* key)
 {
   const char *p = key;
-  uint32 h = *p;
+  uint32_t h = *p;
 
   if (h) {
     for (p += 1; *p != '\0'; p++) {
@@ -147,7 +147,7 @@ uint32 json_strhash(const char* key)
 
 char* json_strdup(const char* s)
 {
-	int32 len = JSON_STRLEN(s) + 1;
+	int32_t len = JSON_STRLEN(s) + 1;
 	char* t = JSON_NEW_ARRAY(char, len);
 	JSON_STRCPY(t, s);
 	return t;
@@ -212,7 +212,7 @@ const char* json_string_value(json_object_t obj)
 	return str->s;
 }
 
-int32 json_string_length(json_object_t obj)
+int32_t json_string_length(json_object_t obj)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_string)
@@ -221,7 +221,7 @@ int32 json_string_length(json_object_t obj)
 	return str->length;
 }
 
-int32 json_string_compare(json_object_t obj1, const char* s)
+int32_t json_string_compare(json_object_t obj1, const char* s)
 {
 	if (base_type(obj1) != k_json_string)
 		return -1;
@@ -231,7 +231,7 @@ int32 json_string_compare(json_object_t obj1, const char* s)
     return res;
 }
 
-int32 json_string_equals(json_object_t obj1, const char* s)
+int32_t json_string_equals(json_object_t obj1, const char* s)
 {
         return json_string_compare(obj1, s) == 0;
 }
@@ -272,7 +272,7 @@ static void delete_array(base_t* base)
 	JSON_FREE(array);
 }
 
-int32 json_array_length(json_object_t array)
+int32_t json_array_length(json_object_t array)
 {
 	if (array->type != k_json_array)
 		return 0;
@@ -280,7 +280,7 @@ int32 json_array_length(json_object_t array)
 	return a->length;	
 }
 
-json_object_t json_array_get(json_object_t obj, int32 index)
+json_object_t json_array_get(json_object_t obj, int32_t index)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_array)
@@ -292,7 +292,7 @@ json_object_t json_array_get(json_object_t obj, int32 index)
 	return json_null();
 }
 
-real_t json_array_getnum(json_object_t obj, int32 index)
+real_t json_array_getnum(json_object_t obj, int32_t index)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_array)
@@ -303,7 +303,7 @@ real_t json_array_getnum(json_object_t obj, int32 index)
 	return NAN;
 }
 
-int32 json_array_set(json_object_t obj, json_object_t value, int32 index)
+int32_t json_array_set(json_object_t obj, json_object_t value, int32_t index)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_array)
@@ -346,7 +346,7 @@ int32 json_array_set(json_object_t obj, json_object_t value, int32 index)
 	return index;
 }
 
-int32 json_array_push(json_object_t obj, json_object_t value)
+int32_t json_array_push(json_object_t obj, json_object_t value)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_array)
@@ -355,7 +355,7 @@ int32 json_array_push(json_object_t obj, json_object_t value)
 	return json_array_set(obj, value, array->length);	
 }
 
-int32 json_array_setnum(json_object_t obj, real_t value, int32 index)
+int32_t json_array_setnum(json_object_t obj, real_t value, int32_t index)
 {
         json_object_t num = json_number_create(value);
         int retval = json_array_set(obj, num, index);
@@ -363,7 +363,7 @@ int32 json_array_setnum(json_object_t obj, real_t value, int32 index)
         return retval;
 }
 
-int32 json_array_setstr(json_object_t obj, const char* value, int32 index)
+int32_t json_array_setstr(json_object_t obj, const char* value, int32_t index)
 {
         json_object_t s = json_string_create(value);
         int retval = json_array_set(obj, s, index);
@@ -371,7 +371,7 @@ int32 json_array_setstr(json_object_t obj, const char* value, int32 index)
         return retval;
 }
 
-const char* json_array_getstr(json_object_t array, int32 index)
+const char* json_array_getstr(json_object_t array, int32_t index)
 {
         json_object_t val = json_array_get(array, index);
         if (val->type == k_json_string)
@@ -393,7 +393,7 @@ struct _hashnode_t {
 static hashnode_t* new_json_hashnode(const char* key, json_object_t* value);
 static void delete_json_hashnode(hashnode_t *hash_node);
 static void delete_json_hashnodes(hashnode_t *hash_node);
-uint32 json_strhash(const char* v);
+uint32_t json_strhash(const char* v);
 
 static hashnode_t* new_json_hashnode(const char* key, json_object_t* value)
 {
@@ -425,20 +425,20 @@ static void delete_json_hashnodes(hashnode_t *hash_node)
 /******************************************************************************/
 
 typedef struct _hashtable_t {
-	uint32 refcount;
-        int32 size;
-        int32 num_nodes;
+	uint32_t refcount;
+        int32_t size;
+        int32_t num_nodes;
 	hashnode_t **nodes;
 } hashtable_t;
 
 
 static hashtable_t* new_hashtable();
 static void delete_hashtable(hashtable_t *hashtable);
-static int32 hashtable_set(hashtable_t *hashtable, const char* key, json_object_t value);
+static int32_t hashtable_set(hashtable_t *hashtable, const char* key, json_object_t value);
 static json_object_t hashtable_get(hashtable_t *hashtable, const char* key);
-static int32 hashtable_unset(hashtable_t *hashtable, const char* key);
-static int32 hashtable_foreach(hashtable_t *hashtable, json_iterator_t func, void* data);
-static int32 hashtable_size(hashtable_t *hashtable);
+static int32_t hashtable_unset(hashtable_t *hashtable, const char* key);
+static int32_t hashtable_foreach(hashtable_t *hashtable, json_iterator_t func, void* data);
+static int32_t hashtable_size(hashtable_t *hashtable);
 static void hashtable_resize(hashtable_t *hashtable);
 static hashnode_t** hashtable_lookup_node(hashtable_t *hashtable, const char* key);
 
@@ -457,7 +457,7 @@ static void delete_hashtable(hashtable_t *hashtable)
 {
 	if (hashtable != NULL) {
                 if (hashtable->nodes) {
-                        for (int32 i = 0; i < hashtable->size; i++) {
+                        for (int32_t i = 0; i < hashtable->size; i++) {
                                 delete_json_hashnodes(hashtable->nodes[i]);
                         }
                         JSON_FREE(hashtable->nodes);
@@ -473,7 +473,7 @@ static hashnode_t** hashtable_lookup_node(hashtable_t* hashtable, const char* ke
 	if (hashtable->nodes == NULL) {
 		hashtable->size = HASHTABLE_MIN_SIZE;
 		hashtable->nodes = JSON_NEW_ARRAY(hashnode_t*, hashtable->size);	
-		for (int32 i = 0; i < hashtable->size; i++)
+		for (int32_t i = 0; i < hashtable->size; i++)
 			hashtable->nodes[i] = NULL;
 	}
 	
@@ -486,7 +486,7 @@ static hashnode_t** hashtable_lookup_node(hashtable_t* hashtable, const char* ke
 	return node;
 }
 
-static int32 hashtable_set(hashtable_t *hashtable, const char* key, json_object_t value)
+static int32_t hashtable_set(hashtable_t *hashtable, const char* key, json_object_t value)
 {
   
 	if ((key == NULL) || (JSON_STRLEN(key) == 0)) {
@@ -525,7 +525,7 @@ static json_object_t hashtable_get(hashtable_t *hashtable, const char* key)
        	return (node)? node->value : json_undefined();
 }
 
-static int32 hashtable_unset(hashtable_t *hashtable, const char* key)
+static int32_t hashtable_unset(hashtable_t *hashtable, const char* key)
 {
 	hashnode_t **node, *dest;
   
@@ -541,20 +541,20 @@ static int32 hashtable_unset(hashtable_t *hashtable, const char* key)
 	return -1;
 }
 
-static int32 hashtable_foreach(hashtable_t *hashtable, json_iterator_t func, void* data)
+static int32_t hashtable_foreach(hashtable_t *hashtable, json_iterator_t func, void* data)
 {
 	hashnode_t *node = NULL;
 	
-	for (int32 i = 0; i < hashtable->size; i++) {
+	for (int32_t i = 0; i < hashtable->size; i++) {
 		for (node = hashtable->nodes[i]; node != NULL; node = node->next) {
-			int32 r = (*func)(node->key, node->value, data);
+			int32_t r = (*func)(node->key, node->value, data);
                         if (r != 0) return r;
 		}
 	}
         return 0;
 }
 
-static int32 hashtable_size(hashtable_t *hashtable)
+static int32_t hashtable_size(hashtable_t *hashtable)
 {
 	return hashtable->num_nodes;
 }
@@ -565,15 +565,15 @@ static void hashtable_resize(hashtable_t *hashtable)
 	hashnode_t **new_nodes;
 	hashnode_t *node;
 	hashnode_t *next;
-	uint32 hash_val;
-	int32 new_size;
+	uint32_t hash_val;
+	int32_t new_size;
 	
 	new_size = 3 * hashtable->size + 1;
 	new_size = (new_size > HASHTABLE_MAX_SIZE)? HASHTABLE_MAX_SIZE : new_size;
 	
 	new_nodes = JSON_NEW_ARRAY(hashnode_t*, new_size);
 	
-	for (int32 i = 0; i < hashtable->size; i++) {
+	for (int32_t i = 0; i < hashtable->size; i++) {
 		for (node = hashtable->nodes[i]; node; node = next) {
 			next = node->next;
 			hash_val = json_strhash(node->key) % new_size;      
@@ -607,7 +607,7 @@ static void delete_object(base_t* base)
         delete_hashtable(hashtable);
 }
 
-int32 json_object_set(json_object_t object, const char* key, json_object_t value)
+int32_t json_object_set(json_object_t object, const char* key, json_object_t value)
 {
 	if (object->type != k_json_object) {
 		return -1;
@@ -671,7 +671,7 @@ const char* json_object_getstr(json_object_t object, const char* key)
         }
 }
 
-int32 json_object_unset(json_object_t object, const char* key)
+int32_t json_object_unset(json_object_t object, const char* key)
 {
 	if (object->type != k_json_object)
 		return -1;
@@ -680,26 +680,26 @@ int32 json_object_unset(json_object_t object, const char* key)
 }
 
 
-int32 json_object_setnum(json_object_t object, const char* key, double value)
+int32_t json_object_setnum(json_object_t object, const char* key, double value)
 {
 	json_object_t obj = json_number_create(value);
-	int32 r = json_object_set(object, key, obj);
+	int32_t r = json_object_set(object, key, obj);
         json_unref(obj);
 	return r;
 }
 
-int32 json_object_setstr(json_object_t object, const char* key, const char* value)
+int32_t json_object_setstr(json_object_t object, const char* key, const char* value)
 {
         if (value == NULL) return -1;
 	json_object_t obj = json_string_create(value);
-	int32 r = json_object_set(object, key, obj);
+	int32_t r = json_object_set(object, key, obj);
         json_unref(obj);
 	return r;
 }
 
-int32 json_object_setbool(json_object_t object, const char* key, int value)
+int32_t json_object_setbool(json_object_t object, const char* key, int value)
 {
-	int32 r;
+	int32_t r;
         if (value == 0)
                 r = json_object_set(object, key, json_false());
         else
@@ -707,7 +707,7 @@ int32 json_object_setbool(json_object_t object, const char* key, int value)
 	return r;
 }
 
-int32 json_object_foreach(json_object_t object, json_iterator_t func, void* data)
+int32_t json_object_foreach(json_object_t object, json_iterator_t func, void* data)
 {
 	if (object->type != k_json_object)
 		return -1;
@@ -715,7 +715,7 @@ int32 json_object_foreach(json_object_t object, json_iterator_t func, void* data
 	return hashtable_foreach(hashtable, func, data);
 }
 
-int32 json_object_length(json_object_t object)
+int32_t json_object_length(json_object_t object)
 {
 	if (object->type != k_json_object)
 		return 0;
@@ -739,7 +739,7 @@ static void _delete(base_t *base)
         }
 }
 
-void json_refcount(json_object_t obj, int32 val)
+void json_refcount(json_object_t obj, int32_t val)
 {
 	if ((obj == NULL) || (obj->type < 100)) {
                 return;
@@ -756,18 +756,18 @@ typedef struct _json_serialise_t {
         int indent;
 } json_serialise_t;
 
-int32 json_serialise_text(json_serialise_t* serialise, 
+int32_t json_serialise_text(json_serialise_t* serialise, 
                           json_object_t object, 
                           json_writer_t fun, 
                           void* userdata);
 
 typedef struct _json_strbuf_t {
         char* s;
-        int32 len;
-        int32 index;
+        int32_t len;
+        int32_t index;
 } json_strbuf_t;
 
-static int32 json_strwriter(void* userdata, const char* s, int32 len)
+static int32_t json_strwriter(void* userdata, const char* s, int32_t len)
 {
         json_strbuf_t* strbuf = (json_strbuf_t*) userdata;
         while (len-- > 0) {
@@ -779,58 +779,58 @@ static int32 json_strwriter(void* userdata, const char* s, int32 len)
         return 0;
 }
 
-int32 json_tostring(json_object_t object, char* buffer, int32 buflen)
+int32_t json_tostring(json_object_t object, char* buffer, int32_t buflen)
 {
         json_strbuf_t strbuf = { buffer, buflen, 0 };
         
-        int32 r = json_serialise(object, 0, json_strwriter, (void*) &strbuf);
+        int32_t r = json_serialise(object, 0, json_strwriter, (void*) &strbuf);
         strbuf.s[strbuf.index] = 0;
         return r;
 }
 
-int32 json_tostring_pretty(json_object_t object, char* buffer, int32 buflen)
+int32_t json_tostring_pretty(json_object_t object, char* buffer, int32_t buflen)
 {
     json_strbuf_t strbuf = { buffer, buflen, 0 };
 
-    int32 r = json_serialise(object, k_json_pretty, json_strwriter, (void*) &strbuf);
+    int32_t r = json_serialise(object, k_json_pretty, json_strwriter, (void*) &strbuf);
     strbuf.s[strbuf.index] = 0;
     return r;
 }
 
-static int32 json_file_writer(void* userdata, const char* s, int32 len)
+static int32_t json_file_writer(void* userdata, const char* s, int32_t len)
 {
         if (len == 0) return 0;
         FILE* fp = (FILE*) userdata;
-	int32 n = fwrite(s, len, 1, fp);
+	int32_t n = fwrite(s, len, 1, fp);
 	return (n != 1);
 }
 
-int32 json_tofilep(json_object_t object, int32 flags, FILE* fp)
+int32_t json_tofilep(json_object_t object, int32_t flags, FILE* fp)
 {
-        int32 res = json_serialise(object, flags, json_file_writer, (void*) fp);
+        int32_t res = json_serialise(object, flags, json_file_writer, (void*) fp);
         fprintf(fp, "\n");
         return res;
 }
 
-int32 json_tofile(json_object_t object, int32 flags, const char* path)
+int32_t json_tofile(json_object_t object, int32_t flags, const char* path)
 {
         FILE* fp = fopen(path, "w");
         if (fp == NULL)
                 return -1;
 
-        int32 r = json_serialise(object, flags, json_file_writer, (void*) fp);
+        int32_t r = json_serialise(object, flags, json_file_writer, (void*) fp);
         fclose(fp);
 
         return r;
 }
 
-void json_print(json_object_t object, int32 flags)
+void json_print(json_object_t object, int32_t flags)
 {
         json_tofilep(object, flags, stdout);
 }
 
-int32 json_serialise(json_object_t object, 
-                     int32 flags, 
+int32_t json_serialise(json_object_t object, 
+                     int32_t flags, 
                      json_writer_t fun, 
                      void* userdata)
 {
@@ -845,17 +845,17 @@ int32 json_serialise(json_object_t object,
 	}
 }
 
-static int32 json_write(json_writer_t fun, void* userdata, const char* s)
+static int32_t json_write(json_writer_t fun, void* userdata, const char* s)
 {
 	return (*fun)(userdata, s, JSON_STRLEN(s));
 }
 
-int32 json_serialise_text(json_serialise_t* serialise, 
+int32_t json_serialise_text(json_serialise_t* serialise, 
                           json_object_t object, 
                           json_writer_t fun, 
                           void* userdata)
 {
-	int32 r;
+	int32_t r;
 
 	switch (object->type) {
 
@@ -905,7 +905,7 @@ int32 json_serialise_text(json_serialise_t* serialise,
 		r = json_write(fun, userdata, "[");
 		if (r != 0) return r;
 		array_t* array = (array_t*) object->value.data;
-		for (int32 i = 0; i < array->length; i++) {
+		for (int32_t i = 0; i < array->length; i++) {
                         if (array->data[i] == NULL)
                                 r = json_write(fun, userdata, "null");
                         else
@@ -934,8 +934,8 @@ int32 json_serialise_text(json_serialise_t* serialise,
 
 		hashtable_t* hashtable = (hashtable_t*) object->value.data;
 		hashnode_t *node = NULL;
-		int32 count = 0;
-		for (int32 i = 0; i < hashtable->size; i++) {
+		int32_t count = 0;
+		for (int32_t i = 0; i < hashtable->size; i++) {
 			for (node = hashtable->nodes[i]; node != NULL; node = node->next) {
                                 if (serialise->pretty) {
                                         for (int ii = 0; ii < serialise->indent; ii++) {
@@ -1040,31 +1040,31 @@ typedef enum {
 
 struct _json_parser_t {
 	char* buffer;
-	int32 buflen;
-	int32 bufindex;
+	int32_t buflen;
+	int32_t bufindex;
 	char backslash;
 	char unicode;
-	int32 unihex;
-	int32 numstate;
-	int32 error_code;
+	int32_t unihex;
+	int32_t numstate;
+	int32_t error_code;
 	char* error_message;
         int quote;
 
         int linenum;
         int colnum;
         
-	int32 stack_depth;
+	int32_t stack_depth;
 	json_object_t value_stack[256];
-	int32 value_stack_top;
+	int32_t value_stack_top;
 	json_parser_state_t state_stack[256];
-	int32 state_stack_top;
+	int32_t state_stack_top;
 
 	json_parser_switch_t parser_switch;
         json_token_t token;
         int unwind_char;
 };
 
-static inline int32 whitespace(int32 c)
+static inline int32_t whitespace(int32_t c)
 {
 	return ((c == ' ') || (c == '\r') || (c == '\n') || (c == '\t'));
 }
@@ -1078,7 +1078,7 @@ json_parser_t* json_parser_create()
 
 static void destroy_value_stack(json_parser_t* parser)
 {
-    for (int32 i = 0; i <= parser->value_stack_top; i++)
+    for (int32_t i = 0; i <= parser->value_stack_top; i++)
         json_unref(parser->value_stack[i]);
     parser->value_stack_top = -1;
     parser->state_stack_top = 0;
@@ -1103,7 +1103,7 @@ void json_parser_destroy(json_parser_t* parser)
         }
 }
 
-int32 json_parser_errno(json_parser_t* parser)
+int32_t json_parser_errno(json_parser_t* parser)
 {
 	return parser->error_code;
 }
@@ -1113,16 +1113,16 @@ char* json_parser_errstr(json_parser_t* parser)
 	return parser->error_message;
 }
 
-static void json_parser_set_error(json_parser_t* parser, int32 error, const char* message)
+static void json_parser_set_error(json_parser_t* parser, int32_t error, const char* message)
 {
 	parser->error_code = error;
 	parser->error_message = json_strdup(message);
 }
 
-static int32 json_parser_append(json_parser_t* parser, int c)
+static int32_t json_parser_append(json_parser_t* parser, int c)
 {
 	if (parser->bufindex >= parser->buflen) {
-		int32 newlen = 2 * parser->buflen;
+		int32_t newlen = 2 * parser->buflen;
 		if (newlen == 0)
 			newlen = 128;
 		char* newbuf = JSON_NEW_ARRAY(char, newlen);
@@ -1172,7 +1172,7 @@ void json_parser_unwind(json_parser_t* parser, int c)
 }
 
 
-static inline const char *token_name(int32 token)
+static inline const char *token_name(int32_t token)
 {
         switch (token) {
         case k_object_start: return "k_object_start";
@@ -1209,7 +1209,7 @@ static inline const char *state_name(json_parser_state_t state)
 }
 
 
-static inline int32 push_state(json_parser_t* parser, int32 s)
+static inline int32_t push_state(json_parser_t* parser, int32_t s)
 {
         if (parser->state_stack_top + 1 >= parser->stack_depth) {
                 json_parser_set_error(parser, k_stack_overflow, "Stack overflow");
@@ -1219,7 +1219,7 @@ static inline int32 push_state(json_parser_t* parser, int32 s)
         return k_continue;
 }
 
-static inline int32 pop_state(json_parser_t* parser)
+static inline int32_t pop_state(json_parser_t* parser)
 {
         if (parser->state_stack_top < 0) {
                 json_parser_set_error(parser, k_stack_overflow, "Stack overflow");
@@ -1228,18 +1228,18 @@ static inline int32 pop_state(json_parser_t* parser)
   	return parser->state_stack[parser->state_stack_top--];
 }
 
-static inline int32 peek_state(json_parser_t* parser)
+static inline int32_t peek_state(json_parser_t* parser)
 {
   	return parser->state_stack[parser->state_stack_top];
 }
 
-static inline void set_state(json_parser_t* parser, int32 s)
+static inline void set_state(json_parser_t* parser, int32_t s)
 {
   	parser->state_stack[parser->state_stack_top] = s;
 }
 
 
-static inline int32 push_value(json_parser_t* parser, json_object_t v)
+static inline int32_t push_value(json_parser_t* parser, json_object_t v)
 {
         if (parser->value_stack_top + 1 >= parser->stack_depth) {
                 json_parser_set_error(parser, k_stack_overflow, "Stack overflow");
@@ -1286,14 +1286,14 @@ static inline json_object_t peek_value(json_parser_t* parser)
 // object_key          + value        -> SET(object_colon)               & -
 // parse_value         + value        -> SET(value_parsed)
 
-static int32 json_parser_token(json_parser_t* parser, int32 token)
+static int32_t json_parser_token(json_parser_t* parser, int32_t token)
 {
 	json_parser_state_t state = parser->state_stack[parser->state_stack_top];
 	double d;
 	json_object_t obj;
 	json_object_t v;
 	json_object_t k;
-	int32 r = k_continue;
+	int32_t r = k_continue;
 
         if (0)  {
                 printf("[");
@@ -1532,9 +1532,9 @@ static int32 json_parser_token(json_parser_t* parser, int32 token)
 	return r;
 }
 
-static int32 json_parser_unicode(json_parser_t* parser, int c)
+static int32_t json_parser_unicode(json_parser_t* parser, int c)
 {
-	int32 r = k_continue;
+	int32_t r = k_continue;
 	char v = 0;
         
 	if (('0' <= c) && (c <= '9')) {
@@ -1563,15 +1563,15 @@ static int32 json_parser_unicode(json_parser_t* parser, int c)
 		if ((0 <= parser->unihex) && (parser->unihex <= 0x007f)) {
 			r = json_parser_append(parser, (int) (parser->unihex & 0x007f));
 		} else if (parser->unihex <= 0x07ff) {
-			uint8 b1 = 0xc0 | (parser->unihex & 0x07c0) >> 6;
-			uint8 b2 = 0x80 | (parser->unihex & 0x003f);
+			uint8_t b1 = 0xc0 | (parser->unihex & 0x07c0) >> 6;
+			uint8_t b2 = 0x80 | (parser->unihex & 0x003f);
 			r = json_parser_append(parser, (int) b1);
 			if (r != k_continue) return r;
 			r = json_parser_append(parser, (int) b2);
 		} else if (parser->unihex <= 0xffff) {
-			uint8 b1 = 0xe0 | (parser->unihex & 0xf000) >> 12;
-			uint8 b2 = 0x80 | (parser->unihex & 0x0fc0) >> 6;
-			uint8 b3 = 0x80 | (parser->unihex & 0x003f);
+			uint8_t b1 = 0xe0 | (parser->unihex & 0xf000) >> 12;
+			uint8_t b2 = 0x80 | (parser->unihex & 0x0fc0) >> 6;
+			uint8_t b3 = 0x80 | (parser->unihex & 0x003f);
 			r = json_parser_append(parser, (int) b1);
 			if (r != k_continue) return r;
 			r = json_parser_append(parser, (int) b2);
@@ -1591,9 +1591,9 @@ static int json_invalid_string_char(int c)
         return 0;
 }
 
-static int32 json_parser_feed_string(json_parser_t* parser, int c)
+static int32_t json_parser_feed_string(json_parser_t* parser, int c)
 {
-	int32 r = k_continue;
+	int32_t r = k_continue;
 
 	if (parser->unicode > 0) {
 		r = json_parser_unicode(parser, c);
@@ -1726,7 +1726,7 @@ char _numtrans[_state_last][_input_last] = {
 
 char _endstate[_state_last] = { 0, 0, 0, 1, 1, 0, 0, 1, 0, 1 };
 
-static inline int32 json_numinput(json_parser_t* parser, int c)
+static inline int32_t json_numinput(json_parser_t* parser, int c)
 {
         (void) parser;
 	if (('1' <= c) && (c <= '9')) return _d19;
@@ -1739,13 +1739,13 @@ static inline int32 json_numinput(json_parser_t* parser, int c)
 	return _other;
 }
 
-static int32 json_parser_feed_number(json_parser_t* parser, int c)
+static int32_t json_parser_feed_number(json_parser_t* parser, int c)
 {
-	int32 r = k_token_error;
+	int32_t r = k_token_error;
 	
-	int32 input = json_numinput(parser, c);
+	int32_t input = json_numinput(parser, c);
 
-	int32 prevstate = parser->numstate;
+	int32_t prevstate = parser->numstate;
 
 	parser->numstate = _numtrans[prevstate][input];
 
@@ -1768,9 +1768,9 @@ static int32 json_parser_feed_number(json_parser_t* parser, int c)
 	return r;
 }
 
-static int32 json_parser_feed_true(json_parser_t* parser, int c)
+static int32_t json_parser_feed_true(json_parser_t* parser, int c)
 {
-	int32 r = json_parser_append(parser, c);
+	int32_t r = json_parser_append(parser, c);
 	if (r != k_continue)
 		return r;
 
@@ -1795,9 +1795,9 @@ static int32 json_parser_feed_true(json_parser_t* parser, int c)
 	return k_continue;
 }
 
-static int32 json_parser_feed_false(json_parser_t* parser, int c)
+static int32_t json_parser_feed_false(json_parser_t* parser, int c)
 {
-	int32 r = json_parser_append(parser, c);
+	int32_t r = json_parser_append(parser, c);
 	if (r != k_continue)
 		return r;
 
@@ -1823,9 +1823,9 @@ static int32 json_parser_feed_false(json_parser_t* parser, int c)
 	return k_continue;
 }
 
-static int32 json_parser_feed_null(json_parser_t* parser, int c)
+static int32_t json_parser_feed_null(json_parser_t* parser, int c)
 {
-	int32 r = json_parser_append(parser, c);
+	int32_t r = json_parser_append(parser, c);
 	if (r != k_continue)
 		return r;
 
@@ -1851,9 +1851,9 @@ static int32 json_parser_feed_null(json_parser_t* parser, int c)
 	return k_continue;
 }
 
-static int32 json_parser_feed_json(json_parser_t* parser, int c)
+static int32_t json_parser_feed_json(json_parser_t* parser, int c)
 {
-	int32 r = k_continue;
+	int32_t r = k_continue;
 
 	if (whitespace(c))
 		return k_continue;
@@ -1937,9 +1937,9 @@ static int32 json_parser_feed_json(json_parser_t* parser, int c)
 	return r;
 }
 
-static int32 json_parser_feed_one(json_parser_t* parser, int c)
+static int32_t json_parser_feed_one(json_parser_t* parser, int c)
 {
-        int32 ret = k_token_error;
+        int32_t ret = k_token_error;
 
         parser->token = k_no_token;
 
@@ -1975,14 +1975,14 @@ static int32 json_parser_feed_one(json_parser_t* parser, int c)
 	return ret;
 }
 
-static inline int32 _parser_done(json_parser_t* parser)
+static inline int32_t _parser_done(json_parser_t* parser)
 {
 	return (parser->state_stack_top == 0
                 && parser->value_stack_top == 0
                 && parser->state_stack[parser->state_stack_top] == k_value_parsed);
 }
 
-int32 json_parser_done(json_parser_t* parser)
+int32_t json_parser_done(json_parser_t* parser)
 {
 	return _parser_done(parser);
 }
@@ -2050,7 +2050,7 @@ static json_object_t json_parser_loop(json_parser_t* parser,
                 }                                                       \
         }
         
-        int32 r;
+        int32_t r;
         int done = 0;
         
         if (errmsg)
