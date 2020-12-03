@@ -48,7 +48,7 @@ jobs:
       run: ctest -V
       
     - name: Upload coverage to Codecov
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{runner.workspace}}
       shell: bash
       run: bash <(curl -s https://codecov.io/bash)
       
