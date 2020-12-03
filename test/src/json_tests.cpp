@@ -1070,7 +1070,7 @@ TEST_F(json_tests, json_object_unset_object_returs_0)
     json_unref(obj);
 }
 
-static int32 for_each_function_call(const char* key, json_object_t value, void *data)
+static int32_t for_each_function_call(const char* key, json_object_t value, void *data)
 {
     json_tests* tests = (json_tests*)data;
     tests->for_each_test(key, value);

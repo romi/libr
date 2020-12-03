@@ -186,7 +186,7 @@ int membuf_vprintf(membuf_t* b, const char* format, va_list ap)
         return err;
 }
 
-static int32 membuf_json_writer(void* userdata, const char* s, int32 len)
+static int32_t membuf_json_writer(void* userdata, const char* s, int32_t len)
 {
         membuf_t *b = (membuf_t *) userdata;
         membuf_append(b, s, len);
