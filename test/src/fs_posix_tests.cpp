@@ -638,6 +638,9 @@ TEST_F(fs_posix_tests, path_chown_user_doesnot_exist_fails)
     ASSERT_EQ(r_err_fake.call_count, 2);
 }
 
+// This test fails on Github actions with error code 6
+// ENXIO
+//The calling process has no controlling terminal. 
 TEST_F(fs_posix_tests, path_chown_path_doesnot_exist_fails)
 {
     // Arrange
@@ -645,8 +648,6 @@ TEST_F(fs_posix_tests, path_chown_path_doesnot_exist_fails)
     std::string unknownpath = "/somerandompaththatdoesntexist";
 
     int nGet = getlogin_r(knownusername, sizeof(knownusername)-1);
-
-    std::cout << "getLoging_r resut:" << nGet << std::endl;
 
     int actual = 0;
     if (nGet == 0)
