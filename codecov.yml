@@ -1,6 +1,9 @@
 codecov:
 # Since we only upload on success we don't need this flag
   require_ci_to_pass: no
+  
+fixes:
+  - "/home/runner/work/libr/libr/::"
 
 coverage:
   precision: 2
