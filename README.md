@@ -1,8 +1,8 @@
 master  
-![Build Status](https://github.com/romi/libr/workflows/CMake/badge.svg?branch=master)
+![Build Status](https://github.com/romi/libr/workflows/CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/romi/libr/branch/master/graph/badge.svg)](https://codecov.io/gh/romi/libr)  
 ci_dev  
-![Build Status](https://github.com/romi/libr/workflows/CMake/badge.svg?branch=ci_dev)
+![Build Status](https://github.com/romi/libr/workflows/CI/badge.svg?branch=ci_dev)
 [![codecov](https://codecov.io/gh/romi/libr/branch/ci_dev/graph/badge.svg)](https://codecov.io/gh/romi/libr)  
 
 # libr
