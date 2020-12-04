@@ -23,6 +23,7 @@ comment:
   require_changes: no
   
 ignore:
-  - "test/src" 
-
-
+  - "test/src"
+  - "test/mocks"
+  - "test/support"
+  - "test/json_data" 
