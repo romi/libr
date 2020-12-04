@@ -50,7 +50,7 @@ jobs:
     - name: debug_path
       run: pwd
       
-    - name: debug_path
+    - name: debug_dir
       run: ls -lart
         
     - name: Upload coverage to Codecov
