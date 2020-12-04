@@ -50,7 +50,17 @@ jobs:
     - name: debug_path
       run: pwd
       
+    - name: debug_path
+      run: ls -lart
+        
     - name: Upload coverage to Codecov
-      run: bash <(curl -s https://codecov.io/bash)
+      uses: codecov/codecov-action@v1
+      with:
+          name: codecov-umbrella
+          yml: ./codecov.yml
+          fail_ci_if_error: true
+      
+    #- name: Upload coverage to Codecov
+      #run: bash <(curl -s https://codecov.io/bash)
       
       
