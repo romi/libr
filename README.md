@@ -1,5 +1,5 @@
 master  
-[![Build Status](https://travis-ci.org/romi/libr.svg?branch=master)](https://travis-ci.org/romi/libr)
+![Build Status](https://github.com/romi/libr/workflows/CMake/badge.svg?branch=Github_action_CI)
 [![codecov](https://codecov.io/gh/romi/libr/branch/master/graph/badge.svg)](https://codecov.io/gh/romi/libr)  
 ci_dev  
 [![Build Status](https://travis-ci.org/romi/libr.svg?branch=ci_dev)](https://travis-ci.org/romi/libr)
