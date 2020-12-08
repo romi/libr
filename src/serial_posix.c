@@ -62,9 +62,7 @@ static int open_serial(const char *device)
                         errno, device, strerror(errno));
                 return -1;
         }
-        
-        // FIXME
-        clock_sleep(1.0);
+
         return fd;
 }
 
