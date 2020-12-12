@@ -1293,35 +1293,6 @@ TEST_F(json_tests, json_tofile_pretty_writes_pretty_file)
     ASSERT_EQ(result, 0);
 }
 
-TEST_F(json_tests, json_tofile_binary_does_not_write_file)
-{
-    // Arrange
-    std::string key10("key10");
-    std::string key11("key11");
-    std::string key12("key12");
-    int value = 10;
-    std::string filename = "./file.json";
-
-    std::string expected_json_string("{\"key10\":10,\"key11\":11,\"key12\":12}");
-
-    // Act
-    json_object_t obj = json_object_create();
-
-    json_object_setnum(obj, key10.c_str(), value++);
-    json_object_setnum(obj, key11.c_str(), value++);
-    json_object_setnum(obj, key12.c_str(), value++);
-
-    int result = json_tofile(obj, k_json_binary, filename.c_str());
-
-    std::string actual_json_string = ReadFileAsString(filename);
-
-
-    json_unref(obj);
-    fs::remove(filename);
-    // Assert
-    ASSERT_EQ(result, -1);
-}
-
 TEST_F(json_tests, json_print_prints_to_stdout)
 {
     // Arrange

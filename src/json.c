@@ -837,12 +837,7 @@ int32_t json_serialise(json_object_t object,
         json_serialise_t serialise;
         serialise.pretty = flags & k_json_pretty;
         serialise.indent = 0;
-
-	if (flags & k_json_binary) {
-		return -1;
-	} else {
-		return json_serialise_text(&serialise, object, fun, userdata);
-	}
+        return json_serialise_text(&serialise, object, fun, userdata);
 }
 
 static int32_t json_write(json_writer_t fun, void* userdata, const char* s)

@@ -110,22 +110,19 @@ int32_t json_object_setbool(json_object_t object, const char* key, int value);
 // serialisation
 
 enum {
-        k_json_pretty = 1,
-        k_json_binary = 2,
+        k_json_pretty = 1
 };
 
 int32_t json_serialise(json_object_t object, 
-                     int32_t flags, 
-                     json_writer_t fun, 
-                     void* userdata);
+                       int32_t flags, 
+                       json_writer_t fun, 
+                       void* userdata);
 int32_t json_tostring(json_object_t object, char* buffer, int32_t buflen);
 int32_t json_tostring_pretty(json_object_t object, char* buffer, int32_t buflen);
 void json_print(json_object_t object, int32_t flags);
 
-#if !defined(JSON_EMBEDDED)
 int32_t json_tofile(json_object_t object, int32_t flags, const char* path);
 int32_t json_tofilep(json_object_t object, int32_t flags, FILE* fp);
-#endif
 
 // parsing
 typedef struct _json_parser_t json_parser_t;
