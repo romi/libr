@@ -46,8 +46,8 @@ typedef enum _json_type_t{
 } json_type_t;
 
 typedef struct _base_t {
-        unsigned short refcount;
-        json_type_t type;
+        uint16_t refcount;
+        uint16_t type;
         union {
                 void* data;
                 double number;
