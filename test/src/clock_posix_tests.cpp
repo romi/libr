@@ -146,7 +146,7 @@ TEST_F(clock_posix_tests, clock_log_datetime_format_is_correct)
     fake_time.tv_nsec = 30000 * 1000;
     clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
     localtime_r_wrapper_fake.custom_fake = clock_posix_tests::localtime_r_wrapper_custom_fake;
-    std::string expected("1970/01/01 00:00:20:030");
+    std::string expected("1970/01/01 00:00:20.030");
 
     // Act
     char* datetime = clock_log_datetime(buffer, sizeof(buffer), '/', ' ', ':');
