@@ -160,6 +160,22 @@ public:
                 return _obj;
         }
                 
+        bool isnull() {
+                return json_isnull(_obj);
+        }
+                
+        bool isarray() {
+                return json_isarray(_obj);
+        }
+                
+        bool isnumber() {
+                return json_isnumber(_obj);
+        }
+                
+        bool isstring() {
+                return json_isstring(_obj);
+        }
+                
         bool has(const char *key) {
                 return (json_isobject(_obj) && json_object_has(_obj, key));
         }
@@ -249,6 +265,12 @@ public:
                 if (!json_isstring(value))
                         throw JSONTypeError("string");
                 return json_string_value(value);
+        }
+
+        void setstr(const char *s, int index) {
+                if (!json_isarray(_obj))
+                        throw JSONTypeError("array");
+                json_array_setstr(_obj, s, index);
         }
 
         JSON array(int index) {
