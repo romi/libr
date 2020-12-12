@@ -83,7 +83,13 @@ class JSON
 {
 protected:
         json_object_t _obj;
-                
+
+        static int32_t _tostring(void* userdata, const char* s, int32_t len) {
+                membuf_t *buf = (membuf_t *) userdata;
+                membuf_append(buf, s, len);
+                return 0;
+        }
+
 public:
 
         static JSON load(const char *filename) {
@@ -147,7 +153,7 @@ public:
         virtual ~JSON() {
                 json_unref(_obj);
         }
-
+        
         JSON &operator= (const JSON &rhs) {
                 json_object_t old = _obj;
                 _obj = rhs._obj;
@@ -158,6 +164,18 @@ public:
                 
         json_object_t ptr() {
                 return _obj;
+        }
+                
+        const char *tostring(char *buffer, int len) {
+                json_tostring(_obj, buffer, len);
+                return buffer;
+        }
+                
+        void tostring(std::string &s) {
+                membuf_t *buf = new_membuf();
+                json_serialise(_obj, 0, JSON::_tostring, buf);
+                s = membuf_data(buf);
+                delete_membuf(buf);
         }
                 
         bool isnull() {
