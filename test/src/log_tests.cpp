@@ -42,7 +42,7 @@ protected:
         clock_gettime_wrapper_fake.custom_fake = log_tests::clock_gettime_wrapper_custom_fake;
         localtime_r_wrapper_fake.custom_fake = log_tests::localtime_r_wrapper_custom_fake;
 
-        log_time = "1970-01-01 00:00:20:030";
+        log_time = "1970-01-01 00:00:20.030";
         log_app_name = "?";
 
         CreateChangingLogFile(logfilepath);
