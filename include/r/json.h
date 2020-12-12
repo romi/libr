@@ -25,24 +25,15 @@
 #ifndef _R_JSON_H
 #define _R_JSON_H
 
-#if !defined(JSON_EMBEDDED)
 #include <stdio.h>
 #include <math.h>
-#endif
-
 #include <stdint.h>
-
-#if defined(JSON_EMBEDDED)
-typedef float real_t;
-#else
-typedef double real_t;
-#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    typedef enum _json_type_t{
+typedef enum _json_type_t{
         k_json_null = 0,
         k_json_true = 1,
         k_json_false = 2,
@@ -52,14 +43,14 @@ extern "C" {
         k_json_array = 101,
         k_json_string = 102,
         k_json_number = 103
-}json_type_t;
+} json_type_t;
 
 typedef struct _base_t {
         unsigned short refcount;
         json_type_t type;
         union {
                 void* data;
-                real_t number;
+                double number;
         } value;
 } base_t;
 
@@ -180,7 +171,7 @@ json_object_t json_false();
 // number
 
 json_object_t json_number_create(double value);
-real_t json_number_value(json_object_t);
+double json_number_value(json_object_t);
 
 #define json_isnumber(__obj) (__obj->type == k_json_number)
 
@@ -203,7 +194,7 @@ int32_t json_array_push(json_object_t array, json_object_t value);
 
 int32_t json_array_gettype(json_object_t object, int32_t index);
 
-real_t json_array_getnum(json_object_t object, int32_t index);
+double json_array_getnum(json_object_t object, int32_t index);
 const char* json_array_getstr(json_object_t object, int32_t index);
 
 int32_t json_array_setnum(json_object_t object, double value, int32_t index);

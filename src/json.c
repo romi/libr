@@ -168,7 +168,7 @@ static void delete_number(base_t* base __attribute__((unused)))
 {
 }
 
-real_t json_number_value(json_object_t obj)
+double json_number_value(json_object_t obj)
 {
         return json_isnumber(obj)? obj->value.number : NAN;
 }
@@ -292,7 +292,7 @@ json_object_t json_array_get(json_object_t obj, int32_t index)
 	return json_null();
 }
 
-real_t json_array_getnum(json_object_t obj, int32_t index)
+double json_array_getnum(json_object_t obj, int32_t index)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_array)
@@ -355,7 +355,7 @@ int32_t json_array_push(json_object_t obj, json_object_t value)
 	return json_array_set(obj, value, array->length);	
 }
 
-int32_t json_array_setnum(json_object_t obj, real_t value, int32_t index)
+int32_t json_array_setnum(json_object_t obj, double value, int32_t index)
 {
         json_object_t num = json_number_create(value);
         int retval = json_array_set(obj, num, index);
