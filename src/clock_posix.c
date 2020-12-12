@@ -66,6 +66,25 @@ char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3)
         return buf;
 }
 
+char *clock_datetime_compact(char *buf, int len)
+{
+
+        struct tm r;
+        struct timeval tv;
+        struct timespec ts;
+        clock_gettime_wrapper(CLOCK_REALTIME, &ts);
+
+        tv.tv_sec = ts.tv_sec;                                    \
+	    tv.tv_usec =ts.tv_nsec / 1000;
+
+        localtime_r_wrapper(&tv.tv_sec, &r);
+
+        snprintf(buf, len, "%04d%02d%02d-%02d%02d%02d",
+                 1900 + r.tm_year, 1 + r.tm_mon, r.tm_mday,
+                 r.tm_hour, r.tm_min, r.tm_sec);
+        return buf;
+}
+
 char *clock_log_datetime(char *buf, int len, char sep1, char sep2, char sep3)
 {
     struct tm r;
@@ -83,7 +102,7 @@ char *clock_log_datetime(char *buf, int len, char sep1, char sep2, char sep3)
     snprintf(buf, len, "%04d%c%02d%c%02d%c%02d%c%02d%c%02d.%03d",
              1900 + r.tm_year, sep1, 1 + r.tm_mon, sep1, r.tm_mday,
              sep2,
-             r.tm_hour, sep3, r.tm_min, sep3, r.tm_sec, sep3, milliseconds);
+             r.tm_hour, sep3, r.tm_min, sep3, r.tm_sec, milliseconds);
     return buf;
 }
 

@@ -45,6 +45,10 @@ char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3);
 // Millisecond resolution.
 char *clock_log_datetime(char *buf, int len, char sep1, char sep2, char sep3);
 
+// Return date-time as string in the form of "20181114-175238", which
+// is more adapted for filenames
+char *clock_datetime_compact(char *buf, int len);
+
 void clock_sleep(double seconds);
         
 #ifdef __cplusplus
