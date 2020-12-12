@@ -31,6 +31,7 @@
 #include <string>
 #include "json.h"
 #include "membuf.h"
+#include "log.h"
 
 class JSONError : public std::exception
 {
@@ -252,6 +253,17 @@ public:
                         throw JSONTypeError("array");
                 JSON json(value);
                 return json;
+        }
+
+        bool boolean(const char *key) {
+                if (!json_isobject(_obj))
+                        throw JSONTypeError("object");
+                if (!json_object_has(_obj, key))
+                        throw JSONKeyError(key);
+                json_object_t value = json_object_get(_obj, key);
+                if (!json_istrue(value) && !json_isfalse(value))
+                        throw JSONTypeError("boolean");
+                return json_istrue(value);
         }
 
         JSON get(int index) {
