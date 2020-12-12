@@ -80,7 +80,7 @@ char *clock_log_datetime(char *buf, int len, char sep1, char sep2, char sep3)
 
     int milliseconds = tv.tv_usec/1000;
 
-    snprintf(buf, len, "%04d%c%02d%c%02d%c%02d%c%02d%c%02d%c%03d",
+    snprintf(buf, len, "%04d%c%02d%c%02d%c%02d%c%02d%c%02d.%03d",
              1900 + r.tm_year, sep1, 1 + r.tm_mon, sep1, r.tm_mday,
              sep2,
              r.tm_hour, sep3, r.tm_min, sep3, r.tm_sec, sep3, milliseconds);
