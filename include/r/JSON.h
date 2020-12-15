@@ -38,7 +38,7 @@ class JSONError : public std::exception
 protected:
         std::string _what;
 public:
-JSONError() : std::exception() {}
+        JSONError() : std::exception() {}
                 
         virtual const char* what() const noexcept override { // TODO
                 return _what.c_str(); 
@@ -48,7 +48,7 @@ JSONError() : std::exception() {}
 class JSONTypeError : public JSONError
 {
 public:
-JSONTypeError(const char *expected) : JSONError() {
+        JSONTypeError(const char *expected) : JSONError() {
                 _what = "Invalid type. Expected JSON type ";
                 _what += expected;
         }
@@ -57,7 +57,7 @@ JSONTypeError(const char *expected) : JSONError() {
 class JSONKeyError : public JSONError
 {
 public:
-JSONKeyError(const char *key) : JSONError() {
+        JSONKeyError(const char *key) : JSONError() {
                 _what = "Invalid key: ";
                 _what += key;
         }
@@ -66,7 +66,7 @@ JSONKeyError(const char *key) : JSONError() {
 class JSONIndexError : public JSONError
 {
 public:
-JSONIndexError(int index) : JSONError() {
+        JSONIndexError(int index) : JSONError() {
                 _what = "Index out of bounds: ";
                 _what += std::to_string(index);
         }
@@ -75,7 +75,7 @@ JSONIndexError(int index) : JSONError() {
 class JSONParseError : public JSONError
 {
 public:
-JSONParseError(const char *msg) : JSONError() {
+        JSONParseError(const char *msg) : JSONError() {
                 _what  = msg;
         }
 };
@@ -139,6 +139,14 @@ public:
                 
         JSON() {
                 _obj = json_null();
+        }
+                
+        JSON(const char *s) {
+                int err;
+                char errmsg[128];
+                _obj = json_parse_ext(s, &err, errmsg, 128);
+                if (err != 0)
+                        throw JSONParseError(errmsg);
         }
                 
         JSON(json_object_t obj) {
