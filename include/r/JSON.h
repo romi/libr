@@ -130,12 +130,6 @@ public:
                         
                 return obj;
         }
-
-        static JSON moveto(json_object_t obj) {
-                JSON temp(obj);
-                json_unref(obj);
-                return temp;
-        }
                 
         JSON() {
                 _obj = json_null();
@@ -166,6 +160,14 @@ public:
         JSON &operator= (const JSON &rhs) {
                 json_object_t old = _obj;
                 _obj = rhs._obj;
+                json_ref(_obj);
+                json_unref(old);
+                return *this;
+        }
+
+        JSON &operator= (json_object_t obj) {
+                json_object_t old = _obj;
+                _obj = obj;
                 json_ref(_obj);
                 json_unref(old);
                 return *this;
