@@ -85,11 +85,11 @@ class JSON
 protected:
         json_object_t _obj;
 
-        static int32_t _tostring(void* userdata, const char* s, int32_t len) {
-                membuf_t *buf = (membuf_t *) userdata;
-                membuf_append(buf, s, len);
-                return 0;
-        }
+//        static int32_t _tostring(void* userdata, const char* s, int32_t len) {
+//                membuf_t *buf = (membuf_t *) userdata;
+//                membuf_append(buf, s, len);
+//                return 0;
+//        }
 
 public:
 
@@ -173,10 +173,9 @@ public:
         }
                 
         void tostring(std::string &s) {
-                membuf_t *buf = new_membuf();
-                json_serialise(_obj, 0, JSON::_tostring, buf);
-                s = membuf_data(buf);
-                delete_membuf(buf);
+                std::vector<char> vec_string(32768);
+                json_tostring(_obj, &vec_string[0], vec_string.size());
+                s = vec_string.data();
         }
                 
         bool isnull() {

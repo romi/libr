@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(libr)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -102,48 +100,7 @@ endif()
 
 ######################################
 
-option(WITH_SGC "Compile the SGC library for memory leak detection" OFF)
-
-set(SOURCES
-  src/r.c 
-  src/mem.c 
-  src/thread_pthread.c 
-  src/fs_posix.c 
-  src/clock_posix.c 
-  src/membuf.c
-  src/list.c 
-  src/log.c 
-  src/util.c
-  src/json.c
-  src/serial_posix.c
-  src/os_wrapper.c include/r/os_wrapper.h)
-
-include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include" )
-
-add_library(r SHARED ${SOURCES})
-
-target_include_directories(r
-        PUBLIC
-          "${CMAKE_CURRENT_SOURCE_DIR}/include"
-          "${CMAKE_CURRENT_SOURCE_DIR}/include/r"
-        )
-
-if(WITH_SGC)
-  target_link_libraries(r pthread m sgc)
-  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D MEM_DIAGNOSTICS")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_DEBUG} -D MEM_DIAGNOSTICS ")
-else(WITH_SGC)
-  target_link_libraries(r pthread m)
-endif(WITH_SGC)
 
 # Always build the mocks library.
-add_subdirectory(test/mocks)
-if(BUILD_TESTS)
-    add_subdirectory(test)
-endif()
-
-INSTALL(TARGETS r DESTINATION "lib")
-INSTALL (
-    DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.h")
+add_subdirectory(libr)
+add_subdirectory(librpp)
