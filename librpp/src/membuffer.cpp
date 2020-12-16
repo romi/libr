@@ -23,7 +23,7 @@
 
  */
 
-#include <string.h>
+#include <cstring>
 
 #include "log.h"
 #include "membuffer.h"
@@ -87,5 +87,4 @@ namespace rpp
     {
         return mutex_;
     }
-
 }
