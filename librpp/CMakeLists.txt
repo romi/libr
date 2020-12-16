@@ -45,6 +45,7 @@ option(BUILD_TESTS "Build all tests." ON)
 option(BUILD_COVERAGE "Build coverage." ON)
 
 set(SOURCES
+        include/json_cpp.h
         include/membuffer.h
         src/membuffer.cpp
         include/string_utils.h

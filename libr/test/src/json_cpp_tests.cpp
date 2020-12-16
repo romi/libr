@@ -3,7 +3,7 @@
 
 #include <zconf.h>
 #include "gtest/gtest.h"
-#include "json_cpp.h"
+#include "../../../librpp/include/json_cpp.h"
 
 extern "C" {
 #include <math.h>

@@ -28,9 +28,10 @@
 #ifdef __cplusplus
 
 #include <exception>
+#include <vector>
 #include <string>
+#include "string_utils.h"
 #include "json.h"
-#include "membuf.h"
 #include "log.h"
 
 class JSONError : public std::exception
@@ -85,11 +86,11 @@ class JSON
 protected:
         json_object_t _obj;
 
-//        static int32_t _tostring(void* userdata, const char* s, int32_t len) {
-//                membuf_t *buf = (membuf_t *) userdata;
-//                membuf_append(buf, s, len);
-//                return 0;
-//        }
+        static int32_t _tostring(void* userdata, const char* s, int32_t len) {
+                std::string *serialised = reinterpret_cast<std::string*>(userdata);
+                serialised->append(s, s+len);
+                return 0;
+        }
 
 public:
 
@@ -116,18 +117,13 @@ public:
         }
 
         static JSON construct(const char *format, ...) {
+                std::string parse_string;
                 va_list ap;
-                membuf_t *buffer = new_membuf();
-        
                 va_start(ap, format);
-                membuf_vprintf(buffer, format, ap);
+                rpp::string_vprintf(parse_string, format, ap);
                 va_end(ap);
 
-                membuf_append_zero(buffer);
-                JSON obj = JSON::parse(membuf_data(buffer));
-
-                delete_membuf(buffer);
-                        
+                JSON obj = JSON::parse(parse_string.c_str());
                 return obj;
         }
                 
@@ -183,9 +179,9 @@ public:
         }
                 
         void tostring(std::string &s) {
-                std::vector<char> vec_string(32768);
-                json_tostring(_obj, &vec_string[0], vec_string.size());
-                s = vec_string.data();
+                std::string serialised;
+                json_serialise(_obj, 0, JSON::_tostring, reinterpret_cast<void*>(&serialised));
+                s = serialised;
         }
                 
         bool isnull() {
