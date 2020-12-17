@@ -49,7 +49,10 @@ set(SOURCES
         include/membuffer.h
         src/membuffer.cpp
         include/string_utils.h
-        src/string_utils.cpp)
+        src/string_utils.cpp
+        include/ILinux.h
+        include/Linux.h
+        src/Linux.cpp)
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
