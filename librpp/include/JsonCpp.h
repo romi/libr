@@ -30,7 +30,7 @@
 #include <exception>
 #include <vector>
 #include <string>
-#include "string_utils.h"
+#include "StringUtils.h"
 #include "json.h"
 #include "log.h"
 
@@ -50,7 +50,7 @@ class JSONTypeError : public JSONError
 {
 public:
         JSONTypeError(const char *expected) : JSONError() {
-                _what = "Invalid type. Expected JSON type ";
+                _what = "Invalid type. Expected JsonCpp type ";
                 _what += expected;
         }
 };
@@ -81,7 +81,7 @@ public:
         }
 };
 
-class JSON
+class JsonCpp
 {
 protected:
         json_object_t _obj;
@@ -94,44 +94,44 @@ protected:
 
 public:
 
-        static JSON load(const char *filename) {
+        static JsonCpp load(const char *filename) {
                 int err;
                 char errmsg[128];
                 json_object_t obj = json_load(filename, &err, errmsg, 128);
                 if (err != 0)
                         throw JSONParseError(errmsg);
-                JSON json(obj);
+                JsonCpp json(obj);
                 json_unref(obj);
                 return json;
         }
 
-        static JSON parse(const char *s) {
+        static JsonCpp parse(const char *s) {
                 int err;
                 char errmsg[128];
                 json_object_t obj = json_parse_ext(s, &err, errmsg, 128);
                 if (err != 0)
                         throw JSONParseError(errmsg);
-                JSON json(obj);
+                JsonCpp json(obj);
                 json_unref(obj);
                 return json;
         }
 
-        static JSON construct(const char *format, ...) {
+        static JsonCpp construct(const char *format, ...) {
                 std::string parse_string;
                 va_list ap;
                 va_start(ap, format);
-                rpp::string_vprintf(parse_string, format, ap);
+                StringUtils::string_vprintf(parse_string, format, ap);
                 va_end(ap);
 
-                JSON obj = JSON::parse(parse_string.c_str());
+                JsonCpp obj = JsonCpp::parse(parse_string.c_str());
                 return obj;
         }
                 
-        JSON() {
+        JsonCpp() {
                 _obj = json_null();
         }
                 
-        JSON(const char *s) {
+        JsonCpp(const char *s) {
                 int err;
                 char errmsg[128];
                 _obj = json_parse_ext(s, &err, errmsg, 128);
@@ -139,21 +139,21 @@ public:
                         throw JSONParseError(errmsg);
         }
                 
-        JSON(json_object_t obj) {
+        JsonCpp(json_object_t obj) {
                 _obj = obj;
                 json_ref(_obj);
         }
                 
-        JSON(JSON &json) {
+        JsonCpp(JsonCpp &json) {
                 _obj = json._obj;
                 json_ref(_obj);
         }
                 
-        virtual ~JSON() {
+        virtual ~JsonCpp() {
                 json_unref(_obj);
         }
         
-        JSON &operator= (const JSON &rhs) {
+        JsonCpp &operator= (const JsonCpp &rhs) {
                 json_object_t old = _obj;
                 _obj = rhs._obj;
                 json_ref(_obj);
@@ -161,7 +161,7 @@ public:
                 return *this;
         }
 
-        JSON &operator= (json_object_t obj) {
+        JsonCpp &operator= (json_object_t obj) {
                 json_object_t old = _obj;
                 _obj = obj;
                 json_ref(_obj);
@@ -180,7 +180,7 @@ public:
                 
         void tostring(std::string &s) {
                 std::string serialised;
-                json_serialise(_obj, 0, JSON::_tostring, reinterpret_cast<void*>(&serialised));
+                json_serialise(_obj, 0, JsonCpp::_tostring, reinterpret_cast<void*>(&serialised));
                 s = serialised;
         }
                 
@@ -204,12 +204,12 @@ public:
                 return (json_isobject(_obj) && json_object_has(_obj, key));
         }
 
-        JSON get(const char *key) {
+        JsonCpp get(const char *key) {
                 if (!json_isobject(_obj))
                         throw JSONTypeError("object");
                 if (!json_object_has(_obj, key))
                         throw JSONKeyError(key);
-                JSON retval(json_object_get(_obj, key));
+                JsonCpp retval(json_object_get(_obj, key));
                 return retval;
         }
 
@@ -248,7 +248,7 @@ public:
                 return json_string_value(value);
         }
 
-        JSON array(const char *key) {
+        JsonCpp array(const char *key) {
                 if (!json_isobject(_obj))
                         throw JSONTypeError("object");
                 if (!json_object_has(_obj, key))
@@ -256,7 +256,7 @@ public:
                 json_object_t value = json_object_get(_obj, key);
                 if (!json_isarray(value))
                         throw JSONTypeError("array");
-                JSON json(value);
+                JsonCpp json(value);
                 return json;
         }
 
@@ -271,12 +271,12 @@ public:
                 return json_istrue(value);
         }
 
-        JSON get(int index) {
+        JsonCpp get(int index) {
                 if (!json_isarray(_obj))
                         throw JSONTypeError("array");
                 if (index < 0 || index >= json_array_length(_obj))
                         throw JSONIndexError(index);
-                JSON retval = json_array_get(_obj, index);
+                JsonCpp retval = json_array_get(_obj, index);
                 return retval;
         }
 
@@ -308,7 +308,7 @@ public:
                 json_array_setstr(_obj, s, index);
         }
 
-        JSON array(int index) {
+        JsonCpp array(int index) {
                 if (!json_isarray(_obj))
                         throw JSONTypeError("array");
                 if (index < 0 || index >= json_array_length(_obj))
@@ -316,7 +316,7 @@ public:
                 json_object_t value = json_array_get(_obj, index);
                 if (!json_isarray(value))
                         throw JSONTypeError("array");
-                JSON json(value);
+                JsonCpp json(value);
                 return json;
         }
 

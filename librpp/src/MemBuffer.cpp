@@ -26,41 +26,41 @@
 #include <cstring>
 
 #include "log.h"
-#include "membuffer.h"
-#include "string_utils.h"
+#include "MemBuffer.h"
+#include "StringUtils.h"
 
 namespace rpp
 {
-    void membuffer::put(char c)
+    void MemBuffer::put(char c)
     {
         data_.emplace_back(c);
     }
 
-    void membuffer::append(const char *data, int len)
+    void MemBuffer::append(const char *data, int len)
     {
         data_.insert(data_.end(), data, data+len);
     }
 
-    void membuffer::append_zero()
+    void MemBuffer::append_zero()
     {
         data_.emplace_back(0);
     }
 
-    void membuffer::append_string(const char *string)
+    void MemBuffer::append_string(const char *string)
     {
         const int KB_32 = (32 * 1024);
         size_t lens = strnlen(string, KB_32);
         if (lens == KB_32)
-            r_warn("membuffer::append_str() string truncated to 32kb");
+            r_warn("MemBuffer::append_str() string truncated to 32kb");
         data_.insert(data_.end(), string, string+lens);
     }
 
-    void membuffer::printf(const char *format, ...)
+    void MemBuffer::printf(const char *format, ...)
     {
         va_list ap;
         va_start(ap, format);
         std::string formatted_string;
-        string_vprintf(formatted_string, format, ap);
+        StringUtils::string_vprintf(formatted_string, format, ap);
         va_end(ap);
         data_.insert(data_.end(), formatted_string.data(), formatted_string.data()+formatted_string.length());
         // might need to append 0 depending on use case.
@@ -68,22 +68,22 @@ namespace rpp
     }
 
     std::vector<char>&
-    membuffer::data()
+    MemBuffer::data()
     {
         return data_;
     }
 
-    void membuffer::clear()
+    void MemBuffer::clear()
     {
         data_.clear();
     }
 
-    size_t membuffer::size()
+    size_t MemBuffer::size()
     {
         return data_.size();
     }
 
-    std::mutex& membuffer::mutex()
+    std::mutex& MemBuffer::mutex()
     {
         return mutex_;
     }

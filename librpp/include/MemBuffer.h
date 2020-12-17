@@ -29,11 +29,11 @@
 
 namespace rpp
 {
-    class membuffer
+    class MemBuffer
     {
     public:
-        membuffer() = default;
-        virtual ~membuffer() = default;
+        MemBuffer() = default;
+        virtual ~MemBuffer() = default;
         void put(char c);
         void append(const char *data, int len);
         void append_zero();

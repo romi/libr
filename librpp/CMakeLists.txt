@@ -45,11 +45,11 @@ option(BUILD_TESTS "Build all tests." ON)
 option(BUILD_COVERAGE "Build coverage." ON)
 
 set(SOURCES
-        include/json_cpp.h
-        include/membuffer.h
-        src/membuffer.cpp
-        include/string_utils.h
-        src/string_utils.cpp
+        include/JsonCpp.h
+        include/MemBuffer.h
+        src/MemBuffer.cpp
+        include/StringUtils.h
+        src/StringUtils.cpp
         include/ILinux.h
         include/Linux.h
         src/Linux.cpp)

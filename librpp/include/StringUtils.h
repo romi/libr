@@ -1,12 +1,17 @@
-#ifndef ROMI_ROVER_BUILD_AND_TEST_STRING_UTILS_H
-#define ROMI_ROVER_BUILD_AND_TEST_STRING_UTILS_H
+// http://www.martinbroadhurst.com/how-to-trim-a-stdstring.html
 
-#include <stdarg.h>
+
 #include <string>
 #include <vector>
+#include <stdarg.h>
 
-namespace rpp
+namespace StringUtils
 {
+    const std::string whitespace_chars = "\t\n\v\f\r ";
+
+    std::string& ltrim(std::string& str, const std::string& chars);
+    std::string& rtrim(std::string& str, const std::string& chars);
+    std::string& trim(std::string& str, const std::string& chars);
     void string_printf(std::string& instring, const char* format, ...);
     void string_vprintf(std::string& instring, const char* format, va_list ap);
 
@@ -20,4 +25,4 @@ namespace rpp
     }
 }
 
-#endif //ROMI_ROVER_BUILD_AND_TEST_STRING_UTILS_H
+

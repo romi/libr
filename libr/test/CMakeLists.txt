@@ -40,7 +40,6 @@ set(SRCS_LOG_JSON
         src/tests_main.cpp
         src/log_tests.cpp
         src/json_tests.cpp
-        src/json_cpp_tests.cpp
         support/test_file_utils.h
         support/test_file_utils.cpp)
 

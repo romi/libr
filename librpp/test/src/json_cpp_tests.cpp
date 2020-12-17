@@ -1,13 +1,7 @@
 #include <string>
-#include <experimental/filesystem>
 
-#include <zconf.h>
 #include "gtest/gtest.h"
-#include "../../../librpp/include/json_cpp.h"
-
-extern "C" {
-#include <math.h>
-}
+#include "JsonCpp.h"
 
 
 class json_cpp_tests : public ::testing::TestWithParam< std::string >

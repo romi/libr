@@ -1,7 +1,7 @@
 #include <string>
 
 #include "gtest/gtest.h"
-#include "string_utils.h"
+#include "StringUtils.h"
 
 
 class string_utils_tests : public ::testing::Test
@@ -29,7 +29,7 @@ TEST_F(string_utils_tests, string_format_creates_expected_string)
     std::string expected("10 string");
 
     // Act
-    std::string actual = rpp::string_format(format, 10, "string");
+    std::string actual = StringUtils::string_format(format, 10, "string");
 
     //Assert
     ASSERT_EQ(actual, expected);
@@ -43,7 +43,7 @@ TEST_F(string_utils_tests, string_printf_creates_expected_string)
     std::string actual;
 
     // Act
-    rpp::string_printf(actual, format.c_str(), 10, "string");
+    StringUtils::string_printf(actual, format.c_str(), 10, "string");
 
     //Assert
     ASSERT_EQ(actual, expected);

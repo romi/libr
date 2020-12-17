@@ -1,7 +1,7 @@
 #include <string>
 
 #include "gtest/gtest.h"
-#include "membuffer.h"
+#include "MemBuffer.h"
 
 
 class membuffer_tests : public ::testing::Test
@@ -25,7 +25,7 @@ protected:
 TEST_F(membuffer_tests, string_format_creates_expected_string)
 {
     // Arrange
-    rpp::membuffer membuffer;
+    rpp::MemBuffer membuffer;
     std::string expected("test string is here");
 
     // Act

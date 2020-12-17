@@ -1,7 +1,27 @@
-#include "string_utils.h"
+// http://www.martinbroadhurst.com/how-to-trim-a-stdstring.html
 
-namespace rpp
+#include <string>
+#include "StringUtils.h"
+
+namespace StringUtils
 {
+    std::string& ltrim(std::string& str, const std::string& chars)
+    {
+        str.erase(0, str.find_first_not_of(chars));
+        return str;
+    }
+
+    std::string& rtrim(std::string& str, const std::string& chars)
+    {
+        str.erase(str.find_last_not_of(chars) + 1);
+        return str;
+    }
+
+    std::string& trim(std::string& str, const std::string& chars)
+    {
+        return ltrim(rtrim(str, chars), chars);
+    }
+
     void string_printf(std::string& instring, const char* format, ...)
     {
         va_list ap;
@@ -22,5 +42,3 @@ namespace rpp
     }
 
 }
-
-
