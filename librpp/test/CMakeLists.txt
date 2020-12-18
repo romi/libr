@@ -24,6 +24,6 @@ if(BUILD_COVERAGE)
     SETUP_TARGET_FOR_COVERAGE_LCOV(
             NAME rpp_unit_tests_common_coverage
             EXECUTABLE ctest -V ${n_cores} -R "rpp_unit"
-            EXCLUDE '*wrapper*'
+            EXCLUDE '*wrapper*' "src/Linux.cpp" "include/Linux.h" "include/ILinux.h"
             DEPENDENCIES rpp_unit_tests_common)
 endif()
