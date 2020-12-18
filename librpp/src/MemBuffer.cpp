@@ -63,14 +63,19 @@ namespace rpp
         StringUtils::string_vprintf(formatted_string, format, ap);
         va_end(ap);
         data_.insert(data_.end(), formatted_string.data(), formatted_string.data()+formatted_string.length());
-        // might need to append 0 depending on use case.
-        // append_zero();
     }
 
     std::vector<char>&
     MemBuffer::data()
     {
         return data_;
+    }
+
+    std::string
+    MemBuffer::string()
+    {
+        std::string data_string(data_.data(), data_.size());
+        return data_string;
     }
 
     void MemBuffer::clear()
