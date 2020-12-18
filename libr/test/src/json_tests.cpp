@@ -1367,7 +1367,7 @@ TEST_F(json_tests, json_print_serialises_float_number_types)
     ASSERT_EQ(actual_stdoutput, expected_json_string);
 }
 
-TEST_F(json_tests, json_print_array_prints_nulls)
+TEST_F(json_tests, json_print_array_prints_undefineds)
 {
     // Arrange
     int parse_error = 0;
@@ -1377,7 +1377,7 @@ TEST_F(json_tests, json_print_array_prints_nulls)
     int expected = index;
 
     std::string json_string("[7, 2, 3]");
-    std::string expected_json_string("[7, 2, 3, null, null, null, null, null, null, null, null, null, null, null, null, null");
+    std::string expected_json_string("[7, 2, 3, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined");
 
     // Act
     auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
@@ -1387,8 +1387,8 @@ TEST_F(json_tests, json_print_array_prints_nulls)
 
     testing::internal::CaptureStdout();
     json_print(obj, k_json_pretty);
-    std::string actual_stdoutput = testing::internal::GetCapturedStdout();
-
+    std::string actual_stdoutput = testing::internal::GetCapturedStdout(); 
+     
     size_t contains = actual_stdoutput.find(expected_json_string);
 
     json_unref(obj);

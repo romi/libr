@@ -241,7 +241,7 @@ int32_t json_string_equals(json_object_t obj1, const char* s)
 typedef struct _array_t {
 	int length;
 	int datalen;
-    json_object_t data[];
+        json_object_t data[];
 } array_t;
 
 json_object_t json_array_create()
@@ -255,6 +255,8 @@ json_object_t json_array_create()
         base->type = k_json_array;
 
 	array = base_get(base, array_t);
+        for (int i = 0; i < len; i++)
+                array->data[i] = json_undefined();
 
 	array->length = 0;
 	array->datalen = len;
@@ -287,7 +289,7 @@ json_object_t json_array_get(json_object_t obj, int32_t index)
 		return json_null();
 	array_t *array = base_get(base, array_t);
 	if ((0 <= index) && (index < array->length)) {
-		return array->data[index];
+                return array->data[index];
 	}
 	return json_null();
 }
@@ -319,10 +321,12 @@ int32_t json_array_set(json_object_t obj, json_object_t value, int32_t index)
 			newlen *= 2;
 		}
                 
-        int memlen = sizeof(array_t) + newlen * sizeof(json_object_t);
-        array_t *newarray = JSON_NEW_ARRAY(array_t, memlen);
+                int memlen = sizeof(array_t) + newlen * sizeof(json_object_t);
+                array_t *newarray = JSON_NEW_ARRAY(array_t, memlen);
 		for (int i = 0; i < array->datalen; i++)
 			newarray->data[i] = array->data[i];
+		for (int i = array->datalen; i < newlen; i++)
+			newarray->data[i] = json_undefined();
 
 		newarray->datalen = newlen;
 		newarray->length = array->length;

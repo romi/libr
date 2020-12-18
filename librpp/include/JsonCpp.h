@@ -49,9 +49,13 @@ public:
 class JSONTypeError : public JSONError
 {
 public:
-        JSONTypeError(const char *expected) : JSONError() {
+        JSONTypeError(const char *expected, const char *key = 0) : JSONError() {
                 _what = "Invalid type. Expected JsonCpp type ";
                 _what += expected;
+                if (key) {
+                        _what += " for key ";
+                        _what += key;
+                }
         }
 };
 
@@ -91,7 +95,44 @@ protected:
                 serialised->append(s, s+len);
                 return 0;
         }
-
+                        
+        void assure_boolean(json_object_t value, const char *key = 0) {
+                if (!json_istrue(value) && !json_isfalse(value))
+                        throw JSONTypeError("boolean", key);
+        }
+                        
+        void assure_number(json_object_t value, const char *key = 0) {
+                if (!json_isnumber(value))
+                        throw JSONTypeError("number", key);
+        }
+                        
+        void assure_string(json_object_t value, const char *key = 0) {
+                if (!json_isstring(value))
+                        throw JSONTypeError("string", key);
+        }
+                        
+        void assure_array(json_object_t value, const char *key = 0) {
+                if (!json_isarray(value))
+                        throw JSONTypeError("array", key);
+        }
+                        
+        void assure_object(json_object_t value, const char *key = 0) {
+                if (!json_isobject(value))
+                        throw JSONTypeError("object", key);
+        }
+                        
+        void assure_object_and_key(const char *key) {
+                assure_object(_obj);
+                if (!has(key))
+                        throw JSONKeyError(key);
+        }
+                        
+        void assure_array_and_index(int index) {
+                assure_array(_obj);
+                if (index < 0 || index >= json_array_length(_obj))
+                        throw JSONIndexError(index);
+        }
+        
 public:
 
         static JsonCpp load(const char *filename) {
@@ -200,141 +241,105 @@ public:
                 return json_isstring(_obj);
         }
                 
+        bool isobject() {
+                return json_isobject(_obj);
+        }
+                
         bool has(const char *key) {
                 return (json_isobject(_obj) && json_object_has(_obj, key));
         }
 
         JsonCpp get(const char *key) {
-                if (!json_isobject(_obj))
-                        throw JSONTypeError("object");
-                if (!json_object_has(_obj, key))
-                        throw JSONKeyError(key);
+                assure_object_and_key(key);                
                 JsonCpp retval(json_object_get(_obj, key));
                 return retval;
         }
 
         double num(const char *key) {
-                if (!json_isobject(_obj))
-                        throw JSONTypeError("object");
-                if (!json_object_has(_obj, key))
-                        throw JSONKeyError(key);
+                assure_object_and_key(key);
                 json_object_t value = json_object_get(_obj, key);
-                if (!json_isnumber(value))
-                        throw JSONTypeError("number");
+                assure_number(value, key);
                 return json_number_value(value);
         }
 
         double num(const char *key, double default_value) {
                 double retval = default_value;
-                if (!json_isobject(_obj))
-                        throw JSONTypeError("object");
-                if (json_object_has(_obj, key)) {
+                assure_object(_obj);
+                if (has(key)) {
                         json_object_t value = json_object_get(_obj, key);
-                        if (!json_isnumber(value))
-                                throw JSONTypeError("number");
+                        assure_number(value, key);
                         retval = json_number_value(value);
                 }
                 return retval;
         }
 
         const char *str(const char *key) {
-                if (!json_isobject(_obj))
-                        throw JSONTypeError("object");
-                if (!json_object_has(_obj, key))
-                        throw JSONKeyError(key);
+                assure_object_and_key(key);                
                 json_object_t value = json_object_get(_obj, key);
-                if (!json_isstring(value))
-                        throw JSONTypeError("string");
+                assure_string(value, key);
                 return json_string_value(value);
         }
 
         JsonCpp array(const char *key) {
-                if (!json_isobject(_obj))
-                        throw JSONTypeError("object");
-                if (!json_object_has(_obj, key))
-                        throw JSONKeyError(key);
+                assure_object_and_key(key);                
                 json_object_t value = json_object_get(_obj, key);
-                if (!json_isarray(value))
-                        throw JSONTypeError("array");
+                assure_array(value, key);
                 JsonCpp json(value);
                 return json;
         }
 
         bool boolean(const char *key) {
-                if (!json_isobject(_obj))
-                        throw JSONTypeError("object");
-                if (!json_object_has(_obj, key))
-                        throw JSONKeyError(key);
+                assure_object_and_key(key);                
                 json_object_t value = json_object_get(_obj, key);
-                if (!json_istrue(value) && !json_isfalse(value))
-                        throw JSONTypeError("boolean");
+                assure_boolean(value);
                 return json_istrue(value);
         }
 
         JsonCpp get(int index) {
-                if (!json_isarray(_obj))
-                        throw JSONTypeError("array");
-                if (index < 0 || index >= json_array_length(_obj))
-                        throw JSONIndexError(index);
+                assure_array_and_index(index);
                 JsonCpp retval = json_array_get(_obj, index);
                 return retval;
         }
 
         double num(int index) {
-                if (!json_isarray(_obj))
-                        throw JSONTypeError("array");
-                if (index < 0 || index >= json_array_length(_obj))
-                        throw JSONIndexError(index);
+                assure_array_and_index(index);
                 json_object_t value = json_array_get(_obj, index);
-                if (!json_isnumber(value))
-                        throw JSONTypeError("number");
+                assure_number(value);
                 return json_number_value(value);
         }
 
         const char *str(int index) {
-                if (!json_isarray(_obj))
-                        throw JSONTypeError("array");
-                if (index < 0 || index >= json_array_length(_obj))
-                        throw JSONIndexError(index);
+                assure_array_and_index(index);
                 json_object_t value = json_array_get(_obj, index);
-                if (!json_isstring(value))
-                        throw JSONTypeError("string");
+                assure_string(value);
                 return json_string_value(value);
         }
 
         void setstr(const char *s, int index) {
-                if (!json_isarray(_obj))
-                        throw JSONTypeError("array");
+                assure_array(_obj);
                 json_array_setstr(_obj, s, index);
         }
 
         JsonCpp array(int index) {
-                if (!json_isarray(_obj))
-                        throw JSONTypeError("array");
-                if (index < 0 || index >= json_array_length(_obj))
-                        throw JSONIndexError(index);
+                assure_array_and_index(index);
                 json_object_t value = json_array_get(_obj, index);
-                if (!json_isarray(value))
-                        throw JSONTypeError("array");
+                assure_array(value);
                 JsonCpp json(value);
                 return json;
         }
 
         int length() {
-                if (!json_isarray(_obj))
-                        throw JSONTypeError("array");
+                assure_array(_obj);
                 return json_array_length(_obj);
         }
 
         double num() {
-                if (!json_isnumber(_obj))
-                        throw JSONTypeError("number");
+                assure_number(_obj);
                 return json_number_value(_obj);
         }
 
         const char *str() {
-                if (!json_isstring(_obj))
-                        throw JSONTypeError("string");
+                assure_string(_obj);
                 return json_string_value(_obj);
         }
                 
