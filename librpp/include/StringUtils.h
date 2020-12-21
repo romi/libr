@@ -21,7 +21,7 @@ namespace StringUtils
         auto size = std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
         std::vector<char> output(++size, '\0');
         std::snprintf(&output[0], size, format.c_str(), std::forward<Args>(args)...);
-        return std::string(&output[0]);
+        return std::string(output.data());
     }
 }
 

@@ -40,6 +40,7 @@ namespace rpp
         void append_string(const char *string);
         void printf(const char* format, ...);
         std::vector<char>& data();
+        std::string string();
         void clear();
         size_t size();
         std::mutex& mutex();
