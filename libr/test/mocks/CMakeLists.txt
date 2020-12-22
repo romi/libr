@@ -2,6 +2,7 @@
 project(rmocks)
 #
 set(SOURCES
+        fff.h
         mem.mock.h
         mem.mock.c
         log.mock.h

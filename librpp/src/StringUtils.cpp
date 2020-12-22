@@ -38,7 +38,7 @@ namespace StringUtils
         std::vector<char> output(++size, '\0');
         std::vsnprintf(&output[0], size, format, ap_copy);
         va_end(ap_copy);
-        instring = &output[0];
+        instring = output.data();
     }
 
 }
