@@ -45,6 +45,12 @@ namespace  rpp {
         int remove(const char *filename) override;
 
         unsigned int sleep(unsigned int seconds) override;
+        
+        int ioctl(int fd, unsigned long request, void *argp) override;
+                
+        int poll(struct pollfd *fds, nfds_t nfds, int timeout) override;
+        
+        ssize_t read(int fd, void *buf, size_t count) override;
     };
 
 }

@@ -4,6 +4,8 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/poll.h>
+#include <sys/ioctl.h>
 
 #include <stdarg.h>
 #include <signal.h>
@@ -53,6 +55,12 @@ namespace rpp {
         virtual int remove(const char *s) = 0;
 
         virtual unsigned int sleep(unsigned int seconds) = 0;
+
+        virtual int ioctl(int fd, unsigned long request, void *argp) = 0;
+        
+        virtual int poll(struct pollfd *fds, nfds_t nfds, int timeout) = 0;
+
+        virtual ssize_t read(int fd, void *buf, size_t count) = 0;
     };
 
 }
