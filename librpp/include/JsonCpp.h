@@ -255,6 +255,10 @@ public:
                 return retval;
         }
 
+        JsonCpp operator[](const char *key) {
+                return get(key);
+        }
+
         double num(const char *key) {
                 assure_object_and_key(key);
                 json_object_t value = json_object_get(_obj, key);
@@ -301,6 +305,10 @@ public:
                 return retval;
         }
 
+        JsonCpp operator[](int index) {
+                return get(index);
+        }
+
         double num(int index) {
                 assure_array_and_index(index);
                 json_object_t value = json_array_get(_obj, index);
@@ -338,11 +346,19 @@ public:
                 return json_number_value(_obj);
         }
 
+        operator double () {
+                return num();
+        }
+        
         const char *str() {
                 assure_string(_obj);
                 return json_string_value(_obj);
         }
-                
+
+        operator const char *() {
+                return str();
+        }
+        
         int32_t foreach(json_iterator_t func, void* data) {
                 return json_object_foreach(_obj, func, data);
         }
