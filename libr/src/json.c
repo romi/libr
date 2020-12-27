@@ -2091,19 +2091,13 @@ static json_object_t json_parser_loop(json_parser_t* parser,
 json_object_t json_load(const char* filename, int* err, char* errmsg, int len)
 {
         json_parser_t* parser = json_parser_create();
-        if (parser == NULL) {
-                *err = 1;
-                snprintf(errmsg, len, "json_load: Failed to create the file parser.");
-                errmsg[len-1] = 0;
-                return json_null();
-        }
-        
+
         FILE* fp = fopen(filename, "r");
         if (fp == NULL) {
                 *err = 1;
                 snprintf(errmsg, len, "json_load: Failed to open the file: %s", filename);
                 errmsg[len-1] = 0;
-            json_parser_data_destroy(parser);
+                json_parser_data_destroy(parser);
                 return json_null();
         }
 
@@ -2113,7 +2107,8 @@ json_object_t json_load(const char* filename, int* err, char* errmsg, int len)
                                              err, errmsg, len);
 
         fclose(fp);
-        if(json_isnull(obj))
+        
+        if (json_isnull(obj))
             json_parser_data_destroy(parser);
         else
             json_parser_destroy(parser);
@@ -2138,24 +2133,22 @@ json_object_t json_parser_eval(json_parser_t* parser, const char* s)
 json_object_t json_parse_ext(const char* buffer, int* err, char* errmsg, int len)
 {
         json_parser_t* parser;
-        json_object_t obj;
+        json_object_t obj = json_null();
         string_input_t in = { buffer, 0 };
-        
-        parser = json_parser_create();
-        if (parser == NULL) {
-                *err = 1;
-                snprintf(errmsg, len, "json_parse_ext: Failed to create the parser.");
-                errmsg[len-1] = 0;
-                return json_null();
+
+        if (buffer != 0) {
+                
+                parser = json_parser_create();
+
+                obj = json_parser_loop(parser, "[string]", string_input_read, &in,
+                                       err, errmsg, len);
+
+                if (json_isnull(obj))
+                        json_parser_data_destroy(parser);
+                else
+                        json_parser_destroy(parser);
         }
-
-        obj = json_parser_loop(parser, "[string]", string_input_read, &in,
-                               err, errmsg, len);
-
-        if(json_isnull(obj))
-            json_parser_data_destroy(parser);
-        else
-            json_parser_destroy(parser);
+        
         return obj;        
 }
         
