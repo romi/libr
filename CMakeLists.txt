@@ -18,10 +18,13 @@ else()
 endif()
 
 # For now everything is debug. Set Compile options locally to maintain independent library builds.
+# Ideal luist of warnings!
+#-Werror -Wall -Wpedantic -Wextra -Wmissing-include-dirs -Wuseless-cast -Wconversion -Wsign-conversion -Wswitch-default -Weffc++ -Wswitch-enum -Wzero-as-null-pointer-constant -Winit-self -Wformat=2 -Waddress -Wlogical-op -Wpointer-arith)
+set(COMMON_COMPILATION_FLAGS "-Wall -Wextra -Wpedantic -Werror -Wmissing-include-dirs")
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -Werror ${PROJECT_SANITISE_FLAGS}")
+set(CMAKE_CXX_FLAGS "${COMMON_COMPILATION_FLAGS} -Wuseless-cast ${PROJECT_SANITISE_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")
-set(CMAKE_C_FLAGS "-Wall -Wextra -Wpedantic -Werror ${PROJECT_SANITISE_FLAGS}")
+set(CMAKE_C_FLAGS "${COMMON_COMPILATION_FLAGS} ${PROJECT_SANITISE_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG "-O0")
 
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${PROJECT_SANITISE_FLAGS}")

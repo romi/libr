@@ -1389,7 +1389,7 @@ TEST_F(serial_posix_tests, serial_command_sendf_formats_command)
 
     //Assert
     ASSERT_EQ(std::string(actual), expected_read_data);
-    ASSERT_EQ(std::string(actual_command), expected_command);
+    ASSERT_EQ(actual_command, expected_command);
     ASSERT_EQ(r_err_fake.call_count, 0);
     ASSERT_EQ(serial_data.errors, 0);
 }

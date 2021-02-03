@@ -462,7 +462,7 @@ TEST_F(fs_posix_tests, path_glue_path_root_valid_buffer_size_returns_correct_buf
 
     //Assert
     ASSERT_EQ(actual, 0);
-    ASSERT_EQ(std::string(buffer), std::string(expected_path));
+    ASSERT_EQ(std::string(buffer), expected_path);
 }
 
 TEST_F(fs_posix_tests, path_glue_path_not_root_valid_buffer_size_returns_correct_buffer)
@@ -486,7 +486,7 @@ TEST_F(fs_posix_tests, path_glue_path_not_root_valid_buffer_size_returns_correct
 
     //Assert
     ASSERT_EQ(actual, 0);
-    ASSERT_EQ(std::string(buffer), std::string(expected_path));
+    ASSERT_EQ(std::string(buffer), expected_path);
 }
 
 TEST_F(fs_posix_tests, path_glue_path_not_root_is_absolute_valid_buffer_size_returns_correct_buffer)
@@ -510,7 +510,7 @@ TEST_F(fs_posix_tests, path_glue_path_not_root_is_absolute_valid_buffer_size_ret
 
     //Assert
     ASSERT_EQ(actual, 0);
-    ASSERT_EQ(std::string(buffer), std::string(expected_path));
+    ASSERT_EQ(std::string(buffer), expected_path);
 }
 
 // Address sanitizer would fail this test if the memory was double deleted.

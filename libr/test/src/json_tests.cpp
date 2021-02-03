@@ -1200,7 +1200,7 @@ TEST_F(json_tests, json_object_length_hashtable_resizes_hashtable)
     int length = json_object_length(obj);
 
     for (int value = 0; value < number_of_values; value++)
-        json_object_setnum(obj, std::string(key + std::to_string(value)).c_str(), value);
+        json_object_setnum(obj, (key + std::to_string(value)).c_str(), value);
 
     int actual_length = json_object_length(obj);
 
@@ -1411,7 +1411,7 @@ TEST_F(json_tests, json_print_object_pretty_indents_objects_COVERAGE)
         json_object_t obj2 = json_object_create();
 
         for (int value = 0; value < number_of_values; value++)
-            json_object_setnum(obj2, std::string(key + std::to_string(value)).c_str(), value);
+            json_object_setnum(obj2, (key + std::to_string(value)).c_str(), value);
 
         json_object_setnum(obj1, "obj1val", 10);
         json_object_set(obj1, "obj2val", obj2);
