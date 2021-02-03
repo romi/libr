@@ -54,7 +54,7 @@ char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3)
         struct timespec ts;
         clock_gettime_wrapper(CLOCK_REALTIME, &ts);
 
-        tv.tv_sec = ts.tv_sec;                                    \
+        tv.tv_sec = ts.tv_sec;
 	    tv.tv_usec =ts.tv_nsec / 1000;
 
         localtime_r_wrapper(&tv.tv_sec, &r);
@@ -74,7 +74,7 @@ char *clock_datetime_compact(char *buf, int len)
         struct timespec ts;
         clock_gettime_wrapper(CLOCK_REALTIME, &ts);
 
-        tv.tv_sec = ts.tv_sec;                                    \
+        tv.tv_sec = ts.tv_sec;
 	    tv.tv_usec =ts.tv_nsec / 1000;
 
         localtime_r_wrapper(&tv.tv_sec, &r);

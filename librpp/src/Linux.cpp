@@ -20,7 +20,7 @@ namespace  rpp
 
         void Linux::exit(int status)
         {
-                return ::exit(status);
+                ::exit(status);
         }
 
         sighandler_t Linux::signal(int signum, sighandler_t handler)

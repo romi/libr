@@ -180,6 +180,50 @@ TEST_F(clock_posix_tests, clock_log_datetime_format_is_correct_when_short_buffer
     ASSERT_EQ(actual, expected);
 }
 
+TEST_F(clock_posix_tests, clock_datetime_compact_format_is_correct)
+{
+    // Arrange
+    char buffer[64];
+    // 20 seconds into 1970.  01/01/1970 00:00:20
+    fake_time.tv_sec = 20;
+    fake_time.tv_nsec = 1000;
+    clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
+    localtime_r_wrapper_fake.custom_fake = clock_posix_tests::localtime_r_wrapper_custom_fake;
+    std::string expected("19700101-000020");
+
+    // Act
+    char* datetime = clock_datetime_compact(buffer, sizeof(buffer));
+    std::string actual(datetime);
+
+    //Assert
+    ASSERT_EQ(clock_gettime_wrapper_fake.call_count, 1);
+    ASSERT_EQ(localtime_r_wrapper_fake.call_count, 1);
+    ASSERT_EQ(actual, expected);
+}
+
+TEST_F(clock_posix_tests, clock_datetime_compact_format_is_correct_when_short_buffer)
+{
+    // Arrange
+    char buffer[64];
+    fake_time.tv_sec = 20;
+    fake_time.tv_nsec = 1000;
+    clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
+    localtime_r_wrapper_fake.custom_fake = clock_posix_tests::localtime_r_wrapper_custom_fake;
+
+    int buffsize = 7;
+    std::string expected("197001");
+
+    // Act
+    char* datetime = clock_datetime_compact(buffer, buffsize);
+    std::string actual(datetime);
+
+    //Assert
+    ASSERT_EQ(clock_gettime_wrapper_fake.call_count, 1);
+    ASSERT_EQ(localtime_r_wrapper_fake.call_count, 1);
+    ASSERT_EQ(actual, expected);
+}
+
+
 TEST_F(clock_posix_tests, clock_sleep_calls_usleep_with_correct_time)
 {
     // Arrange

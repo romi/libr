@@ -4,9 +4,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(libr_VERSION_MAJOR 0)
-set(libr_VERSION_MINOR 1)
-
 # Default option is off.
 # We override this on the server for a test buid, so tests should be run with this on before checking in.
 option(ADDRESS_SANITISER_BUILD "Enable build settings to allow address sanitiser" ON) # default to off

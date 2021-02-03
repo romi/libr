@@ -7,23 +7,24 @@ set(SRCS_RPP
         src/json_cpp_tests.cpp
         mocks/Linux-Mock.cpp)
 
-add_executable( rpp_unit_tests_common
+add_executable( rpp_unit_tests
                 ${SRCS_RPP})
 
-target_link_libraries( rpp_unit_tests_common
+target_link_libraries( rpp_unit_tests
                         gtest
                         gmock
                         rpp)
 
 add_test(
-    NAME rpp_unit_tests_common
-    COMMAND rpp_unit_tests_common
+    NAME rpp_unit_tests
+    COMMAND rpp_unit_tests
 )
 
 if(BUILD_COVERAGE)
     SETUP_TARGET_FOR_COVERAGE_LCOV(
-            NAME rpp_unit_tests_common_coverage
+            NAME rpp_unit_tests_coverage
             EXECUTABLE ctest -V ${n_cores} -R "rpp_unit"
-            EXCLUDE '*wrapper*' "src/Linux.cpp" "include/Linux.h" "include/ILinux.h"
-            DEPENDENCIES rpp_unit_tests_common)
+#            EXCLUDE '*wrapper*' "src/Linux.cpp" "include/Linux.h" "include/ILinux.h"
+            EXCLUDE '*wrapper*' "src/Linux.cpp" "include/*.h"
+            DEPENDENCIES rpp_unit_tests)
 endif()
