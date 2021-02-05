@@ -5,7 +5,7 @@
 #include "gtest/gtest.h"
 #include "test_file_utils.h"
 
-#include "fs.h"
+#include "fs_posix.h"
 #include "mem.h"
 
 extern "C" {

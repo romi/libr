@@ -2,6 +2,10 @@
 # This is not integrated with the rest of the romi build, and will only build on the current, experimental, build system in-house.
 cmake_minimum_required(VERSION 3.10)
 
+include(${CMAKE_MODULES_DIRECTORY}/RomiProjectBuildOptions.cmake)
+MESSAGE("CXX Flags = ${CMAKE_CXX_FLAGS}")
+MESSAGE("C Flags = ${CMAKE_C_FLAGS}")
+
 set(SRCS_OS
         src/tests_main.cpp
         src/mem_tests.cpp

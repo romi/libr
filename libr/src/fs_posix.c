@@ -74,7 +74,7 @@ int path_is_absolute(const char *path)
         return path[0] == '/'; // FIXME!
 }
 
-int path_make_absolute(const char *path, char *buffer, int len)
+int path_make_absolute(const char *path, char *buffer, size_t len)
 {
         int r;
         
@@ -88,7 +88,7 @@ int path_make_absolute(const char *path, char *buffer, int len)
         }
         
         buffer[len-1] = 0;
-        return r > len;
+        return  (size_t)r > len;
 }
 
 list_t *directory_list(const char *path)
@@ -211,7 +211,7 @@ list_t* path_break(const char *path)
         return elements;
 }
 
-int path_glue(list_t* elements, int absolute, char *buffer, int len)
+int path_glue(list_t* elements, int absolute, char *buffer, size_t len)
 {
         if ((elements == NULL) || (buffer == NULL))
             return -1;
@@ -265,7 +265,7 @@ static int get_user_info(const char *user, uid_t *uid, gid_t *gid)
 {
         struct passwd pwbuf;
         struct passwd *pwbufp = NULL;
-        const int bufsize = 16384;
+        const size_t bufsize = 16384;
         char buf[bufsize];
 
         int err = getpwnam_r(user, &pwbuf, buf, bufsize, &pwbufp);
@@ -312,24 +312,24 @@ int _file_backup(const char *path)
     return 0;
 }
 
-int _file_store(const char *path, int fd, char *data, int32_t len)
+int _file_store(const char *path, int fd, char *data, size_t len)
 {
-    int32_t written = 0;
+    size_t written = 0;
 
     while (written < len) {
-        int32_t n = write(fd, data + written, len - written);
+        ssize_t n = write(fd, data + written, len - written);
         if (n == -1) {
             char msg[200];
             strerror_r(errno, msg, sizeof(msg));
             r_err("Failed to write the file %s: %s", path, msg);
             return -1;
         }
-        written += n;
+        written += (size_t)n;
     }
     return 0;
 }
 
-int file_store(const char *path, char *data, int len, int flags)
+int file_store(const char *path, char *data, size_t len, int flags)
 {
     int err = -1;
     int fd = -1;

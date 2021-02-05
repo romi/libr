@@ -2,7 +2,7 @@
 #include <time.h>
 #include "gtest/gtest.h"
 
-#include "clock.h"
+#include "clock_posix.h"
 
 extern "C" {
 #include "log.mock.h"
@@ -66,7 +66,7 @@ TEST_F(clock_posix_tests, clock_timestamp_is_correct)
     clock_gettime_wrapper_fake.return_val = 0;
     clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
 
-    uint64_t expected = (fake_time.tv_sec * NANOSECONDS_IN_SECOND) + fake_time.tv_nsec;
+    uint64_t expected = (uint64_t)((fake_time.tv_sec * NANOSECONDS_IN_SECOND) + fake_time.tv_nsec);
 
     // Act
     uint64_t actual = clock_timestamp();
@@ -124,7 +124,7 @@ TEST_F(clock_posix_tests, clock_datetime_format_is_correct_when_short_buffer)
     clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
     localtime_r_wrapper_fake.custom_fake = clock_posix_tests::localtime_r_wrapper_custom_fake;
 
-    int buffsize = 8;
+    size_t buffsize = 8;
     std::string expected("1970/01");
 
     // Act
@@ -167,7 +167,7 @@ TEST_F(clock_posix_tests, clock_log_datetime_format_is_correct_when_short_buffer
     clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
     localtime_r_wrapper_fake.custom_fake = clock_posix_tests::localtime_r_wrapper_custom_fake;
 
-    int buffsize = 8;
+    size_t buffsize = 8;
     std::string expected("1970/01");
 
     // Act
@@ -210,7 +210,7 @@ TEST_F(clock_posix_tests, clock_datetime_compact_format_is_correct_when_short_bu
     clock_gettime_wrapper_fake.custom_fake = clock_posix_tests::clock_gettime_wrapper_custom_fake;
     localtime_r_wrapper_fake.custom_fake = clock_posix_tests::localtime_r_wrapper_custom_fake;
 
-    int buffsize = 7;
+    size_t buffsize = 7;
     std::string expected("197001");
 
     // Act
@@ -229,7 +229,7 @@ TEST_F(clock_posix_tests, clock_sleep_calls_usleep_with_correct_time)
     // Arrange
     usleep_wrapper_fake.return_val = 0;
     double time_seconds = 2.1;
-    __useconds_t expected = time_seconds * MICROSECONDS_IN_SECOND;
+    __useconds_t expected = __useconds_t(time_seconds * MICROSECONDS_IN_SECOND);
 
     // Act
     clock_sleep(time_seconds);

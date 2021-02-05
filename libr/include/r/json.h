@@ -33,6 +33,8 @@
 extern "C" {
 #endif
 
+#define MAX_JSON_ARRAY_SIZE (UINT16_MAX * 2)
+
 typedef enum _json_type_t{
         k_json_null = 0,
         k_json_true = 1,
@@ -46,8 +48,8 @@ typedef enum _json_type_t{
 } json_type_t;
 
 typedef struct _base_t {
-        uint16_t refcount;
-        uint16_t type;
+        int32_t refcount;
+        json_type_t type;
         union {
                 void* data;
                 double number;
@@ -65,14 +67,14 @@ typedef int32_t (*json_iterator_t)(const char* key, json_object_t value, void* d
 
 /* Return zero if all went well, and non-zero when an error
    occured. The error code will be returned by json_serialise(). */
-typedef int32_t (*json_writer_t)(void* userdata, const char* s, int32_t len);
+typedef int32_t (*json_writer_t)(void* userdata, const char* s, size_t len);
 //
 
 #define json_type(__o) ((base_t*)__o)->type
 
 //
 
-json_object_t json_load(const char* filename, int* err, char* errmsg, int len);
+json_object_t json_load(const char* filename, int* err, char* errmsg, size_t len);
 
 /*
   object.field
@@ -89,7 +91,7 @@ double json_getnum(json_object_t obj, const char* expression);
 // object
 
 json_object_t json_object_create();
-int32_t json_object_length(json_object_t object);
+size_t json_object_length(json_object_t object);
 /* Returns the code of the iterator function. */
 int32_t json_object_foreach(json_object_t object, json_iterator_t func, void* data);
 json_object_t json_object_get(json_object_t object, const char* key);
@@ -139,12 +141,12 @@ int32_t json_parser_feed(json_parser_t* parser, const char* buffer, int32_t len)
 int32_t json_parser_done(json_parser_t* parser);
 
 json_object_t json_parser_eval_ext(json_parser_t* parser, const char* s,
-                                   int* err, char* errmsg, int len);
+                                   int* err, char* errmsg, size_t len);
 json_object_t json_parser_eval(json_parser_t* parser, const char* buffer);
 
 json_object_t json_parser_result(json_parser_t* parser);
 
-json_object_t json_parse_ext(const char* buffer, int* err, char* errmsg, int len);
+json_object_t json_parse_ext(const char* buffer, int* err, char* errmsg, size_t len);
 json_object_t json_parse(const char* buffer);
 
 // null
@@ -176,7 +178,7 @@ double json_number_value(json_object_t);
 
 json_object_t json_string_create(const char* s);
 const char* json_string_value(json_object_t string);
-int32_t json_string_length(json_object_t string);
+size_t json_string_length(json_object_t string);
 int32_t json_string_equals(json_object_t string, const char* s);
 
 #define json_isstring(__obj) (__obj->type == k_json_string)
@@ -184,18 +186,18 @@ int32_t json_string_equals(json_object_t string, const char* s);
 // array
 
 json_object_t json_array_create();
-int32_t json_array_length(json_object_t array);
-json_object_t json_array_get(json_object_t array, int32_t index);
-int32_t json_array_set(json_object_t array, json_object_t value, int32_t index);
-int32_t json_array_push(json_object_t array, json_object_t value);
+size_t json_array_length(json_object_t array);
+json_object_t json_array_get(json_object_t array, size_t index);
+size_t json_array_set(json_object_t array, json_object_t value, size_t index);
+size_t json_array_push(json_object_t array, json_object_t value);
 
 int32_t json_array_gettype(json_object_t object, int32_t index);
 
-double json_array_getnum(json_object_t object, int32_t index);
-const char* json_array_getstr(json_object_t object, int32_t index);
+double json_array_getnum(json_object_t object, size_t index);
+const char* json_array_getstr(json_object_t object, size_t index);
 
-int32_t json_array_setnum(json_object_t object, double value, int32_t index);
-int32_t json_array_setstr(json_object_t object, const char* value, int32_t index);
+size_t json_array_setnum(json_object_t object, double value, size_t index);
+size_t json_array_setstr(json_object_t object, const char* value, size_t index);
 
 #define json_isarray(__obj) (__obj->type == k_json_array)
 

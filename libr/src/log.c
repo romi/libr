@@ -213,7 +213,7 @@ static void log_(int level, const char* s)
 }
 
 
-static int log_printf(char* buffer, int bufflen, const char* format, va_list ap)
+static int log_printf(char* buffer, size_t bufflen, const char* format, va_list ap)
 {
     memset(buffer, 0, bufflen);
     vsnprintf(buffer, bufflen, format, ap);

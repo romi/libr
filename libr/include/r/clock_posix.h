@@ -22,39 +22,37 @@
   <http://www.gnu.org/licenses/>.
 
  */
+#ifndef _R_CLOCK_H_
+#define _R_CLOCK_H_
 
-#ifndef _R_FS_H_
-#define _R_FS_H_
-
-#include "list.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int path_exists(const char *path);
-int path_is_absolute(const char *path);
-int path_make_absolute(const char *path, char *buffer, int len);
-list_t* path_break(const char *path);
-int path_glue(list_t* elements, int absolute, char *buffer, int len);
-void path_delete(list_t* list);
-int path_chown(const char *path, const char *user);
+#define MICROSECONDS_IN_SECOND  1000000
+#define NANOSECONDS_IN_SECOND  1000000000
 
-int is_file(const char *path);
-int is_directory(const char *path);
+// Micro-seconds since UNIX epoch
+uint64_t clock_timestamp();
 
-enum {
-        FS_BACKUP = 1,
-        FS_LOCK = 2
-};
+// Seconds since UNIX epoch
+double clock_time();
 
-int file_store(const char *path, char *data, int len, int flags);
+// Return date-time as string in the form of "2018-11-14 17:52:38"
+char *clock_datetime(char *buf, size_t len, char sep1, char sep2, char sep3);
+// Millisecond resolution.
+char *clock_log_datetime(char *buf, size_t len, char sep1, char sep2, char sep3);
 
-list_t *directory_list(const char *path);
-int directory_create(const char *path);
+// Return date-time as string in the form of "20181114-175238", which
+// is more adapted for filenames
+char *clock_datetime_compact(char *buf, size_t len);
 
+void clock_sleep(double seconds);
+        
 #ifdef __cplusplus
 }
 #endif
 
-#endif  /* _R_FS_H_ */
+#endif // _R_CLOCK_H_

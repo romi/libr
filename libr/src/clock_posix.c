@@ -46,7 +46,7 @@ double clock_time()
         return (double) ts.tv_sec + (double) ts.tv_nsec / NANOSECONDS_IN_SECOND;
 }
 
-char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3)
+char *clock_datetime(char *buf, size_t len, char sep1, char sep2, char sep3)
 {
 
         struct tm r;
@@ -66,7 +66,7 @@ char *clock_datetime(char *buf, int len, char sep1, char sep2, char sep3)
         return buf;
 }
 
-char *clock_datetime_compact(char *buf, int len)
+char *clock_datetime_compact(char *buf, size_t len)
 {
 
         struct tm r;
@@ -85,7 +85,7 @@ char *clock_datetime_compact(char *buf, int len)
         return buf;
 }
 
-char *clock_log_datetime(char *buf, int len, char sep1, char sep2, char sep3)
+char *clock_log_datetime(char *buf, size_t len, char sep1, char sep2, char sep3)
 {
     struct tm r;
     struct timeval tv;
@@ -97,9 +97,9 @@ char *clock_log_datetime(char *buf, int len, char sep1, char sep2, char sep3)
 
     localtime_r_wrapper(&tv.tv_sec, &r);
 
-    int milliseconds = tv.tv_usec/1000;
+    long milliseconds = tv.tv_usec/1000;
 
-    snprintf(buf, len, "%04d%c%02d%c%02d%c%02d%c%02d%c%02d.%03d",
+    snprintf(buf, len, "%04d%c%02d%c%02d%c%02d%c%02d%c%02d.%03ld",
              1900 + r.tm_year, sep1, 1 + r.tm_mon, sep1, r.tm_mday,
              sep2,
              r.tm_hour, sep3, r.tm_min, sep3, r.tm_sec, milliseconds);

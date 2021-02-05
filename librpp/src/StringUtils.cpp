@@ -34,11 +34,10 @@ namespace StringUtils
     {
         va_list ap_copy;
         va_copy(ap_copy, ap);
-        auto size = std::vsnprintf(nullptr, 0, format, ap);
+        size_t size = (size_t)std::vsnprintf(nullptr, 0, format, ap);
         std::vector<char> output(++size, '\0');
         std::vsnprintf(&output[0], size, format, ap_copy);
         va_end(ap_copy);
         instring = output.data();
     }
-
 }

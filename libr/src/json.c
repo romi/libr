@@ -33,7 +33,6 @@ char* json_strdup(const char* s);
 
 #define base_type(_b)      (_b)->type
 #define base_get(_b,_type) ((_type*)(_b)->value.data)
-#define base_getnum(_b)    (_b)->value.number
 
 static base_t* _null = NULL;
 static base_t* _true = NULL;
@@ -41,14 +40,8 @@ static base_t* _false = NULL;
 static base_t* _undefined = NULL;
 
 #define JSON_NEW(_type)            ((_type*)safe_malloc(sizeof(_type), 1))
-#define JSON_NEW_ARRAY(_type, _n)  ((_type*)safe_malloc((_n)*sizeof(_type), 1))
+#define JSON_NEW_ARRAY(_type, _n)  ((_type*)safe_malloc((size_t)(_n)*sizeof(_type), 1))
 #define JSON_FREE(_p)              r_free(_p)
-#define JSON_MEMCPY(_dst,_src,_n)  memcpy(_dst,_src,_n)
-#define JSON_MEMSET(_ptr,_c,_n)    memset(_ptr,_c,_n)
-#define JSON_MEMCMP(_s,_t,_n)      memcmp(_s,_t,_n)
-#define JSON_STRLEN(_s)            strlen(_s)
-#define JSON_STRCMP(_s,_t)         strcmp(_s,_t)
-#define JSON_STRCPY(_dst,_src)     strcpy(_dst,_src)
 
 /******************************************************************************/
 
@@ -75,7 +68,7 @@ static int file_input_read(void *ptr)
 
 /******************************************************************************/
 
-base_t* base_new(int type, int len)
+base_t* base_new(json_type_t type, size_t len)
 {
         base_t* base = JSON_NEW(base_t);
         base->refcount = 1;
@@ -131,9 +124,10 @@ json_object_t json_undefined()
 /******************************************************************************/
 
 /* 31 bit hash function */
+// TBD: Think about a length check!
 uint32_t json_strhash(const char* key)
 {
-  const char *p = key;
+  const uint8_t *p =  (uint8_t *)key;
   uint32_t h = *p;
 
   if (h) {
@@ -147,9 +141,9 @@ uint32_t json_strhash(const char* key)
 
 char* json_strdup(const char* s)
 {
-	int32_t len = JSON_STRLEN(s) + 1;
+	size_t len = strlen(s) + 1;
 	char* t = JSON_NEW_ARRAY(char, len);
-	JSON_STRCPY(t, s);
+	strcpy(t, s);
 	return t;
 }
 
@@ -176,7 +170,7 @@ double json_number_value(json_object_t obj)
 /******************************************************************************/
 
 typedef struct _string_t {
-	int length;
+	size_t length;
 	char s[];
 } string_t;
 
@@ -184,14 +178,14 @@ json_object_t json_string_create(const char* s)
 {
 	base_t *base;
 	string_t *string;
-       	int len = strlen(s);
+       	size_t len = strlen(s);
 
         base = base_new(k_json_string, sizeof(string_t) + len + 1);
         base->type = k_json_string;
 
 	string = base_get(base, string_t);
 	string->length = len;
-	JSON_MEMCPY(string->s, s, string->length);
+	memcpy(string->s, s, string->length);
 	string->s[string->length] = 0;
 
 	return base;
@@ -212,7 +206,7 @@ const char* json_string_value(json_object_t obj)
 	return str->s;
 }
 
-int32_t json_string_length(json_object_t obj)
+size_t json_string_length(json_object_t obj)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_string)
@@ -239,23 +233,23 @@ int32_t json_string_equals(json_object_t obj1, const char* s)
 /******************************************************************************/
 
 typedef struct _array_t {
-	int length;
-	int datalen;
-        json_object_t data[];
+    size_t length;
+	size_t datalen;
+	json_object_t data[];
 } array_t;
 
 json_object_t json_array_create()
 {
 	base_t *base;
 	array_t *array;
-       	int len = 4;
-        int memlen = sizeof(array_t) + len * sizeof(json_object_t);
+       	size_t len = 4;
+        size_t memlen = sizeof(array_t) + len * sizeof(json_object_t);
 
         base = base_new(k_json_array, memlen);
         base->type = k_json_array;
 
 	array = base_get(base, array_t);
-        for (int i = 0; i < len; i++)
+        for (size_t i = 0; i < len; i++)
                 array->data[i] = json_undefined();
 
 	array->length = 0;
@@ -267,14 +261,14 @@ json_object_t json_array_create()
 static void delete_array(base_t* base)
 {
 	array_t *array = base_get(base, array_t);
-        int i;
+        size_t i;
 
         for (i = 0; i < array->length; i++)
                 json_unref(array->data[i]);
 	JSON_FREE(array);
 }
 
-int32_t json_array_length(json_object_t array)
+size_t json_array_length(json_object_t array)
 {
 	if (array->type != k_json_array)
 		return 0;
@@ -282,59 +276,60 @@ int32_t json_array_length(json_object_t array)
 	return a->length;	
 }
 
-json_object_t json_array_get(json_object_t obj, int32_t index)
+json_object_t json_array_get(json_object_t obj, size_t index)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_array)
 		return json_null();
 	array_t *array = base_get(base, array_t);
-	if ((0 <= index) && (index < array->length)) {
+	if (index < array->length) {
                 return array->data[index];
 	}
 	return json_null();
 }
 
-double json_array_getnum(json_object_t obj, int32_t index)
+double json_array_getnum(json_object_t obj, size_t index)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_array)
 		return NAN;
 	array_t *array = base_get(base, array_t);
-	if ((0 <= index) && (index < array->length))
+	if (index < array->length)
 		return json_number_value(array->data[index]);
 	return NAN;
 }
 
-int32_t json_array_set(json_object_t obj, json_object_t value, int32_t index)
+
+size_t json_array_set(json_object_t obj, json_object_t value, size_t index)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_array)
 		return 0;
-	if (index < 0)
-	    return index;
+	if (index > MAX_JSON_ARRAY_SIZE)
+	    return 0;
 
 	array_t *array = base_get(base, array_t);
-        // LOCK
+	// LOCK
 	if (index >= array->datalen) {
-		int newlen = 8;
+		size_t newlen = 8;
 		while (newlen <= index) {
 			newlen *= 2;
 		}
                 
-                int memlen = sizeof(array_t) + newlen * sizeof(json_object_t);
-                array_t *newarray = JSON_NEW_ARRAY(array_t, memlen);
-		for (int i = 0; i < array->datalen; i++)
+        size_t memlen = sizeof(array_t) + newlen * sizeof(json_object_t);
+        array_t *newarray = JSON_NEW_ARRAY(array_t, memlen);
+		for (size_t i = 0; i < array->datalen; i++)
 			newarray->data[i] = array->data[i];
-		for (int i = array->datalen; i < newlen; i++)
+		for (size_t i = array->datalen; i < newlen; i++)
 			newarray->data[i] = json_undefined();
 
 		newarray->datalen = newlen;
 		newarray->length = array->length;
 
-                base->value.data = newarray;                
+        base->value.data = newarray;
 
-                JSON_FREE(array);
-                array = newarray;
+        JSON_FREE(array);
+        array = newarray;
 	}
 
 	json_object_t old = array->data[index];
@@ -350,7 +345,7 @@ int32_t json_array_set(json_object_t obj, json_object_t value, int32_t index)
 	return index;
 }
 
-int32_t json_array_push(json_object_t obj, json_object_t value)
+size_t json_array_push(json_object_t obj, json_object_t value)
 {
 	base_t* base = (base_t*) obj;
 	if (base_type(base) != k_json_array)
@@ -359,23 +354,23 @@ int32_t json_array_push(json_object_t obj, json_object_t value)
 	return json_array_set(obj, value, array->length);	
 }
 
-int32_t json_array_setnum(json_object_t obj, double value, int32_t index)
+size_t json_array_setnum(json_object_t obj, double value, size_t index)
 {
         json_object_t num = json_number_create(value);
-        int retval = json_array_set(obj, num, index);
+        size_t retval = json_array_set(obj, num, index);
         json_unref(num);
         return retval;
 }
 
-int32_t json_array_setstr(json_object_t obj, const char* value, int32_t index)
+size_t json_array_setstr(json_object_t obj, const char* value, size_t index)
 {
         json_object_t s = json_string_create(value);
-        int retval = json_array_set(obj, s, index);
+        size_t retval = json_array_set(obj, s, index);
         json_unref(s);
         return retval;
 }
 
-const char* json_array_getstr(json_object_t array, int32_t index)
+const char* json_array_getstr(json_object_t array, size_t index)
 {
         json_object_t val = json_array_get(array, index);
         if (val->type == k_json_string)
@@ -397,7 +392,7 @@ struct _hashnode_t {
 static hashnode_t* new_json_hashnode(const char* key, json_object_t* value);
 static void delete_json_hashnode(hashnode_t *hash_node);
 static void delete_json_hashnodes(hashnode_t *hash_node);
-uint32_t json_strhash(const char* v);
+
 
 static hashnode_t* new_json_hashnode(const char* key, json_object_t* value)
 {
@@ -427,12 +422,12 @@ static void delete_json_hashnodes(hashnode_t *hash_node)
 }
 
 /******************************************************************************/
-
+// TBD: size_t?
 typedef struct _hashtable_t {
-	uint32_t refcount;
-        int32_t size;
-        int32_t num_nodes;
-	hashnode_t **nodes;
+	  //  uint32_t refcount;
+        uint32_t size;
+        uint32_t num_nodes;
+	    hashnode_t **nodes;
 } hashtable_t;
 
 
@@ -442,14 +437,14 @@ static int32_t hashtable_set(hashtable_t *hashtable, const char* key, json_objec
 static json_object_t hashtable_get(hashtable_t *hashtable, const char* key);
 static int32_t hashtable_unset(hashtable_t *hashtable, const char* key);
 static int32_t hashtable_foreach(hashtable_t *hashtable, json_iterator_t func, void* data);
-static int32_t hashtable_size(hashtable_t *hashtable);
+static uint32_t hashtable_size(hashtable_t *hashtable);
 static void hashtable_resize(hashtable_t *hashtable);
 static hashnode_t** hashtable_lookup_node(hashtable_t *hashtable, const char* key);
 
 static hashtable_t* new_hashtable()
 {
 	hashtable_t *hashtable = JSON_NEW(hashtable_t);
-	hashtable->refcount = 0;
+//	hashtable->refcount = 0;
 	hashtable->num_nodes = 0;
 	hashtable->size = 0;
 	hashtable->nodes = NULL;
@@ -461,7 +456,7 @@ static void delete_hashtable(hashtable_t *hashtable)
 {
 	if (hashtable != NULL) {
                 if (hashtable->nodes) {
-                        for (int32_t i = 0; i < hashtable->size; i++) {
+                        for (uint32_t i = 0; i < hashtable->size; i++) {
                                 delete_json_hashnodes(hashtable->nodes[i]);
                         }
                         JSON_FREE(hashtable->nodes);
@@ -477,13 +472,13 @@ static hashnode_t** hashtable_lookup_node(hashtable_t* hashtable, const char* ke
 	if (hashtable->nodes == NULL) {
 		hashtable->size = HASHTABLE_MIN_SIZE;
 		hashtable->nodes = JSON_NEW_ARRAY(hashnode_t*, hashtable->size);	
-		for (int32_t i = 0; i < hashtable->size; i++)
+		for (uint32_t i = 0; i < hashtable->size; i++)
 			hashtable->nodes[i] = NULL;
 	}
 	
 	node = &hashtable->nodes[json_strhash(key) % hashtable->size];
 	
-	while (*node && (JSON_STRCMP((*node)->key, key) != 0)) {
+	while (*node && (strcmp((*node)->key, key) != 0)) {
 		node = &(*node)->next;
 	}
 	
@@ -493,7 +488,7 @@ static hashnode_t** hashtable_lookup_node(hashtable_t* hashtable, const char* ke
 static int32_t hashtable_set(hashtable_t *hashtable, const char* key, json_object_t value)
 {
   
-	if ((key == NULL) || (JSON_STRLEN(key) == 0)) {
+	if ((key == NULL) || (strlen(key) == 0)) {
 		return -1;
 	}
 
@@ -549,7 +544,7 @@ static int32_t hashtable_foreach(hashtable_t *hashtable, json_iterator_t func, v
 {
 	hashnode_t *node = NULL;
 	
-	for (int32_t i = 0; i < hashtable->size; i++) {
+	for (uint32_t i = 0; i < hashtable->size; i++) {
 		for (node = hashtable->nodes[i]; node != NULL; node = node->next) {
 			int32_t r = (*func)(node->key, node->value, data);
                         if (r != 0) return r;
@@ -558,7 +553,7 @@ static int32_t hashtable_foreach(hashtable_t *hashtable, json_iterator_t func, v
         return 0;
 }
 
-static int32_t hashtable_size(hashtable_t *hashtable)
+static uint32_t hashtable_size(hashtable_t *hashtable)
 {
 	return hashtable->num_nodes;
 }
@@ -570,14 +565,14 @@ static void hashtable_resize(hashtable_t *hashtable)
 	hashnode_t *node;
 	hashnode_t *next;
 	uint32_t hash_val;
-	int32_t new_size;
+	uint32_t new_size;
 	
 	new_size = 3 * hashtable->size + 1;
 	new_size = (new_size > HASHTABLE_MAX_SIZE)? HASHTABLE_MAX_SIZE : new_size;
 	
 	new_nodes = JSON_NEW_ARRAY(hashnode_t*, new_size);
 	
-	for (int32_t i = 0; i < hashtable->size; i++) {
+	for (uint32_t i = 0; i < hashtable->size; i++) {
 		for (node = hashtable->nodes[i]; node; node = next) {
 			next = node->next;
 			hash_val = json_strhash(node->key) % new_size;      
@@ -719,7 +714,7 @@ int32_t json_object_foreach(json_object_t object, json_iterator_t func, void* da
 	return hashtable_foreach(hashtable, func, data);
 }
 
-int32_t json_object_length(json_object_t object)
+size_t json_object_length(json_object_t object)
 {
 	if (object->type != k_json_object)
 		return 0;
@@ -771,7 +766,7 @@ typedef struct _json_strbuf_t {
         int32_t index;
 } json_strbuf_t;
 
-static int32_t json_strwriter(void* userdata, const char* s, int32_t len)
+static int32_t json_strwriter(void* userdata, const char* s, size_t len)
 {
         json_strbuf_t* strbuf = (json_strbuf_t*) userdata;
         while (len-- > 0) {
@@ -801,11 +796,11 @@ int32_t json_tostring_pretty(json_object_t object, char* buffer, int32_t buflen)
     return r;
 }
 
-static int32_t json_file_writer(void* userdata, const char* s, int32_t len)
+static int32_t json_file_writer(void* userdata, const char* s, size_t len)
 {
         if (len == 0) return 0;
         FILE* fp = (FILE*) userdata;
-	int32_t n = fwrite(s, len, 1, fp);
+	size_t n = fwrite(s, len, 1, fp);
 	return (n != 1);
 }
 
@@ -846,7 +841,7 @@ int32_t json_serialise(json_object_t object,
 
 static int32_t json_write(json_writer_t fun, void* userdata, const char* s)
 {
-	return (*fun)(userdata, s, JSON_STRLEN(s));
+	return (*fun)(userdata, s, strlen(s));
 }
 
 int32_t json_serialise_text(json_serialise_t* serialise, 
@@ -904,7 +899,7 @@ int32_t json_serialise_text(json_serialise_t* serialise,
 		r = json_write(fun, userdata, "[");
 		if (r != 0) return r;
 		array_t* array = (array_t*) object->value.data;
-		for (int32_t i = 0; i < array->length; i++) {
+		for (size_t i = 0; i < array->length; i++) {
                         if (array->data[i] == NULL)
                                 r = json_write(fun, userdata, "null");
                         else
@@ -933,8 +928,8 @@ int32_t json_serialise_text(json_serialise_t* serialise,
 
 		hashtable_t* hashtable = (hashtable_t*) object->value.data;
 		hashnode_t *node = NULL;
-		int32_t count = 0;
-		for (int32_t i = 0; i < hashtable->size; i++) {
+		uint32_t count = 0;
+		for (uint32_t i = 0; i < hashtable->size; i++) {
 			for (node = hashtable->nodes[i]; node != NULL; node = node->next) {
                                 if (serialise->pretty) {
                                         for (int ii = 0; ii < serialise->indent; ii++) {
@@ -986,16 +981,16 @@ int32_t json_serialise_text(json_serialise_t* serialise,
 
 /******************************************************************************/
 
-typedef enum {
+typedef enum _json_error_t{
 	k_end_of_string = -5,
 	k_stack_overflow = -4,
-	k_out_of_memory = -3,
+	k_out_of_memory = -3, // TBD
 	k_token_error = -2,
 	k_parsing_error = -1,
 	k_continue = 0
 } json_error_t;
 
-typedef enum {
+typedef enum _json_token_t{
 	k_no_token = -1,
         k_value,
 	k_object_start,
@@ -1009,7 +1004,7 @@ typedef enum {
 	k_null,
 	k_colon,
 	k_comma,
-	k_end
+	k_end // TBD
 } json_token_t;
 
 
@@ -1039,8 +1034,8 @@ typedef enum {
 
 struct _json_parser_t {
 	char* buffer;
-	int32_t buflen;
-	int32_t bufindex;
+	size_t buflen;
+	size_t bufindex;
 	char backslash;
 	char unicode;
 	int32_t unihex;
@@ -1102,10 +1097,11 @@ void json_parser_destroy(json_parser_t* parser)
         }
 }
 
-int32_t json_parser_errno(json_parser_t* parser)
-{
-	return parser->error_code;
-}
+// TBD
+//int32_t json_parser_errno(json_parser_t* parser)
+//{
+//	return parser->error_code;
+//}
 
 char* json_parser_errstr(json_parser_t* parser)
 {
@@ -1121,12 +1117,12 @@ static void json_parser_set_error(json_parser_t* parser, int32_t error, const ch
 static int32_t json_parser_append(json_parser_t* parser, int c)
 {
 	if (parser->bufindex >= parser->buflen) {
-		int32_t newlen = 2 * parser->buflen;
+		size_t newlen = 2 * parser->buflen;
 		if (newlen == 0)
 			newlen = 128;
 		char* newbuf = JSON_NEW_ARRAY(char, newlen);
 		if (parser->buffer != NULL) {
-			JSON_MEMCPY(newbuf, parser->buffer, parser->buflen);
+			memcpy(newbuf, parser->buffer, parser->buflen);
 			JSON_FREE(parser->buffer);
 		}
 		parser->buffer = newbuf;
@@ -1145,8 +1141,8 @@ void json_parser_reset(json_parser_t* parser)
 	parser->parser_switch = k_parsing_json;
 	parser->value_stack_top = -1;
 	parser->stack_depth = 256;
-        parser->token = k_no_token;
-        parser->unwind_char = -1;
+    parser->token = k_no_token;
+    parser->unwind_char = -1;
 	parser->bufindex = 0;
 	parser->unicode = 0;
 	parser->unihex = 0;
@@ -1169,7 +1165,6 @@ void json_parser_unwind(json_parser_t* parser, int c)
 {
         parser->unwind_char = c;
 }
-
 
 static inline const char *token_name(int32_t token)
 {
@@ -1208,7 +1203,7 @@ static inline const char *state_name(json_parser_state_t state)
 }
 
 
-static inline int32_t push_state(json_parser_t* parser, int32_t s)
+static inline json_error_t push_state(json_parser_t* parser, json_parser_state_t s)
 {
         if (parser->state_stack_top + 1 >= parser->stack_depth) {
                 json_parser_set_error(parser, k_stack_overflow, "Stack overflow");
@@ -1218,7 +1213,7 @@ static inline int32_t push_state(json_parser_t* parser, int32_t s)
         return k_continue;
 }
 
-static inline int32_t pop_state(json_parser_t* parser)
+static inline json_parser_state_t pop_state(json_parser_t* parser)
 {
         if (parser->state_stack_top < 0) {
                 json_parser_set_error(parser, k_stack_overflow, "Stack overflow");
@@ -1227,12 +1222,12 @@ static inline int32_t pop_state(json_parser_t* parser)
   	return parser->state_stack[parser->state_stack_top--];
 }
 
-static inline int32_t peek_state(json_parser_t* parser)
+static inline json_parser_state_t peek_state(json_parser_t* parser)
 {
   	return parser->state_stack[parser->state_stack_top];
 }
 
-static inline void set_state(json_parser_t* parser, int32_t s)
+static inline void set_state(json_parser_t* parser, json_parser_state_t s)
 {
   	parser->state_stack[parser->state_stack_top] = s;
 }
@@ -1285,14 +1280,15 @@ static inline json_object_t peek_value(json_parser_t* parser)
 // object_key          + value        -> SET(object_colon)               & -
 // parse_value         + value        -> SET(value_parsed)
 
-static int32_t json_parser_token(json_parser_t* parser, int32_t token)
+static int32_t json_parser_token(json_parser_t* parser, json_token_t token)
 {
 	json_parser_state_t state = parser->state_stack[parser->state_stack_top];
 	double d;
+    char *non_num_data = NULL;
 	json_object_t obj;
 	json_object_t v;
 	json_object_t k;
-	int32_t r = k_continue;
+	json_error_t r = k_continue;
 
         if (0)  {
                 printf("[");
@@ -1327,13 +1323,13 @@ static int32_t json_parser_token(json_parser_t* parser, int32_t token)
                         return json_parser_token(parser, k_value);
                 break;
 
-        case k_number: 
-                d = atof(parser->buffer); // FIXME: use strtod
-                json_parser_reset_buffer(parser);
-                r = push_value(parser, json_number_create(d));
-                if (r == k_continue)
-                        return json_parser_token(parser, k_value);
-                break;
+        case k_number:
+            d = strtod(parser->buffer, &non_num_data);
+            json_parser_reset_buffer(parser);
+            r = push_value(parser, json_number_create(d));
+            if (r == k_continue)
+                return json_parser_token(parser, k_value);
+            break;
 
         case k_true:
                 r = push_value(parser, json_true());
@@ -1352,6 +1348,14 @@ static int32_t json_parser_token(json_parser_t* parser, int32_t token)
                 if (r == k_continue)
                         return json_parser_token(parser, k_value);
                 break;
+        case k_no_token:
+        case k_value:
+        case k_object_end:
+        case k_array_end:
+        case k_colon:
+        case k_comma:
+        case k_end:
+               r_debug("json_parser_token - unhandled token %d", token);
         }
 
         if (r != k_continue)
@@ -1362,171 +1366,132 @@ static int32_t json_parser_token(json_parser_t* parser, int32_t token)
                 if (token == k_value)
                         set_state(parser, k_value_parsed);
                 break;
-                
 	    case k_array_value_or_end:
-		    switch (token) {
-                case k_value:
-                        v = pop_value(parser);
-                        obj = peek_value(parser);
-                        json_array_push(obj, v);
-                        json_unref(v);
-                        set_state(parser, k_array_comma_or_end);
-                        break;
-                        
-                case k_array_end:
-                        pop_state(parser);
-                        r = json_parser_token(parser, k_value);
-                        break;
-                                
-		default:
-                        json_parser_set_error(parser, k_parsing_error,
-                                              "Expected a value or ']' while parsing array");
-			r = k_parsing_error;
-			break;		
-		}
+                if (token == k_value) {
+                    v = pop_value(parser);
+                    obj = peek_value(parser);
+                    json_array_push(obj, v);
+                    json_unref(v);
+                    set_state(parser, k_array_comma_or_end);
+                }
+                else if (token == k_array_end) {
+                    pop_state(parser);
+                    r = json_parser_token(parser, k_value);
+                }
+                else {
+                    json_parser_set_error(parser, k_parsing_error,
+                                          "Expected a value or ']' while parsing array");
+                    r = k_parsing_error;
+                }
 		break;
 
 	case k_array_comma_or_end:
-		switch (token) {
-                case k_comma:
-                        set_state(parser, k_array_value);
-                        break;
-                        
-                case k_array_end:
-                        pop_state(parser);
-                        r = json_parser_token(parser, k_value);
-                        break;
-                                
-		default:
-                        json_parser_set_error(parser, k_parsing_error,
-                                              "Expected a ',' or ']' while parsing array");
-			r = k_parsing_error;
-			break;		
-		}
+                if (token == k_comma) {
+                    set_state(parser, k_array_value);
+                }
+                else if (token == k_array_end) {
+                    pop_state(parser);
+                    r = json_parser_token(parser, k_value);
+                }
+                else {
+                    json_parser_set_error(parser, k_parsing_error,"Expected a ',' or ']' while parsing array");
+                    r = k_parsing_error;
+                }
 		break;
 
         case k_array_value:
-		switch (token) {
-                case k_value:
-                        v = pop_value(parser);
-                        obj = peek_value(parser);
-                        json_array_push(obj, v);
-                        json_unref(v);
-                        set_state(parser, k_array_comma_or_end);
-                        break;
-                                
-		default:
-                        json_parser_set_error(parser, k_parsing_error,
-                                              "Expected a value while parsing array");
-			r = k_parsing_error;
-			break;		
-		}
+            if (token == k_value)
+            {
+                v = pop_value(parser);
+                obj = peek_value(parser);
+                json_array_push(obj, v);
+                json_unref(v);
+                set_state(parser, k_array_comma_or_end);
+            }
+            else
+            {
+                json_parser_set_error(parser, k_parsing_error,"Expected a value while parsing array");
+                r = k_parsing_error;
+            }
 		break;
                 
         case k_object_key_or_end:
-		switch (token) {
-                case k_value:
-                        k = peek_value(parser);
-                        if (!json_isstring(k)) {
-                                json_parser_set_error(parser, k_parsing_error,
-                                                      "Expected a string as object key");
-                                r = k_parsing_error;
-                        } else set_state(parser, k_object_colon);
-                        break;
-                        
-                case k_object_end:
-                        pop_state(parser);
-                        r = json_parser_token(parser, k_value);
-                        break;
-                                
-		default:
-                        json_parser_set_error(parser, k_parsing_error,
-                                              "Expected a key string or '}' while parsing object");
-			r = k_parsing_error;
-			break;		
-		}
+            if (token == k_value) {
+                    k = peek_value(parser);
+                    if (!json_isstring(k)) {
+                            json_parser_set_error(parser, k_parsing_error,"Expected a string as object key");
+                            r = k_parsing_error;
+                    } else set_state(parser, k_object_colon);
+            }
+            else if (token == k_object_end) {
+                    pop_state(parser);
+                    r = json_parser_token(parser, k_value);
+            }
+            else{
+                    json_parser_set_error(parser, k_parsing_error,"Expected a key string or '}' while parsing object");
+                    r = k_parsing_error;
+            }
 		break;
                 
         case k_object_colon:
-		switch (token) {
-                case k_colon:
-                        set_state(parser, k_object_value);
-                        break;
-		default:
-                        json_parser_set_error(parser, k_parsing_error,
-                                              "Expected a ':' while parsing object");
-			r = k_parsing_error;
-			break;		
-		}
-                break;
+            if (token == k_colon) {
+                    set_state(parser, k_object_value);
+            }
+            else{
+                    json_parser_set_error(parser, k_parsing_error,"Expected a ':' while parsing object");
+                    r = k_parsing_error;
+            }
+            break;
                 
         case k_object_value:
-		switch (token) {
-                case k_value:
-                        v = pop_value(parser);
-                        k = pop_value(parser);
-                        obj = peek_value(parser);
-                        json_object_set(obj, json_string_value(k), v);
-                        json_unref(k);
-                        json_unref(v);
-                        set_state(parser, k_object_comma_or_end);
-                        break;
-                                
-		default:
-                        json_parser_set_error(parser, k_parsing_error,
-                                              "The key-value pair has an invalid value");
-			r = k_parsing_error;
-			break;		
-		}
+            if (token == k_value) {
+                v = pop_value(parser);
+                k = pop_value(parser);
+                obj = peek_value(parser);
+                json_object_set(obj, json_string_value(k), v);
+                json_unref(k);
+                json_unref(v);
+                set_state(parser, k_object_comma_or_end);
+            }
+            else{
+                json_parser_set_error(parser, k_parsing_error,"The key-value pair has an invalid value");
+                r = k_parsing_error;
+            }
 		break;
                                 
         case k_object_comma_or_end:
-		switch (token) {
-                case k_comma:
-                        set_state(parser, k_object_key);
-                        break;
-                        
-                case k_object_end:
-                        pop_state(parser);
-                        r = json_parser_token(parser, k_value);
-                        break;
-                                
-		default:
-                        json_parser_set_error(parser, k_parsing_error,
-                                              "Expected a comma or '}' while parsing object");
-			r = k_parsing_error;
-			break;		
-		}
+            if (token == k_comma) {
+                set_state(parser, k_object_key);
+            }
+            else if (token == k_object_end) {
+                pop_state(parser);
+                r = json_parser_token(parser, k_value);
+            }
+            else {
+                json_parser_set_error(parser, k_parsing_error,"Expected a comma or '}' while parsing object");
+                r = k_parsing_error;
+            }
 		break;
                 
         case k_object_key:
-		switch (token) {
-                case k_value:
-                        k = peek_value(parser);
-                        if (!json_isstring(k)) {
-                                json_parser_set_error(parser, k_parsing_error,
-                                                      "Expected a string as object key");
-                                r = k_parsing_error;
-                        } else set_state(parser, k_object_colon);
-                        break;
-                        
-                        json_parser_set_error(parser, k_parsing_error,
-                                              "Expected a key string while parsing object");
-			r = k_parsing_error;
-			break;		
-		default:
-                        json_parser_set_error(parser, k_parsing_error,
-                                              "Expected a key string while parsing object");
-			r = k_parsing_error;
-			break;		
-		}
+            if (token == k_value) {
+                k = peek_value(parser);
+                if (!json_isstring(k)) {
+                    json_parser_set_error(parser, k_parsing_error,
+                                          "Expected a string as object key");
+                    r = k_parsing_error;
+                } else set_state(parser, k_object_colon);
+            }
+            else{
+                json_parser_set_error(parser, k_parsing_error,"Expected a key string while parsing object");
+                r = k_parsing_error;
+            }
 		break;
-                
         default:
                 json_parser_set_error(parser, k_parsing_error, "Parse error");
                 r = k_parsing_error;
                 break;		
-	};
+	}
 
 	return r;
 }
@@ -1537,11 +1502,11 @@ static int32_t json_parser_unicode(json_parser_t* parser, int c)
 	char v = 0;
         
 	if (('0' <= c) && (c <= '9')) {
-		v = c - '0';
+		v = (char)(c - '0');
 	} else if (('a' <= c) && (c <= 'f')) {
-		v = 10 + c - 'a';
+		v = (char)(10 + c - 'a');
 	} else if (('A' <= c) && (c <= 'F')) {
-		v = 10 + c - 'A';
+		v = (char)(10 + c - 'A');
 	} else {
                 json_parser_set_error(parser, k_parsing_error,
                                       "Invalid character in escaped unicode character");
@@ -1562,15 +1527,15 @@ static int32_t json_parser_unicode(json_parser_t* parser, int c)
 		if ((0 <= parser->unihex) && (parser->unihex <= 0x007f)) {
 			r = json_parser_append(parser, (int) (parser->unihex & 0x007f));
 		} else if (parser->unihex <= 0x07ff) {
-			uint8_t b1 = 0xc0 | (parser->unihex & 0x07c0) >> 6;
-			uint8_t b2 = 0x80 | (parser->unihex & 0x003f);
+			uint8_t b1 = (uint8_t)(0xc0 | (parser->unihex & 0x07c0) >> 6);
+			uint8_t b2 = (uint8_t)(0x80 | (parser->unihex & 0x003f));
 			r = json_parser_append(parser, (int) b1);
 			if (r != k_continue) return r;
 			r = json_parser_append(parser, (int) b2);
 		} else if (parser->unihex <= 0xffff) {
-			uint8_t b1 = 0xe0 | (parser->unihex & 0xf000) >> 12;
-			uint8_t b2 = 0x80 | (parser->unihex & 0x0fc0) >> 6;
-			uint8_t b3 = 0x80 | (parser->unihex & 0x003f);
+			uint8_t b1 = (uint8_t)(0xe0 | (parser->unihex & 0xf000) >> 12);
+			uint8_t b2 = (uint8_t)(0x80 | (parser->unihex & 0x0fc0) >> 6);
+			uint8_t b3 = (uint8_t)(0x80 | (parser->unihex & 0x003f));
 			r = json_parser_append(parser, (int) b1);
 			if (r != k_continue) return r;
 			r = json_parser_append(parser, (int) b2);
@@ -1774,13 +1739,13 @@ static int32_t json_parser_feed_true(json_parser_t* parser, int c)
 		return r;
 
 	if (parser->bufindex < 4) {
-		if (JSON_MEMCMP(parser->buffer, "true", parser->bufindex) != 0) {
+		if (memcmp(parser->buffer, "true", parser->bufindex) != 0) {
                         json_parser_set_error(parser, k_token_error,
                                               "Invalid character while parsing 'true'");
 			return k_token_error;
                 }
 	} else if (parser->bufindex == 4) {
-		if (JSON_MEMCMP(parser->buffer, "true", 4) == 0) {
+		if (memcmp(parser->buffer, "true", 4) == 0) {
 			parser->parser_switch = k_parsing_json;
 			parser->token = k_true;
                         json_parser_reset_buffer(parser);
@@ -1801,14 +1766,14 @@ static int32_t json_parser_feed_false(json_parser_t* parser, int c)
 		return r;
 
 	if (parser->bufindex < 5) {
-		if (JSON_MEMCMP(parser->buffer, "false", parser->bufindex) != 0) {
+		if (memcmp(parser->buffer, "false", parser->bufindex) != 0) {
                         json_parser_set_error(parser, k_token_error,
                                               "Invalid character while parsing 'false'");
 			return k_token_error;
                 }
 
 	} else if (parser->bufindex == 5) {
-		if (JSON_MEMCMP(parser->buffer, "false", 5) == 0) {
+		if (memcmp(parser->buffer, "false", 5) == 0) {
 			parser->parser_switch = k_parsing_json;
 			parser->token = k_false;
                         json_parser_reset_buffer(parser);
@@ -1829,14 +1794,14 @@ static int32_t json_parser_feed_null(json_parser_t* parser, int c)
 		return r;
 
 	if (parser->bufindex < 4) {
-		if (JSON_MEMCMP(parser->buffer, "null", parser->bufindex) != 0) {
+		if (memcmp(parser->buffer, "null", parser->bufindex) != 0) {
                         json_parser_set_error(parser, k_token_error,
                                               "Invalid character while parsing 'null'");
 			return k_token_error;
                 }
 
 	} else if (parser->bufindex == 4) {
-		if (JSON_MEMCMP(parser->buffer, "null", 4) == 0) {
+		if (memcmp(parser->buffer, "null", 4) == 0) {
 			parser->parser_switch = k_parsing_json;
 			parser->token = k_null;
                         json_parser_reset_buffer(parser);
@@ -2029,26 +1994,25 @@ static int json_parser_flush(json_parser_t* parser,
         return err;
 }
 
+void json_format_error(char *s, int* err, char* errmsg, size_t len, const char *name, const json_parser_t* parser)
+{
+    if (err) *err = 1;
+    if (errmsg) {
+            snprintf(errmsg, len,
+                     "json_parser_loop: %s:%d:%d  error: %s",
+                     name, parser->linenum, parser->colnum, s);
+            errmsg[len-1] = 0;
+    }
+}
+
 static json_object_t json_parser_loop(json_parser_t* parser,
                                       const char *name,
                                       input_read_t in,
                                       void *ptr,
                                       int* err,
                                       char* errmsg,
-                                      int len)
+                                      size_t len)
 {
-        
-#define FORMAT_ERR(__s) {                                               \
-                if (err) *err = 1;                                      \
-                if (errmsg) {                                           \
-                        snprintf(errmsg, len,                           \
-                                 "json_parser_loop: %s:%d:%d  error: %s", \
-                                 name, parser->linenum, parser->colnum, \
-                                 __s);                                  \
-                        errmsg[len-1] = 0;                              \
-                }                                                       \
-        }
-        
         int32_t r;
         int done = 0;
         
@@ -2069,26 +2033,26 @@ static json_object_t json_parser_loop(json_parser_t* parser,
                 else 
                         r = json_parser_feed_one(parser, c);
                 if (r != 0) {
-                        FORMAT_ERR(json_parser_errstr(parser));
+                        json_format_error(json_parser_errstr(parser), err, errmsg, len, name, parser);
                         return json_null();
                 }
                 
                 done = _parser_done(parser);
                 if (c == -1 && !done) {
-                        FORMAT_ERR("The file is corrupt.");
+                        json_format_error("The file is corrupt.", err, errmsg, len, name, parser);
                         return json_null();
                 }
         } while (!done);
         
         if (json_parser_flush(parser, in, ptr)) {
-                FORMAT_ERR(json_parser_errstr(parser));
+                json_format_error(json_parser_errstr(parser), err, errmsg, len, name, parser);
                 return json_null();
         }
 
         return json_parser_result(parser);
 }
 
-json_object_t json_load(const char* filename, int* err, char* errmsg, int len)
+json_object_t json_load(const char* filename, int* err, char* errmsg, size_t len)
 {
         json_parser_t* parser = json_parser_create();
 
@@ -2117,7 +2081,7 @@ json_object_t json_load(const char* filename, int* err, char* errmsg, int len)
 }
 
 json_object_t json_parser_eval_ext(json_parser_t* parser, const char* s,
-                                   int* err, char* errmsg, int len)
+                                   int* err, char* errmsg, size_t len)
 {
         string_input_t in = { s, 0 };
 	json_parser_reset(parser);
@@ -2130,7 +2094,7 @@ json_object_t json_parser_eval(json_parser_t* parser, const char* s)
         return json_parser_eval_ext(parser, s, &err, NULL, 0);
 }
 
-json_object_t json_parse_ext(const char* buffer, int* err, char* errmsg, int len)
+json_object_t json_parse_ext(const char* buffer, int* err, char* errmsg, size_t len)
 {
         json_parser_t* parser;
         json_object_t obj = json_null();

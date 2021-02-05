@@ -4,6 +4,8 @@ project(librpp)
 set(librpp_VERSION_MAJOR 0)
 set(librpp_VERSION_MINOR 1)
 
+include(${CMAKE_MODULES_DIRECTORY}/RomiProjectBuildOptions.cmake)
+
 set(SOURCES
         include/JsonCpp.h
         include/MemBuffer.h

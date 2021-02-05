@@ -209,7 +209,7 @@ char *safe_strdup(const char *s)
                 r_warn("safe_strdup: s == NULL!"); 
                 return NULL;
         }
-        int len = 0;
+        size_t len = 0;
         while (s[len] != 0) {
                 len++;
                 if (len >= ONE_MB) {

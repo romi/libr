@@ -4,10 +4,10 @@
 #include <zconf.h>
 #include "gtest/gtest.h"
 #include "test_file_utils.h"
-#include "json.h"
 
 extern "C" {
-#include <math.h>
+#include <cmath>
+#include "json.h"
 }
 
 extern std::string full_exe_path;
@@ -18,9 +18,11 @@ namespace fs = std::experimental::filesystem;
 static std::string getexepath()
 {
     char result[ PATH_MAX ];
+    std::string pstring;
     ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
-    std::string sresult(result, (count > 0) ? count : 0 );
-    std::string pstring = fs::path(result).parent_path();
+
+    std::string sresult(result, (count > 0) ? (size_t)count : 0 );
+    pstring = fs::path(result).parent_path();
     return pstring;
 }
 
@@ -52,7 +54,7 @@ public:
 
 };
 
-std::vector<std::string> GetFilesInDir(std::string directory)
+std::vector<std::string> GetFilesInDir(const std::string& directory)
 {
     std::vector<std::string> filenames;
 
@@ -64,11 +66,11 @@ std::vector<std::string> GetFilesInDir(std::string directory)
 }
 
 std::pair<std::string, std::string>
-parse_json_filename(std::string json_test_filename)
+parse_json_filename(const std::string& json_test_filename)
 {
     std::string delim = "_";
 
-    auto start = 0U;
+    size_t start = 0U;
     auto end = json_test_filename.find(delim);
     std::string success = json_test_filename.substr(start, end - start);
     start = end + delim.length();
@@ -78,7 +80,7 @@ parse_json_filename(std::string json_test_filename)
 
 }
 
-int get_expected_error(std::string success)
+int get_expected_error(const std::string& success)
 {
     int successval = 1;
     if (success == "y")
@@ -114,7 +116,7 @@ const char *get_string(json_object_t obj)
 }
 
 
-bool is_type(std::string type, json_object_t obj)
+bool is_type(const std::string& type, json_object_t obj)
 {
     bool ret = false;
 
@@ -308,11 +310,11 @@ TEST_F(json_tests, json_string_length_correct)
     char error_message[256];
 
     std::string json_string("[\"test_string\"]");
-    int expected_json_string_length = json_string.length()- 4; // []""
+    size_t expected_json_string_length = json_string.length()- 4; // []""
 
     // Act
     auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
-    int actual_length = json_string_length(json_array_get(obj, 0));
+    size_t actual_length = json_string_length(json_array_get(obj, 0));
     json_unref(obj);
 
     //Assert
@@ -330,7 +332,7 @@ TEST_F(json_tests, json_string_length_correct_when_not_a_string)
 
     // Act
     auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
-    int actual_length = json_string_length(obj);
+    size_t actual_length = json_string_length(obj);
     json_unref(obj);
 
     //Assert
@@ -421,7 +423,7 @@ TEST_F(json_tests, json_array_length_returns_correct_value)
 
     // Act
     auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
-    int actual = json_array_length(obj);
+    size_t actual = json_array_length(obj);
     json_unref(obj);
 
     //Assert
@@ -439,7 +441,7 @@ TEST_F(json_tests, json_array_length_incorrect_type_returns_0)
 
     // Act
     auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
-    int actual = json_array_length(obj);
+    size_t actual = json_array_length(obj);
     json_unref(obj);
 
     //Assert
@@ -486,7 +488,7 @@ TEST_F(json_tests, json_array_get_invalid_index_returns_json_null)
     // Arrange
     int parse_error = 0;
     char error_message[256];
-    int index = 20;
+    size_t index = 20;
     std::string json_string("[7, 2, 3]");
 
     // Act
@@ -537,7 +539,7 @@ TEST_F(json_tests, json_array_getnum_invalid_index_returns_NAN)
     // Arrange
     int parse_error = 0;
     char error_message[256];
-    int index = 20;
+    size_t index = 20;
     std::string json_string("[7, 2, 3]");
 
     // Act
@@ -555,7 +557,7 @@ TEST_F(json_tests, json_array_set_invalid_type_returns_0)
     // Arrange
     int parse_error = 0;
     char error_message[256];
-    int index = 2;
+    size_t index = 2;
     int numbervalue = 100;
     int expected = 0;
 
@@ -577,9 +579,9 @@ TEST_F(json_tests, json_array_set_valid_index_returns_index)
     // Arrange
     int parse_error = 0;
     char error_message[256];
-    int index = 2;
+    size_t index = 2;
     int numbervalue = 100;
-    int expected = index;
+    size_t expected = index;
 
     std::string json_string("[7, 2, 3]");
     std::string json_expected_string("[7, 2, 100]");
@@ -608,9 +610,9 @@ TEST_F(json_tests, json_array_set_outofrange_index_returns_index_sets_value)
     // Arrange
     int parse_error = 0;
     char error_message[256];
-    int index = 8;
+    size_t index = 8;
     int numbervalue = 100;
-    int expected = index;
+    size_t expected = index;
 
     std::string json_string("[7, 2, 3]");
 
@@ -628,18 +630,73 @@ TEST_F(json_tests, json_array_set_outofrange_index_returns_index_sets_value)
     ASSERT_EQ(actual_number, numbervalue);
 }
 
+TEST_F(json_tests, json_array_set_maximum_sets_maximum)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    size_t index = MAX_JSON_ARRAY_SIZE;
+    int numbervalue = 100;
+    size_t expected = index;
+
+    std::string json_string("[7, 2, 3]");
+
+    // Act -
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto numberobj = json_number_create(numbervalue);
+    auto actual = json_array_set(obj, numberobj, index);
+
+    char buffer[256];
+    json_tostring(obj, buffer, 256);
+    std::string actual_string(buffer);
+
+    json_unref(obj);
+    json_unref(numberobj);
+
+    // Assert
+    ASSERT_EQ(actual, expected);
+}
+
+TEST_F(json_tests, json_array_set_over_maximum_leaves_array_unchanged)
+{
+    // Arrange
+    int parse_error = 0;
+    char error_message[256];
+    size_t index = MAX_JSON_ARRAY_SIZE + 1;
+    int numbervalue = 100;
+    int expected = 0;
+
+    std::string json_string("[7, 2, 3]");
+
+    // Act -
+    auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
+    auto numberobj = json_number_create(numbervalue);
+    auto actual = json_array_set(obj, numberobj, index);
+
+    char buffer[256];
+    json_tostring(obj, buffer, 256);
+    std::string actual_string(buffer);
+
+    json_unref(obj);
+    json_unref(numberobj);
+
+    // Assert
+    ASSERT_EQ(actual, expected);
+    ASSERT_EQ(json_string, actual_string);
+}
+
 TEST_F(json_tests, json_array_set_negative_leaves_array_unchanged)
 {
     // Arrange
     int parse_error = 0;
     char error_message[256];
-    int index = -1;
+    size_t index = static_cast<size_t>(-1);
     int numbervalue = 100;
-    int expected = index;
+    int expected = 0;
 
     std::string json_string("[7, 2, 3]");
 
-    // Act
+    // Act -
     auto obj = json_parse_ext(json_string.c_str(), &parse_error, error_message, sizeof(error_message));
     auto numberobj = json_number_create(numbervalue);
     auto actual = json_array_set(obj, numberobj, index);
@@ -709,7 +766,7 @@ TEST_F(json_tests, json_setnum_sets_number)
     int parse_error = 0;
     char error_message[256];
     int numbervalue = 100;
-    int index = 3;
+    size_t index = 3;
 
     std::string json_string("[7, 2, 3]");
 
@@ -733,7 +790,7 @@ TEST_F(json_tests, json_setstr_sets_string)
     int parse_error = 0;
     char error_message[256];
     std::string string_value("hundred");
-    int index = 2;
+    size_t index = 2;
 
     std::string json_string("[7, 2, 3]");
     std::string json_expected_string("[7, 2, \"hundred\"]");
@@ -1143,7 +1200,7 @@ TEST_F(json_tests, json_object_length_is_correct_empty)
     json_object_t obj = json_object_create();
 
     // Act
-    int actual = json_object_length(obj);
+    auto actual = json_object_length(obj);
 
     // Assert
     ASSERT_EQ(actual, expected_size);
@@ -1158,7 +1215,7 @@ TEST_F(json_tests, json_object_length_wrong_object_type_is_correct)
     auto numberobj = json_number_create(value);
 
     // Act
-    int actual = json_object_length(numberobj);
+    auto actual = json_object_length(numberobj);
 
     // Assert
     ASSERT_EQ(actual, expected_size);
@@ -1182,7 +1239,7 @@ TEST_F(json_tests, json_object_length_is_correct)
     json_object_setnum(obj, key12.c_str(), value++);
 
     // Act
-    int actual = json_object_length(obj);
+    auto actual = json_object_length(obj);
 
     // Assert
     ASSERT_EQ(actual, expected_size);
@@ -1197,12 +1254,12 @@ TEST_F(json_tests, json_object_length_hashtable_resizes_hashtable)
 
     // Act
     json_object_t obj = json_object_create();
-    int length = json_object_length(obj);
+    auto length = json_object_length(obj);
 
     for (int value = 0; value < number_of_values; value++)
         json_object_setnum(obj, (key + std::to_string(value)).c_str(), value);
 
-    int actual_length = json_object_length(obj);
+    auto actual_length = json_object_length(obj);
 
     json_unref(obj);
 
@@ -1348,13 +1405,11 @@ TEST_F(json_tests, json_print_serialises_float_number_types)
 {
     // Arrange
     std::string key10("key10");
-    float value = 200.192836234;
-
-    std::string expected_json_string("{\"key10\":200.192841}\n");
+    double value = 200.192836234;
+    std::string expected_json_string("{\"key10\":200.192836}\n");
 
     // Act
     json_object_t obj = json_object_create();
-
     json_object_setnum(obj, key10.c_str(), value);
 
     testing::internal::CaptureStdout();
@@ -1372,9 +1427,9 @@ TEST_F(json_tests, json_print_array_prints_undefineds)
     // Arrange
     int parse_error = 0;
     char error_message[256];
-    int index = 128;
+    size_t index = 128;
     int numbervalue = 100;
-    int expected = index;
+    size_t expected = index;
 
     std::string json_string("[7, 2, 3]");
     std::string expected_json_string("[7, 2, 3, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined");

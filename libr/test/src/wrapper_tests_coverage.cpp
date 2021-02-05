@@ -3,7 +3,7 @@
 #include "gtest/gtest.h"
 
 #include "os_wrapper.h"
-#include "clock.h"
+#include "clock_posix.h"
 
 extern "C" {
 #include "log.mock.h"

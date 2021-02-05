@@ -38,8 +38,8 @@ typedef struct _membuf_t membuf_t;
 struct _membuf_t
 {
     char* buffer;
-    int length;
-    int index;
+    size_t length;
+    size_t index;
     mutex_t *mutex;
 };
 
@@ -47,7 +47,7 @@ membuf_t *new_membuf();
 void delete_membuf(membuf_t *b);
 
 void membuf_put(membuf_t *b, char c);
-void membuf_append(membuf_t *b, const char *data, int len);
+void membuf_append(membuf_t *b, const char *data, size_t len);
 void membuf_append_zero(membuf_t *b);
 
 /**
@@ -63,21 +63,21 @@ int membuf_printf(membuf_t *b, const char* format, ...);
 int membuf_vprintf(membuf_t *b, const char* format, va_list ap);
 void membuf_print_obj(membuf_t *b, json_object_t obj);
 
-int membuf_available(membuf_t *b);
-void membuf_assure(membuf_t *b, int size);
+size_t membuf_available(membuf_t *b);
+void membuf_assure(membuf_t *b, size_t size);
 void membuf_clear(membuf_t *b);
 
 char* membuf_data(membuf_t *b);
-int membuf_len(membuf_t *b);
+size_t membuf_len(membuf_t *b);
 
 void membuf_lock(membuf_t *b);
 void membuf_unlock(membuf_t *b);
 mutex_t *membuf_mutex(membuf_t *b);
 
-int membuf_size(membuf_t *b);
+size_t membuf_size(membuf_t *b);
 
 // Use with caution!
-void membuf_set_len(membuf_t *b, int len);
+void membuf_set_len(membuf_t *b, size_t len);
 
 #ifdef __cplusplus
 }

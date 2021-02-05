@@ -4,6 +4,8 @@ project(libr)
 set(libr_VERSION_MAJOR 0)
 set(libr_VERSION_MINOR 1)
 
+include(${CMAKE_MODULES_DIRECTORY}/RomiProjectBuildOptions.cmake)
+
 set(SOURCES
   src/r.c 
   src/mem.c 

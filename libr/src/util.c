@@ -27,7 +27,7 @@
 #include <sys/syscall.h>
 #include "r.h"
 
-char *rprintf(char *buffer, int buflen, const char *format, ...)
+char *rprintf(char *buffer, size_t buflen, const char *format, ...)
 {
         int len;
         va_list ap;
@@ -36,7 +36,7 @@ char *rprintf(char *buffer, int buflen, const char *format, ...)
         len = vsnprintf(NULL, 0, format, ap);
         va_end(ap);
 
-        if (len < 0 || buflen < len+1)
+        if (len < 0 || buflen < (size_t)len+1)
                 return NULL;
         
         va_start(ap, format);
@@ -61,8 +61,8 @@ char *r_uuid()
         r_random(&b, sizeof(b));
 
         // RFC 4122 section 4.4
-        b[6] = 0x40 | (b[6] & 0x0f);
-        b[8] = 0x80 | (b[8] & 0x3f);
+        b[6] = (uint8_t)(0x40 | (b[6] & 0x0f));
+        b[8] = (uint8_t)(0x80 | (b[8] & 0x3f));
         
         char s[37];
         snprintf(s, 37,

@@ -3,7 +3,7 @@
 #include <termio.h>
 #include "gtest/gtest.h"
 
-#include "serial.h"
+#include "serial_posix.h"
 
 extern "C" {
 #include "log.mock.h"
@@ -117,10 +117,10 @@ protected:
         return 0;
     }
 
-    static ssize_t read_custom_fake( int fd, void *data, size_t size)
+    static ssize_t read_custom_fake( int fd, void *data, size_t __attribute__((unused))size)
     {
         fd_data = fd;
-        request_size_data = size;
+//        request_size_data = size;
         *((char*)data) = read_data[current_read_char++];
         return read_return_value;
     }
@@ -130,19 +130,19 @@ protected:
         char* char_data = ((char*)data);
         size_t char_data_index = 0;
         fd_data = fd;
-        request_size_data = size;
+//        request_size_data = size;
 
         while (char_data_index < size)
             char_data[char_data_index++] = read_data[current_read_char++];
-        return size;
+        return (ssize_t)size;
     }
 
-    static ssize_t read_return_number_custom_fake( int fd, void *data, size_t size)
+    static ssize_t read_return_number_custom_fake( int fd, void *data, size_t __attribute__((unused))size)
     {
         char* char_data = ((char*)data);
         size_t char_data_index = 0;
         fd_data = fd;
-        request_size_data = size;
+//        request_size_data = size;
 
         while (char_data_index < (size_t)read_return_value)
             char_data[char_data_index++] = read_data[current_read_char++];
@@ -152,9 +152,9 @@ protected:
     static ssize_t write_size_custom_fake(int fd, const void *data, size_t size)
     {
         fd_data = fd;
-        request_size_data = size;
+//        request_size_data = size;
         write_data += (char *)data;
-        return size;
+        return (ssize_t)size;
     }
 
 public:
@@ -172,12 +172,12 @@ public:
     static int fd_data;
     static std::string read_data;
     static std::string put_data;
-    static size_t request_size_data;
+//    static size_t request_size_data;
     static ssize_t read_return_value;
-    static int current_read_char;
+    static size_t current_read_char;
 
     static std::string write_data;
-    static ssize_t write_return_value;
+//    static ssize_t write_return_value;
 };
 
 unsigned int serial_posix_tests::cflags_data;
@@ -187,11 +187,11 @@ speed_t serial_posix_tests::speed_data;
 int serial_posix_tests::fd_data;
 std::string serial_posix_tests::read_data;
 std::string serial_posix_tests::put_data;
-size_t serial_posix_tests::request_size_data;
+//size_t serial_posix_tests::request_size_data;
 ssize_t serial_posix_tests::read_return_value;
-int serial_posix_tests::current_read_char;
+size_t serial_posix_tests::current_read_char;
 std::string serial_posix_tests::write_data;
-ssize_t serial_posix_tests::write_return_value;
+//ssize_t serial_posix_tests::write_return_value;
 
 
 TEST_F(serial_posix_tests, new_serial_open_calls_with_correct_parameters)
@@ -699,7 +699,7 @@ TEST_F(serial_posix_tests, serial_read_read_fails_returns_error)
 TEST_F(serial_posix_tests, serial_read_read_succeeds_returns_correct_data)
 {
     // Arrange
-    int num__to_read = 4;
+    size_t num__to_read = 4;
     serial_t serial_data;
     serial_data.fd = 10;
     serial_data.quit = 0;
@@ -708,7 +708,7 @@ TEST_F(serial_posix_tests, serial_read_read_succeeds_returns_correct_data)
     
     current_read_char = 0;
     read_fake.custom_fake = read_size_custom_fake;
-    read_return_value = num__to_read;
+    read_return_value = (ssize_t )num__to_read;
 
     const int buffer_size = 1024;
     char buffer[buffer_size];
@@ -730,9 +730,9 @@ TEST_F(serial_posix_tests, serial_read_read_succeeds_returns_correct_data)
 TEST_F(serial_posix_tests, serial_read_read_succeeds_multiple_times_returns_correct_data)
 {
     // Arrange
-    int num__to_read = 12;
-    int num_chars_read = 4;
-    int num_read_calls = num__to_read / num_chars_read;
+    size_t num__to_read = 12;
+    size_t num_chars_read = 4;
+    size_t num_read_calls = num__to_read / num_chars_read;
     serial_t serial_data;
     serial_data.fd = 10;
     serial_data.quit = 0;
@@ -741,7 +741,7 @@ TEST_F(serial_posix_tests, serial_read_read_succeeds_multiple_times_returns_corr
     current_read_char = 0;
 
     read_fake.custom_fake = read_return_number_custom_fake;
-    read_return_value = num_chars_read;
+    read_return_value = (ssize_t)num_chars_read;
 
     const int buffer_size = 1024;
     char buffer[buffer_size];
@@ -1048,7 +1048,7 @@ TEST_F(serial_posix_tests, serial_write_called_with_correct_parameters)
 
     const char *buffer = "buffer";
     std::string bufferstring(buffer);
-    write_fake.return_val = bufferstring.length();
+    write_fake.return_val = (ssize_t)bufferstring.length();
     // Act
     int actual = serial_write(&serial_data, buffer, bufferstring.length());
 
@@ -1071,14 +1071,14 @@ TEST_F(serial_posix_tests, serial_write_called_correct_number_of_times)
 
     const char *buffer = "buffer";
     std::string bufferstring(buffer);
-    write_fake.return_val = bufferstring.length();
+    write_fake.return_val = (ssize_t)bufferstring.length();
 
     ssize_t write_return_values[3] = { 0, 3, 3 };
     SET_RETURN_SEQ(write, write_return_values, 3);
 
     // Act
     int actual = serial_write(&serial_data, buffer, bufferstring.length());
-    int bufferLength = bufferstring.length();
+    size_t bufferLength = bufferstring.length();
 
     //Assert
     ASSERT_EQ(actual, 0);
@@ -1089,7 +1089,7 @@ TEST_F(serial_posix_tests, serial_write_called_correct_number_of_times)
     ASSERT_EQ(write_fake.arg1_history[2], buffer+write_return_values[1]);
     ASSERT_EQ(write_fake.arg2_history[0], bufferLength);
     ASSERT_EQ(write_fake.arg2_history[1], bufferLength);
-    ASSERT_EQ(write_fake.arg2_history[2], (bufferLength-write_return_values[1]));
+    ASSERT_EQ(write_fake.arg2_history[2], (bufferLength - static_cast<unsigned long>(write_return_values[1])));
 }
 
 TEST_F(serial_posix_tests, serial_write_fails_returns_error)
@@ -1123,7 +1123,7 @@ TEST_F(serial_posix_tests, serial_print_calls_write_with_correct_parameters)
 
     const char *buffer = "buffer";
     std::string bufferstring(buffer);
-    write_fake.return_val = bufferstring.length();
+    write_fake.return_val = static_cast<ssize_t>(bufferstring.length());
 
     // Act
     int actual = serial_print(&serial_data, buffer);

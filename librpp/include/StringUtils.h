@@ -18,7 +18,7 @@ namespace StringUtils
     template <typename ...Args>
     std::string string_format(const std::string& format, Args && ...args)
     {
-        auto size = std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
+        size_t size = (size_t)std::snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...);
         std::vector<char> output(++size, '\0');
         std::snprintf(&output[0], size, format.c_str(), std::forward<Args>(args)...);
         return std::string(output.data());

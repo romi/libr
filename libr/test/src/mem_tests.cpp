@@ -132,8 +132,8 @@ TEST_F(mem_tests, safe_calloc_calls_with_correct_size)
 {
     // Arrange
     const int number = 10;
-    int size = sizeof(uint16_t);
-    int expected_size = number * size;
+    size_t size = sizeof(uint16_t);
+    size_t expected_size = number * size;
     uint16_t buffer[number];
     malloc_wrapper_fake.return_val = &buffer;
 

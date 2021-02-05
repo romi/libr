@@ -40,14 +40,14 @@ int get_termios(serial_t *s, struct termios *tty);
 int set_termios(serial_t *s, struct termios myTermios);
 
 int serial_get(serial_t *s);
-int serial_read(serial_t *s, char *buf, int len);
+int serial_read(serial_t *s, char *buf, size_t len);
 const char *serial_readline(serial_t *s, membuf_t *buffer);
-int serial_read_timeout(serial_t *s, char *buf, int len, int timeout_ms);
+int serial_read_timeout(serial_t *s, char *buf, size_t len, int timeout_ms);
 
 // returns 0: no error, -1: error
 // These functions are not protected by a mutex. 
 int serial_put(serial_t *s, char c);
-int serial_write(serial_t *s, const char *buf, int len);
+int serial_write(serial_t *s, const char *buf, size_t Slen);
 int serial_print(serial_t *s, const char *line);
 int serial_println(serial_t *s, const char *line);
 int serial_printf(serial_t *s, const char *format, ...);

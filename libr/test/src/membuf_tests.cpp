@@ -39,7 +39,7 @@ protected:
     {
 	}
 
-	void SetupMemBufferAndMutex(char* buffer, int length, int index)
+	void SetupMemBufferAndMutex(char* buffer, size_t length, size_t index)
     {
         memset(&membuffer, 0, sizeof(membuffer));
         char fakemutex = 'p';
@@ -380,11 +380,11 @@ TEST_F(membuf_tests, membuf_len_returns_correct_value)
     const int dest_buffer_size = 16;
     char dest_buffer[dest_buffer_size];
     memset(&dest_buffer, 0, sizeof(dest_buffer));
-    int expected_index = 4;
+    size_t expected_index = 4;
     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, expected_index);
 
     // Act
-    int actual = membuf_len(&membuffer);
+    size_t actual = membuf_len(&membuffer);
 
     // Assert
     ASSERT_EQ(actual, expected_index);
@@ -396,7 +396,7 @@ TEST_F(membuf_tests, membuf_set_len_does_not_set_legth_when_new_length_too_long)
     const int dest_buffer_size = 16;
     char dest_buffer[dest_buffer_size];
     memset(&dest_buffer, 0, sizeof(dest_buffer));
-    int expected_index = 4;
+    size_t expected_index = 4;
     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, expected_index);
 
     // Act
@@ -412,8 +412,8 @@ TEST_F(membuf_tests, membuf_set_len_set_length_when_length_valid)
     const int dest_buffer_size = 16;
     char dest_buffer[dest_buffer_size];
     memset(&dest_buffer, 0, sizeof(dest_buffer));
-    int length = 4;
-    int expected_index = 10;
+    size_t length = 4;
+    size_t expected_index = 10;
     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, length);
 
     // Act
@@ -430,12 +430,12 @@ TEST_F(membuf_tests, membuf_availible_returns_correct_value)
     char dest_buffer[dest_buffer_size];
     memset(&dest_buffer, 0, sizeof(dest_buffer));
 
-    int index = 4;
-    int expected_available = dest_buffer_size - index;
+    size_t index = 4;
+    size_t expected_available = dest_buffer_size - index;
     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, index);
 
     // Act
-    int actual = membuf_available(&membuffer);
+    size_t actual = membuf_available(&membuffer);
 
     // Assert
     ASSERT_EQ(actual, expected_available);
@@ -448,11 +448,11 @@ TEST_F(membuf_tests, membuf_size_returns_correct_value)
     char dest_buffer[dest_buffer_size];
     memset(&dest_buffer, 0, sizeof(dest_buffer));
 
-    int index = 4;
+    size_t index = 4;
     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, index);
 
     // Act
-    int actual = membuf_size(&membuffer);
+    size_t actual = membuf_size(&membuffer);
 
     // Assert
     ASSERT_EQ(actual, dest_buffer_size);
@@ -465,7 +465,7 @@ TEST_F(membuf_tests, membuf_assure_when_grow_succeeds_returns_correct_value)
     char dest_buffer[dest_buffer_size];
     memset(&dest_buffer, 0, sizeof(dest_buffer));
 
-    int index = 4;
+    size_t index = 4;
     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, index);
 
     const int grown_buffer_size = 32;
@@ -490,7 +490,7 @@ TEST_F(membuf_tests, membuf_printf_with_correct_parameters_prints_to_buffer)
     char dest_buffer[dest_buffer_size];
     memset(&dest_buffer, 0, sizeof(dest_buffer));
 
-    int index = 0;
+    size_t index = 0;
     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, index);
 
     const int grown_buffer_size = 32;
@@ -516,7 +516,7 @@ TEST_F(membuf_tests, membuf_printf_buffer_grows_returns_correct_value)
     char dest_buffer[dest_buffer_size];
     memset(&dest_buffer, 0, sizeof(dest_buffer));
 
-    int index = 0;
+    size_t index = 0;
     SetupMemBufferAndMutex(dest_buffer, dest_buffer_size, index);
 
     const int grown_buffer_size = 8;

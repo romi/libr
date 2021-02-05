@@ -31,14 +31,14 @@ extern "C" {
 
 #include <r/mem.h>
 #include <r/thread.h>
-#include <r/fs.h>
-#include <r/clock.h>
+#include <r/fs_posix.h>
+#include <r/clock_posix.h>
 #include <r/membuf.h>
 #include <r/list.h>
 #include <r/log.h>
 #include <r/util.h>
 #include <r/json.h>
-#include <r/serial.h>
+#include <r/serial_posix.h>
 #include <r/os_wrapper.h>
 
 /**

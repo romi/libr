@@ -30,7 +30,7 @@
 static void membuf_grow(membuf_t *b)
 {
         if (b) {
-                int len = 2 * b->length;
+                size_t len = 2 * b->length;
                 if (len == 0)
                         len = 128;
                 b->buffer = r_realloc(b->buffer, len);
@@ -38,7 +38,7 @@ static void membuf_grow(membuf_t *b)
         }
 }
 
-static void membuf_grow_to_fit(membuf_t *b, int len)
+static void membuf_grow_to_fit(membuf_t *b, size_t len)
 {
         if (b) {
                 while (b->index + len > b->length)
@@ -87,7 +87,7 @@ mutex_t *membuf_mutex(membuf_t *b)
         return b == NULL? NULL : b->mutex;
 }
 
-void membuf_append(membuf_t *b, const char *data, int len)
+void membuf_append(membuf_t *b, const char *data, size_t len)
 {
         if (b) {
                 membuf_grow_to_fit(b, len);
@@ -122,12 +122,12 @@ char* membuf_data(membuf_t *b)
         return b == NULL? NULL : b->buffer;
 }
 
-int membuf_len(membuf_t *b)
+size_t membuf_len(membuf_t *b)
 {
         return b == NULL? 0 : b->index;
 }
 
-void membuf_set_len(membuf_t *b, int len)
+void membuf_set_len(membuf_t *b, size_t len)
 {
         if (b) {
                 if (len <= b->length)
@@ -135,17 +135,17 @@ void membuf_set_len(membuf_t *b, int len)
         }
 }
 
-int membuf_available(membuf_t *b)
+size_t membuf_available(membuf_t *b)
 {
         return b == NULL? 0 : b->length - b->index;
 }
 
-int membuf_size(membuf_t *b)
+size_t membuf_size(membuf_t *b)
 {
         return b == NULL? 0 : b->length;
 }
 
-void membuf_assure(membuf_t *b, int size)
+void membuf_assure(membuf_t *b, size_t size)
 {
         membuf_grow_to_fit(b, size);
 }
@@ -170,13 +170,13 @@ int membuf_vprintf(membuf_t* b, const char* format, va_list ap)
         len = vsnprintf(NULL, 0, format, ap);
 
         if (len >= 0) {
-                membuf_assure(b, len+1);
+                membuf_assure(b, (size_t)len+1);
 
-                int available = membuf_available(b);
+                size_t available = membuf_available(b);
                 
                 len = vsnprintf(b->buffer + b->index, available, format, ap_copy);
-                if (len >= 0 && len < available) {
-                        b->index += len;
+                if (len >= 0 && (size_t)len < available) {
+                        b->index += (size_t)len;
                         err = 0;
                 }
         }
@@ -186,7 +186,7 @@ int membuf_vprintf(membuf_t* b, const char* format, va_list ap)
         return err;
 }
 
-static int32_t membuf_json_writer(void* userdata, const char* s, int32_t len)
+static int32_t membuf_json_writer(void* userdata, const char* s, size_t len)
 {
         membuf_t *b = (membuf_t *) userdata;
         membuf_append(b, s, len);

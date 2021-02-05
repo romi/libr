@@ -69,7 +69,7 @@ static int open_serial(const char *device)
 static int configure_termios(serial_t *s, int reset)
 {
     struct termios tty;
-    int speed_constant;
+    speed_t speed_constant;
 
     switch (s->speed) {
         case 9600: speed_constant = B9600; break;
@@ -89,23 +89,23 @@ static int configure_termios(serial_t *s, int reset)
     }
 
     tty.c_cflag |= CLOCAL | CREAD;
-    tty.c_cflag &= ~CSIZE;
+    tty.c_cflag &= (unsigned int) ~CSIZE;
     tty.c_cflag |= CS8;         /* 8-bit characters */
-    tty.c_cflag &= ~PARENB;     /* no parity bit */
-    tty.c_cflag &= ~CSTOPB;     /* only need 1 stop bit */
+    tty.c_cflag &= (unsigned int) ~PARENB;     /* no parity bit */
+    tty.c_cflag &= (unsigned int) ~CSTOPB;     /* only need 1 stop bit */
     tty.c_cflag &= ~CRTSCTS;    /* no hardware flowcontrol */
-    tty.c_cflag &= ~HUPCL;
+    tty.c_cflag &= (unsigned int) ~HUPCL;
     if(reset)
         tty.c_cflag |= HUPCL;
 
     tty.c_lflag |= ICANON | ISIG;  /* canonical input */
-    tty.c_lflag &= ~(ECHO | ECHOE | ECHONL | IEXTEN);
+    tty.c_lflag &= (unsigned int) ~(ECHO | ECHOE | ECHONL | IEXTEN);
 
-    tty.c_iflag &= ~IGNCR;  /* preserve carriage return */
+    tty.c_iflag &= (unsigned int) ~IGNCR;  /* preserve carriage return */
     tty.c_iflag |= IGNCR;  /* preserve carriage return */
-    tty.c_iflag &= ~INPCK;
-    tty.c_iflag &= ~(INLCR | ICRNL | IUCLC | IMAXBEL);
-    tty.c_iflag &= ~(IXON | IXOFF | IXANY);   /* no SW flowcontrol */
+    tty.c_iflag &= (unsigned int) ~INPCK;
+    tty.c_iflag &= (unsigned int) ~(INLCR | ICRNL | IUCLC | IMAXBEL);
+    tty.c_iflag &= (unsigned int) ~(IXON | IXOFF | IXANY);   /* no SW flowcontrol */
 
 //    tty.c_oflag &= ~OPOST;
     tty.c_oflag = 0;
@@ -254,9 +254,9 @@ int serial_get(serial_t *s)
         return -1;
 }
 
-int serial_read(serial_t *s, char *buf, int len)
+int serial_read(serial_t *s, char *buf, size_t len)
 {
-        int n = 0;
+        size_t n = 0;
         if (s->fd == -1)
                 return -1;
         
@@ -268,12 +268,12 @@ int serial_read(serial_t *s, char *buf, int len)
                         r_err("serial_read");
                         return -1;
                 }
-                n += m;
+                n += (size_t)m;
         }
         return 0;
 }
 
-int serial_read_timeout(serial_t *s, char *buf, int len, int timeout_ms)
+int serial_read_timeout(serial_t *s, char *buf, size_t len, int timeout_ms)
 {
     if ((s==NULL) || (buf == NULL) || (s->fd == -1))
         return -1;
@@ -365,9 +365,9 @@ int serial_put(serial_t *s, char c)
         return 0;
 }
 
-int serial_write(serial_t *s, const char *buf, int len)
+int serial_write(serial_t *s, const char *buf, size_t len)
 {
-        int n = 0;
+        size_t n = 0;
 
         if (s->fd == -1)
                 return -1;
@@ -381,7 +381,7 @@ int serial_write(serial_t *s, const char *buf, int len)
                         r_err("serial_write");
                         return -1;
                 }
-                n += m;
+                n += (size_t)m;
         }
         return 0;
 }

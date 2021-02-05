@@ -63,7 +63,7 @@ protected:
 
     std::string CreateLogEntry(const std::string& time, const std::string& type, const std::string& name, const std::string& log)
     {
-        auto size = std::snprintf(nullptr, 0, logformat.c_str(), time.c_str(), type.c_str(), name.c_str(), log.c_str());
+        size_t size = (size_t)std::snprintf(nullptr, 0, logformat.c_str(), time.c_str(), type.c_str(), name.c_str(), log.c_str());
         std::string logEntry(size, '\0');
         std::sprintf(&logEntry[0], logformat.c_str(), time.c_str(), type.c_str(), name.c_str(), log.c_str());
         return logEntry;
