@@ -972,7 +972,10 @@ int32_t json_serialise_text(json_serialise_t* serialise,
                 }
 		r = json_write(fun, userdata, "}");
 		if (r != 0) return r;
-	} break;
+	}
+	break;
+	default:
+	    r_warn("json_serialise_text: unknown type");
 
 	}
 
@@ -992,7 +995,7 @@ typedef enum _json_error_t{
 
 typedef enum _json_token_t{
 	k_no_token = -1,
-        k_value,
+	k_value,
 	k_object_start,
 	k_object_end,
 	k_array_start,
@@ -1008,7 +1011,7 @@ typedef enum _json_token_t{
 } json_token_t;
 
 
-typedef enum {
+typedef enum _json_parser_switch_t{
 	k_parsing_json,
 	k_parsing_string,
 	k_parsing_number,
@@ -1018,7 +1021,7 @@ typedef enum {
 } json_parser_switch_t;
 
 
-typedef enum {
+typedef enum _json_parser_state_t{
         k_parse_value = 0,
         k_array_value_or_end,
         k_array_comma_or_end,
@@ -1029,6 +1032,7 @@ typedef enum {
         k_object_comma_or_end,
         k_object_key,
         k_value_parsed,
+        k_state_error
 } json_parser_state_t;  
 
 
@@ -1054,8 +1058,8 @@ struct _json_parser_t {
 	int32_t state_stack_top;
 
 	json_parser_switch_t parser_switch;
-        json_token_t token;
-        int unwind_char;
+    json_token_t token;
+    int unwind_char;
 };
 
 static inline int32_t whitespace(int32_t c)
@@ -1355,6 +1359,7 @@ static int32_t json_parser_token(json_parser_t* parser, json_token_t token)
         case k_colon:
         case k_comma:
         case k_end:
+        default:
                r_debug("json_parser_token - unhandled token %d", token);
         }
 
@@ -1542,7 +1547,9 @@ static int32_t json_parser_unicode(json_parser_t* parser, int c)
 			if (r != k_continue) return r;
 			r = json_parser_append(parser, (int) b3);
 		} 
-		break;		
+		break;
+	    default:
+	        r_warn("json_parser_unicode - unknown unicode value");
 	}
 	return r;
 }
@@ -1931,10 +1938,12 @@ static int32_t json_parser_feed_one(json_parser_t* parser, int c)
 	case k_parsing_null: 
 		ret = json_parser_feed_null(parser, c);
                 break;
+    default:
+        r_warn("json_parser_feed_one: unknown parser switch");
 	}
 
-        if (parser->token > k_no_token)
-                ret = json_parser_token(parser, parser->token);
+    if (parser->token > k_no_token)
+            ret = json_parser_token(parser, parser->token);
 
 	return ret;
 }
