@@ -731,6 +731,10 @@ static void _delete(base_t *base)
                 case k_json_string: delete_string(base); break;
                 case k_json_array: delete_array(base); break;
                 case k_json_object: delete_object(base); break;
+                case k_json_null:
+                case k_json_true:
+                case k_json_false:
+                case k_json_undefined:
                 default: break;
                 }
 
@@ -1202,6 +1206,7 @@ static inline const char *state_name(json_parser_state_t state)
         case k_object_value: return "k_object_value";
         case k_object_comma_or_end: return "k_object_comma_or_end";
         case k_object_key: return "k_object_key";
+        case k_state_error: return "k_state_error";
         default: return "unknown state";
         }
 }
@@ -1360,7 +1365,8 @@ static int32_t json_parser_token(json_parser_t* parser, json_token_t token)
         case k_comma:
         case k_end:
         default:
-               r_debug("json_parser_token - unhandled token %d", token);
+//               r_debug("json_parser_token - unhandled token %d", token);
+        break;
         }
 
         if (r != k_continue)
@@ -1492,6 +1498,9 @@ static int32_t json_parser_token(json_parser_t* parser, json_token_t token)
                 r = k_parsing_error;
             }
 		break;
+        case k_value_parsed:
+        break;
+        case k_state_error:
         default:
                 json_parser_set_error(parser, k_parsing_error, "Parse error");
                 r = k_parsing_error;
