@@ -31,7 +31,7 @@ const std::string json_directory = getexepath() + "/json_data/";
 class json_tests : public ::testing::TestWithParam< std::string >
 {
 protected:
-    json_tests() = default;
+    json_tests() : numcalls(0) {};
 
     ~json_tests() override = default;
 

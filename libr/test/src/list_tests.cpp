@@ -68,13 +68,13 @@ protected:
     _list_t list_element4;
     _list_t list_element5;
 
-    const char *a_valid;
-    const char *b_valid;
-    const char *c_valid;
-    const char *d_valid;
-    const char *e_valid;
-    const char *f_valid;
-    const char *g_valid;
+    const std::string a_valid;
+    const std::string b_valid;
+    const std::string c_valid;
+    const std::string d_valid;
+    const std::string e_valid;
+    const std::string f_valid;
+    const std::string g_valid;
 
 };
 
@@ -563,10 +563,8 @@ TEST_F(list_tests, list_str_compare_nullptr_paramters_returns_0)
 TEST_F(list_tests, list_str_compare_a_valid_b_nullptr_returns_less_than_0)
 {
     // Arrange
-    const char *a_valid = "a_valid";
-
     // Act
-    int actual = list_str_compare_func((void*)a_valid, nullptr);
+    int actual = list_str_compare_func((void*)a_valid.c_str(), nullptr);
 
     //Assert
     ASSERT_EQ(actual, -1);
@@ -575,10 +573,8 @@ TEST_F(list_tests, list_str_compare_a_valid_b_nullptr_returns_less_than_0)
 TEST_F(list_tests, list_str_compare_a_nullptr_b_valid_returns_greater_than_0)
 {
     // Arrange
-    const char *b_valid = "b_valid";
-
     // Act
-    int actual = list_str_compare_func(nullptr, (void*)b_valid);
+    int actual = list_str_compare_func(nullptr, (void*)b_valid.c_str());
 
     //Assert
     ASSERT_EQ(actual, 1);
@@ -587,12 +583,10 @@ TEST_F(list_tests, list_str_compare_a_nullptr_b_valid_returns_greater_than_0)
 TEST_F(list_tests, list_str_compare_a_valid_b_valid_returns_strcmp_value)
 {
     // Arrange
-    const char *a_valid = "a_valid";
-    const char *b_valid = "b_valid";
-    int expected = strcmp(a_valid, b_valid);
+    int expected = strcmp(a_valid.c_str(), b_valid.c_str());
 
     // Act
-    int actual = list_str_compare_func((void*)a_valid, (void*)b_valid);
+    int actual = list_str_compare_func((void*)a_valid.c_str(), (void*)b_valid.c_str());
 
     //Assert
     ASSERT_EQ(actual, expected);
@@ -601,11 +595,10 @@ TEST_F(list_tests, list_str_compare_a_valid_b_valid_returns_strcmp_value)
 TEST_F(list_tests, list_str_compare_a_invalid_data_b_valid_data_returns_less_than_0)
 {
     // Arrange
-    const char *a_valid = "a_valid";
     int b_invalid_data = 11;
 
     // Act
-    int actual = list_str_compare_func(&b_invalid_data, (void*)a_valid);
+    int actual = list_str_compare_func(&b_invalid_data, (void*)a_valid.c_str());
 
     //Assert
     ASSERT_LT(actual, 0);
@@ -614,11 +607,10 @@ TEST_F(list_tests, list_str_compare_a_invalid_data_b_valid_data_returns_less_tha
 TEST_F(list_tests, list_str_compare_a_valid_b_invalid_data_type_returns_greater_than_0)
 {
     // Arrange
-    const char *a_valid = "a_valid";
     int b_invalid_data = 11;
 
     // Act
-    int actual = list_str_compare_func((void*)a_valid, &b_invalid_data);
+    int actual = list_str_compare_func((void*)a_valid.c_str(), &b_invalid_data);
 
     //Assert
     ASSERT_GT(actual, 0);
@@ -649,7 +641,7 @@ TEST_F(list_tests, list_sort_list_single_entry_returns_list)
 TEST_F(list_tests, list_sort_list_compare_function_nullptr_returns_nullptr)
 {
     // Arrange
-    _list_t *test_list = CreateList3((void*)a_valid, (void*)b_valid, (void*)c_valid);
+    _list_t *test_list = CreateList3((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str());
 
     // Act
     _list_t *plist = list_sort(test_list, nullptr);
@@ -661,111 +653,111 @@ TEST_F(list_tests, list_sort_list_compare_function_nullptr_returns_nullptr)
 TEST_F(list_tests, list_sort_valid_data_sorts_list)
 {
     // Arrange
-    _list_t *test_list = CreateList3((void*)b_valid, (void*)c_valid, (void*)a_valid);
+    _list_t *test_list = CreateList3((void*)b_valid.c_str(), (void*)c_valid.c_str(), (void*)a_valid.c_str());
 
     // Act
     _list_t *plist = list_sort(test_list, list_str_compare_func);
 
     //Assert
-    ASSERT_EQ(list_nth(plist, 0)->data, a_valid);
-    ASSERT_EQ(list_nth(plist, 1)->data, b_valid);
-    ASSERT_EQ(list_nth(plist, 2)->data, c_valid);
+    ASSERT_EQ((char*)list_nth(plist, 0)->data, a_valid);
+    ASSERT_EQ((char*)list_nth(plist, 1)->data, b_valid);
+    ASSERT_EQ((char*)list_nth(plist, 2)->data, c_valid);
 }
 
 TEST_F(list_tests, list_sort_first_entry_nullptr_placed_at_end)
 {
     // Arrange
-    _list_t *test_list = CreateList3(nullptr, (void*)c_valid, (void*)a_valid);
+    _list_t *test_list = CreateList3(nullptr, (void*)c_valid.c_str(), (void*)a_valid.c_str());
 
     // Act
     _list_t *plist = list_sort(test_list, list_str_compare_func);
 
     //Assert
-    ASSERT_EQ(list_nth(plist, 0)->data, a_valid);
-    ASSERT_EQ(list_nth(plist, 1)->data, c_valid);
-    ASSERT_EQ(list_nth(plist, 2)->data, nullptr);
+    ASSERT_EQ((char*) list_nth(plist, 0)->data, a_valid);
+    ASSERT_EQ((char*) list_nth(plist, 1)->data, c_valid);
+    ASSERT_EQ((char*) list_nth(plist, 2)->data, nullptr);
 }
 
 TEST_F(list_tests, list_sort_middle_entry_nullptr_placed_at_end)
 {
     // Arrange
-    _list_t *test_list = CreateList3((void*)b_valid, nullptr, (void*)a_valid);
+    _list_t *test_list = CreateList3((void*)b_valid.c_str(), nullptr, (void*)a_valid.c_str());
 
     // Act
     _list_t *plist = list_sort(test_list, list_str_compare_func);
 
     //Assert
-    ASSERT_EQ(list_nth(plist, 0)->data, a_valid);
-    ASSERT_EQ(list_nth(plist, 1)->data, b_valid);
-    ASSERT_EQ(list_nth(plist, 2)->data, nullptr);
+    ASSERT_EQ((char*) list_nth(plist, 0)->data, a_valid);
+    ASSERT_EQ((char*) list_nth(plist, 1)->data, b_valid);
+    ASSERT_EQ((char*) list_nth(plist, 2)->data, nullptr);
 }
 
 TEST_F(list_tests, list_sort_last_entry_nullptr_placed_at_end)
 {
     // Arrange
-    _list_t *test_list = CreateList3((void*)b_valid, (void*)c_valid, nullptr);
+    _list_t *test_list = CreateList3((void*)b_valid.c_str(), (void*)c_valid.c_str(), nullptr);
 
     // Act
     _list_t *plist = list_sort(test_list, list_str_compare_func);
 
     //Assert
-    ASSERT_EQ(list_nth(plist, 0)->data, b_valid);
-    ASSERT_EQ(list_nth(plist, 1)->data, c_valid);
-    ASSERT_EQ(list_nth(plist, 2)->data, nullptr);
+    ASSERT_EQ((char*) list_nth(plist, 0)->data, b_valid);
+    ASSERT_EQ((char*) list_nth(plist, 1)->data, c_valid);
+    ASSERT_EQ((char*) list_nth(plist, 2)->data, nullptr);
 }
 
 TEST_F(list_tests, list_sort_already_sorted_stays_same)
 {
     // Arrange
-    _list_t *test_list = CreateList3((void*)a_valid, (void*)b_valid, (void*)c_valid);
+    _list_t *test_list = CreateList3((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str());
 
     // Act
     _list_t *plist = list_sort(test_list, list_str_compare_func);
 
     //Assert
-    ASSERT_EQ(list_nth(plist, 0)->data, a_valid);
-    ASSERT_EQ(list_nth(plist, 1)->data, b_valid);
-    ASSERT_EQ(list_nth(plist, 2)->data, c_valid);
+    ASSERT_EQ((char*) list_nth(plist, 0)->data, a_valid);
+    ASSERT_EQ((char*) list_nth(plist, 1)->data, b_valid);
+    ASSERT_EQ((char*) list_nth(plist, 2)->data, c_valid);
 }
 
 TEST_F(list_tests, list_sort_larger_list_sorted_correctly)
 {
     // Arrange
-    _list_t *test_list = CreateList6((void*)b_valid, (void*)c_valid, (void*)a_valid, (void*)f_valid, (void*)e_valid, (void*)d_valid);
+    _list_t *test_list = CreateList6((void*)b_valid.c_str(), (void*)c_valid.c_str(), (void*)a_valid.c_str(), (void*)f_valid.c_str(), (void*)e_valid.c_str(), (void*)d_valid.c_str());
 
     // Act
     _list_t *plist = list_sort(test_list, list_str_compare_func);
 
     //Assert
-    ASSERT_EQ(list_nth(plist, 0)->data, a_valid);
-    ASSERT_EQ(list_nth(plist, 1)->data, b_valid);
-    ASSERT_EQ(list_nth(plist, 2)->data, c_valid);
-    ASSERT_EQ(list_nth(plist, 3)->data, d_valid);
-    ASSERT_EQ(list_nth(plist, 4)->data, e_valid);
-    ASSERT_EQ(list_nth(plist, 5)->data, f_valid);
+    ASSERT_EQ((char*) list_nth(plist, 0)->data, a_valid);
+    ASSERT_EQ((char*) list_nth(plist, 1)->data, b_valid);
+    ASSERT_EQ((char*) list_nth(plist, 2)->data, c_valid);
+    ASSERT_EQ((char*) list_nth(plist, 3)->data, d_valid);
+    ASSERT_EQ((char*) list_nth(plist, 4)->data, e_valid);
+    ASSERT_EQ((char*) list_nth(plist, 5)->data, f_valid);
 }
 
 TEST_F(list_tests, list_sort_duplicates_sorted_correctly)
 {
     // Arrange
-    _list_t *test_list = CreateList6((void*)b_valid, (void*)c_valid, (void*)a_valid, (void*)c_valid, (void*)f_valid, (void*)d_valid);
+    _list_t *test_list = CreateList6((void*)b_valid.c_str(), (void*)c_valid.c_str(), (void*)a_valid.c_str(), (void*)c_valid.c_str(), (void*)f_valid.c_str(), (void*)d_valid.c_str());
 
     // Act
     _list_t *plist = list_sort(test_list, list_str_compare_func);
 
     //Assert
-    ASSERT_EQ(list_nth(plist, 0)->data, a_valid);
-    ASSERT_EQ(list_nth(plist, 1)->data, b_valid);
-    ASSERT_EQ(list_nth(plist, 2)->data, c_valid);
-    ASSERT_EQ(list_nth(plist, 3)->data, c_valid);
-    ASSERT_EQ(list_nth(plist, 4)->data, d_valid);
-    ASSERT_EQ(list_nth(plist, 5)->data, f_valid);
+    ASSERT_EQ((char*) list_nth(plist, 0)->data, a_valid);
+    ASSERT_EQ((char*) list_nth(plist, 1)->data, b_valid);
+    ASSERT_EQ((char*) list_nth(plist, 2)->data, c_valid);
+    ASSERT_EQ((char*) list_nth(plist, 3)->data, c_valid);
+    ASSERT_EQ((char*) list_nth(plist, 4)->data, d_valid);
+    ASSERT_EQ((char*) list_nth(plist, 5)->data, f_valid);
 }
 
 TEST_F(list_tests, list_last_when_valid_returns_correct_entry)
 {
     // Arrange
-  _list_t *test_list = CreateList3((void*)a_valid, (void*)b_valid, (void*)c_valid);
+  _list_t *test_list = CreateList3((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str());
 
     // Act
     list_t *plast = list_last(test_list);
@@ -800,7 +792,7 @@ TEST_F(list_tests, list_last_when_nullptr_list_returns_nullptr)
 TEST_F(list_tests, list_size_when_valid_returns_correct_value)
 {
     // Arrange
-    _list_t *test_list = CreateList3((void*)a_valid, (void*)b_valid, (void*)c_valid);
+    _list_t *test_list = CreateList3((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str());
 
     // Act
     int actual = list_size(test_list);
@@ -835,15 +827,15 @@ TEST_F(list_tests, list_size_when_nullptr_list_returns_nullptr)
 TEST_F(list_tests, list_insert_at_front_inserts_correctly)
 {
     // Arrange
-    _list_t *test_list = CreateList3((void*)a_valid, (void*)b_valid, (void*)c_valid);
+    _list_t *test_list = CreateList3((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str());
 
     safe_malloc_fake.return_val = &list_element3;
 
     // Act
-    _list_t *actual = list_insert_at(test_list, 0, (void*)d_valid);
+    _list_t *actual = list_insert_at(test_list, 0, (void*)d_valid.c_str());
 
     //Assert
-    ASSERT_EQ(actual->data, d_valid);
+    ASSERT_EQ((char*) actual->data, d_valid);
     ASSERT_EQ(actual->next, test_list);
 }
 
@@ -853,17 +845,17 @@ TEST_F(list_tests, list_insert_at_middle_inserts_correctly)
     list_t new_element;
     new_element.next = nullptr;
 
-    _list_t *test_list = CreateList6((void*)a_valid, (void*)b_valid, (void*)c_valid, (void*)d_valid, (void*)e_valid, (void*)f_valid);
+    _list_t *test_list = CreateList6((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str(), (void*)d_valid.c_str(), (void*)e_valid.c_str(), (void*)f_valid.c_str());
 
     safe_malloc_fake.return_val = &new_element;
 
     // Act
-    _list_t *actual = list_insert_at(test_list, 2, (void*)g_valid);
+    _list_t *actual = list_insert_at(test_list, 2, (void*)g_valid.c_str());
 
     //Assert
-    ASSERT_EQ(list_nth(actual, 1)->data, b_valid);
-    ASSERT_EQ(list_nth(actual, 2)->data, g_valid);
-    ASSERT_EQ(list_nth(actual, 3)->data, c_valid);
+    ASSERT_EQ((char*) list_nth(actual, 1)->data, b_valid);
+    ASSERT_EQ((char*) list_nth(actual, 2)->data, g_valid);
+    ASSERT_EQ((char*) list_nth(actual, 3)->data, c_valid);
 }
 
 TEST_F(list_tests, list_insert_at_end_inserts_correctly)
@@ -872,16 +864,16 @@ TEST_F(list_tests, list_insert_at_end_inserts_correctly)
     list_t new_element;
     new_element.next = nullptr;
 
-    _list_t *test_list = CreateList6((void*)a_valid, (void*)b_valid, (void*)c_valid, (void*)d_valid, (void*)e_valid, (void*)f_valid);
+    _list_t *test_list = CreateList6((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str(), (void*)d_valid.c_str(), (void*)e_valid.c_str(), (void*)f_valid.c_str());
 
     safe_malloc_fake.return_val = &new_element;
 
     // Act
-    _list_t *actual = list_insert_at(test_list, 6, (void*)g_valid);
+    _list_t *actual = list_insert_at(test_list, 6, (void*)g_valid.c_str());
 
     //Assert
-    ASSERT_EQ(list_nth(actual, 5)->data, f_valid);
-    ASSERT_EQ(list_nth(actual, 6)->data, g_valid);
+    ASSERT_EQ((char*) list_nth(actual, 5)->data, f_valid);
+    ASSERT_EQ((char*) list_nth(actual, 6)->data, g_valid);
 }
 
 TEST_F(list_tests, list_insert_past_end_inserts_at_end)
@@ -890,16 +882,16 @@ TEST_F(list_tests, list_insert_past_end_inserts_at_end)
     list_t new_element;
     new_element.next = nullptr;
 
-    _list_t *test_list = CreateList6((void*)a_valid, (void*)b_valid, (void*)c_valid, (void*)d_valid, (void*)e_valid, (void*)f_valid);
+    _list_t *test_list = CreateList6((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str(), (void*)d_valid.c_str(), (void*)e_valid.c_str(), (void*)f_valid.c_str());
 
     safe_malloc_fake.return_val = &new_element;
 
     // Act
-    _list_t *actual = list_insert_at(test_list, 8, (void*)g_valid);
+    _list_t *actual = list_insert_at(test_list, 8, (void*)g_valid.c_str());
 
     //Assert
-    ASSERT_EQ(list_nth(actual, 5)->data, f_valid);
-    ASSERT_EQ(list_nth(actual, 6)->data, g_valid);
+    ASSERT_EQ((char*) list_nth(actual, 5)->data, f_valid);
+    ASSERT_EQ((char*) list_nth(actual, 6)->data, g_valid);
 }
 
 TEST_F(list_tests, list_insert_ordered_nullptr_list_returns_new_entry)
@@ -908,7 +900,7 @@ TEST_F(list_tests, list_insert_ordered_nullptr_list_returns_new_entry)
     safe_malloc_fake.return_val = &list_element3;
 
     // Act
-    _list_t *actual = list_insert_ordered(nullptr, (void*)a_valid, list_str_compare_func);
+    _list_t *actual = list_insert_ordered(nullptr, (void*)a_valid.c_str(), list_str_compare_func);
 
     //Assert
     ASSERT_EQ(actual, &list_element3);
@@ -918,7 +910,7 @@ TEST_F(list_tests, list_insert_ordered_front_inserts_correctly)
 {
     // Arrange
     const char *a_avalid = "a_avalid";
-    _list_t *test_list = CreateList3((void*)a_valid, (void*)b_valid, (void*)c_valid);
+    _list_t *test_list = CreateList3((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str());
 
     safe_malloc_fake.return_val = &list_element3;
 
@@ -938,7 +930,7 @@ TEST_F(list_tests, list_insert_ordered_at_middle_inserts_correctly)
     list_t new_element;
     new_element.next = nullptr;
 
-    _list_t *test_list = CreateList6((void*)a_valid, (void*)b_valid, (void*)c_valid, (void*)d_valid, (void*)e_valid, (void*)f_valid);
+    _list_t *test_list = CreateList6((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str(), (void*)d_valid.c_str(), (void*)e_valid.c_str(), (void*)f_valid.c_str());
 
     safe_malloc_fake.return_val = &new_element;
 
@@ -946,9 +938,9 @@ TEST_F(list_tests, list_insert_ordered_at_middle_inserts_correctly)
     _list_t *actual = list_insert_ordered(test_list, (void*)c_cvalid, list_str_compare_func);
 
     //Assert
-    ASSERT_EQ(list_nth(actual, 2)->data, c_cvalid);
-    ASSERT_EQ(list_nth(actual, 3)->data, c_valid);
-    ASSERT_EQ(list_nth(actual, 4)->data, d_valid);
+    ASSERT_EQ((char*) list_nth(actual, 2)->data, c_cvalid);
+    ASSERT_EQ((char*) list_nth(actual, 3)->data, c_valid);
+    ASSERT_EQ((char*) list_nth(actual, 4)->data, d_valid);
 }
 
 TEST_F(list_tests, list_insert_ordered_at_end_inserts_correctly)
@@ -957,16 +949,16 @@ TEST_F(list_tests, list_insert_ordered_at_end_inserts_correctly)
     list_t new_element;
     new_element.next = nullptr;
 
-    _list_t *test_list = CreateList6((void*)a_valid, (void*)b_valid, (void*)c_valid, (void*)d_valid, (void*)e_valid, (void*)f_valid);
+    _list_t *test_list = CreateList6((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str(), (void*)d_valid.c_str(), (void*)e_valid.c_str(), (void*)f_valid.c_str());
 
     safe_malloc_fake.return_val = &new_element;
 
     // Act
-    _list_t *actual = list_insert_ordered(test_list, (void*)g_valid, list_str_compare_func);
+    _list_t *actual = list_insert_ordered(test_list, (void*)g_valid.c_str(), list_str_compare_func);
 
     //Assert
-    ASSERT_EQ(list_nth(actual, 5)->data, f_valid);
-    ASSERT_EQ(list_nth(actual, 6)->data, g_valid);
+    ASSERT_EQ((char*) list_nth(actual, 5)->data, f_valid);
+    ASSERT_EQ((char*) list_nth(actual, 6)->data, g_valid);
 }
 
 TEST_F(list_tests, list_insert_ordered_compare_func_nullptr_returns_nullptr)
@@ -975,12 +967,12 @@ TEST_F(list_tests, list_insert_ordered_compare_func_nullptr_returns_nullptr)
     list_t new_element;
     new_element.next = nullptr;
 
-    _list_t *test_list = CreateList6((void*)a_valid, (void*)b_valid, (void*)c_valid, (void*)d_valid, (void*)e_valid, (void*)f_valid);
+    _list_t *test_list = CreateList6((void*)a_valid.c_str(), (void*)b_valid.c_str(), (void*)c_valid.c_str(), (void*)d_valid.c_str(), (void*)e_valid.c_str(), (void*)f_valid.c_str());
 
     safe_malloc_fake.return_val = &new_element;
 
     // Act
-    _list_t *actual = list_insert_ordered(test_list, (void*)g_valid, nullptr);
+    _list_t *actual = list_insert_ordered(test_list, (void*)g_valid.c_str(), nullptr);
 
     //Assert
     ASSERT_EQ(actual, nullptr);

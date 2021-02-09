@@ -17,7 +17,8 @@ extern "C" {
 class membuf_tests : public ::testing::Test
 {
 protected:
-	membuf_tests() = default;
+	membuf_tests() : membuffer{}
+	{};
 
 	~membuf_tests() override = default;
 

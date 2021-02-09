@@ -32,7 +32,8 @@ namespace rpp
     class MemBuffer
     {
     public:
-        MemBuffer() = default;
+        MemBuffer() : data_(), mutex_()
+        {}
         virtual ~MemBuffer() = default;
         void put(char c);
         void append(const char *data, int len);

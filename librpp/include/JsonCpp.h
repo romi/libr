@@ -39,7 +39,7 @@ class JSONError : public std::exception
 protected:
         std::string _what;
 public:
-        JSONError() : std::exception() {}
+        JSONError() : std::exception(), _what() {}
                 
         const char* what() const noexcept override { // TODO
                 return _what.c_str(); 
@@ -168,11 +168,12 @@ public:
                 return obj;
         }
                 
-        JsonCpp() {
-                _obj = json_null();
+        JsonCpp() : _obj(json_null())
+        {
         }
                 
-        explicit JsonCpp(const char *s) {
+        explicit JsonCpp(const char *s) : _obj(json_null())
+        {
                 int err;
                 char errmsg[128];
                 _obj = json_parse_ext(s, &err, errmsg, 128);
@@ -180,12 +181,14 @@ public:
                         throw JSONParseError(errmsg);
         }
                 
-        explicit JsonCpp(json_object_t obj) {
+        explicit JsonCpp(json_object_t obj) : _obj(obj)
+        {
                 _obj = obj;
                 json_ref(_obj);
         }
                 
-        JsonCpp(JsonCpp &json) {
+        JsonCpp(JsonCpp &json) : _obj(json._obj)
+        {
                 _obj = json._obj;
                 json_ref(_obj);
         }

@@ -20,7 +20,8 @@ namespace fs = std::experimental::filesystem;
 class log_tests : public ::testing::Test
 {
 protected:
-    log_tests() = default;
+    log_tests() : log_time(), log_app_name(), changing_log_file_entry(), log_string_from_callback()
+    {};
 
     ~log_tests() override = default;
 
