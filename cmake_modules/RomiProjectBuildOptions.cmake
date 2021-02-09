@@ -1,6 +1,6 @@
 MESSAGE("Importing Romi Project Build Settings" )
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -19,7 +19,7 @@ endif()
 # For now everything is debug. Set Compile options locally to maintain independent library builds.
 # Ideal list of warnings! Add gradually!
 #-Werror -Wall -Wpedantic -Wextra -Wmissing-include-dirs -Wuseless-cast -Wconversion -Wsign-conversion -Wswitch-default -Weffc++ -Wswitch-enum -Wzero-as-null-pointer-constant -Winit-self -Wformat=2 -Waddress -Wlogical-op -Wpointer-arith)
-set(COMMON_COMPILATION_FLAGS "-Wall -Wextra -Wpedantic -Werror -Wmissing-include-dirs -Wconversion -Wsign-conversion -Wswitch-default -Wswitch-enum -Winit-self -Waddress -Wlogical-op")
+set(COMMON_COMPILATION_FLAGS "-Wall -Wextra -Wpedantic -Werror -Wmissing-include-dirs -Wconversion -Wsign-conversion -Wswitch-default -Wswitch-enum -Winit-self -Waddress -Wlogical-op -Wpointer-arith -Wformat=2")
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "${COMMON_COMPILATION_FLAGS} -Wuseless-cast -Weffc++ -Wzero-as-null-pointer-constant ${PROJECT_SANITISE_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")

@@ -64,9 +64,9 @@ protected:
 
     std::string CreateLogEntry(const std::string& time, const std::string& type, const std::string& name, const std::string& log)
     {
-        size_t size = (size_t)std::snprintf(nullptr, 0, logformat.c_str(), time.c_str(), type.c_str(), name.c_str(), log.c_str());
+        size_t size = (size_t)std::snprintf(nullptr, 0, "[%s] [%s] [%s] %s\n", time.c_str(), type.c_str(), name.c_str(), log.c_str());
         std::string logEntry(size, '\0');
-        std::sprintf(&logEntry[0], logformat.c_str(), time.c_str(), type.c_str(), name.c_str(), log.c_str());
+        std::sprintf(&logEntry[0], "[%s] [%s] [%s] %s\n", time.c_str(), type.c_str(), name.c_str(), log.c_str());
         return logEntry;
     }
 
@@ -105,7 +105,7 @@ protected:
 
     const std::string logDirectory = "./logDirectory/";
     const std::string logfilepath = logDirectory + std::string("logfile");
-    const std::string logformat = "[%s] [%s] [%s] %s\n";
+  //  const std::string logformat = "[%s] [%s] [%s] %s\n";
     const std::string debug_type = "DD";
     const std::string info_type = "II";
     const std::string warning_type = "WW";
