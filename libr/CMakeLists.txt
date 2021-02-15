@@ -4,8 +4,6 @@ project(libr)
 set(libr_VERSION_MAJOR 0)
 set(libr_VERSION_MINOR 1)
 
-include(${CMAKE_MODULES_DIRECTORY}/RomiProjectBuildOptions.cmake)
-
 set(SOURCES
   src/r.c 
   src/mem.c 
@@ -18,7 +16,8 @@ set(SOURCES
   src/util.c
   src/json.c
   src/serial_posix.c
-  src/os_wrapper.c include/r/os_wrapper.h)
+  src/os_wrapper.c
+  include/r/os_wrapper.h)
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 

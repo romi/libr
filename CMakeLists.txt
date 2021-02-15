@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(romi_librS)
+project(romi_libr)
 
 set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 set(CMAKE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
