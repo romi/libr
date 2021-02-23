@@ -59,7 +59,7 @@ TEST_F(membuf_tests, r_init_init__cleanup_COVERAGE)
 {
     // Arrange
     // Act
-    int actual = r_init(NULL, NULL);
+    int actual = r_init(nullptr, nullptr);
     r_cleanup();
     // Assert
     ASSERT_EQ(actual, 0);

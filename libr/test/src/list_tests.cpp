@@ -160,7 +160,7 @@ TEST_F(list_tests, delete_list_and_data_when_data_null_does_not_delete_data)
     _list_t list1 = {nullptr, &list2};
 
     // Act
-    delete_list_and_data(&list1, NULL);
+    delete_list_and_data(&list1, nullptr);
 
     //Assert
     ASSERT_EQ(safe_free_fake.call_count, 3);
@@ -179,7 +179,7 @@ TEST_F(list_tests, delete_list_and_data_when_data_not_null_deletes_data)
     _list_t list1 = {&d1, &list2};
 
     // Act
-    delete_list_and_data(&list1, NULL);
+    delete_list_and_data(&list1, nullptr);
 
     //Assert
     ASSERT_EQ(safe_free_fake.call_count, 5);
