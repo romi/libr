@@ -51,7 +51,7 @@ list_t* list_insert_at(list_t *list, int n, void* data);
 list_t* list_insert_ordered(list_t *list, void* data, compare_func_t compare_func);
 int list_size(list_t *list);
 
-#define list_next(__slist)	((__slist) ? (((list_t *)(__slist))->next) : NULL)
+#define list_next(__slist)	((__slist) ? (((__slist))->next) : NULL)
 #define list_get(__slist,__type)	((__slist) ? ((__type*)(__slist)->data) : NULL)
 
 int list_str_compare_func (void *a, void *b);

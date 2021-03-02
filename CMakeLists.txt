@@ -17,9 +17,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(COMMON_COMPILATION_FLAGS "-Wall -Wextra -Wpedantic -Werror")
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "${COMMON_COMPILATION_FLAGS}")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 set(CMAKE_C_FLAGS "${COMMON_COMPILATION_FLAGS}")
-set(CMAKE_C_FLAGS_DEBUG "-O0")
 
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 ############################################################
