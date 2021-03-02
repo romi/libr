@@ -554,7 +554,7 @@ TEST_F(fs_posix_tests, directory_list_when_directory_exists_returns_files)
 
     //Assert
     ASSERT_EQ(list_size(dirlisting), 2);
-    delete_list_and_data(dirlisting, NULL);
+    delete_list_and_data(dirlisting, nullptr);
 }
 
 TEST_F(fs_posix_tests, directory_create_when_directory_exists_returns_0)

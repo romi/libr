@@ -59,7 +59,7 @@ TEST_F(wrapper_tests_coverage, getcwd_coverage)
 {
     // Arrange
     // Act
-    char *wd = getcwd_wrapper(NULL, 0);
+    char *wd = getcwd_wrapper(nullptr, 0);
     free_wrapper(wd);
     // Assert
 }
