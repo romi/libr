@@ -17,7 +17,6 @@ namespace  rpp
                 return ::close(fd);
         }
 
-
         void Linux::exit(int status)
         {
                 ::exit(status);
@@ -68,7 +67,6 @@ namespace  rpp
                 return ::closedir( dir );
         }
 
-
         FILE * Linux::fopen( const char * file_name, const char * mode )
         {
                 return ::fopen( file_name, mode );
@@ -107,6 +105,57 @@ namespace  rpp
         ssize_t Linux::read(int fd, void *buf, size_t count)
         {
                 return ::read(fd, buf, count);
+        }
+
+        int Linux::socket(int domain, int type, int protocol)
+        {
+                return ::socket(domain, type, protocol);
+        }
+
+        int Linux::connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
+        {
+                return ::connect(sockfd, addr, addrlen);
+        }
+
+        int Linux::shutdown(int sockfd, int how)
+        {
+                return ::shutdown(sockfd, how);
+        }
+        
+        ssize_t Linux::recv(int sockfd, void *buf, size_t len, int flags)
+        {
+                return ::recv(sockfd, buf, len, flags);
+        }
+        
+        ssize_t Linux::send(int sockfd, const void *buf, size_t len, int flags)
+        {
+                return ::send(sockfd, buf, len, flags);
+        }
+        
+        int Linux::bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
+        {
+                return ::bind(sockfd, addr, addrlen);
+        }
+
+        int Linux::listen(int sockfd, int backlog)
+        {
+                return ::listen(sockfd, backlog);
+        }
+
+        int Linux::accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+        {
+                return ::accept(sockfd, addr, addrlen);
+        }
+
+        int Linux::setsockopt(int sockfd, int level, int optname, const
+                              void *optval, socklen_t optlen)
+        {
+                return ::setsockopt(sockfd, level, optname, optval, optlen);
+        }
+
+        int Linux::getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+        {
+                return ::getsockname(sockfd, addr, addrlen);
         }
 }
 

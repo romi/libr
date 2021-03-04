@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/poll.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #include <stdarg.h>
 #include <signal.h>
@@ -15,6 +16,7 @@
 #include <cstdlib>
 #include <fcntl.h>
 #include <unistd.h>
+
 
 namespace rpp {
 
@@ -34,7 +36,8 @@ namespace rpp {
 
         virtual pid_t waitpid(pid_t pid, int *status, int options) = 0;
 
-        virtual int execve(const char *filename, char *const argv[], char *const envp[]) = 0;
+        virtual int execve(const char *filename, char *const argv[],
+                           char *const envp[]) = 0;
 
         virtual pid_t fork(void) = 0;
 
@@ -61,6 +64,28 @@ namespace rpp {
         virtual int poll(struct pollfd *fds, nfds_t nfds, int timeout) = 0;
 
         virtual ssize_t read(int fd, void *buf, size_t count) = 0;
+
+        virtual int socket(int domain, int type, int protocol) = 0;
+
+        virtual int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) = 0;
+
+        virtual int shutdown(int sockfd, int how) = 0;
+        
+        virtual ssize_t recv(int sockfd, void *buf, size_t len, int flags) = 0;
+
+        virtual ssize_t send(int sockfd, const void *buf, size_t len, int flags) = 0;
+        
+        virtual int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) = 0;
+
+        virtual int listen(int sockfd, int backlog) = 0;
+
+        virtual int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) = 0;
+
+        virtual int setsockopt(int sockfd, int level, int optname,
+                               const void *optval, socklen_t optlen) = 0;
+
+        virtual int getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen) = 0;
+
     };
 
 }
