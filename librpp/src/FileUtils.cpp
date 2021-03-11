@@ -18,7 +18,7 @@ bool FileUtils::ReadFileAsVector(const std::string &filename, std::vector <uint8
 bool FileUtils::WriteVectorAsFile(const std::string& filename, const std::vector<uint8_t>& in)
 {
         try{
-                std::ofstream out(filename, std::ios::in | std::ios::binary);
+                std::ofstream out(filename, std::ios::out | std::ios::binary);
                 out.exceptions(std::ifstream::badbit | std::ifstream::failbit);
                 std::copy(in.begin(), in.end(), std::ostream_iterator<uint8_t>(out));
         }
