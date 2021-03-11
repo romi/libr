@@ -5,6 +5,7 @@ set(SRCS_RPP
         src/MemBuffer_tests.cpp
         src/StringUtils_tests.cpp
         src/json_cpp_tests.cpp
+        src/FileUtils_tests.cpp
         mocks/Linux-Mock.cpp)
 
 add_executable( rpp_unit_tests

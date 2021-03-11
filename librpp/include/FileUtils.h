@@ -7,11 +7,19 @@
 #include <vector>
 #include <iterator>
 
+#include <string.h>
+
+#include <filesystem>
+namespace fs = std::filesystem;
+
+#define FILE_UTILS_EXCEPTION_LOG(...) \
+        std::cout << fs::path(__FILE__).filename() << ": " << __func__ << "(): " << __VA_ARGS__ << ": " << std::endl;
+
 class FileUtils
 {
 public:
-    static bool ReadFileAsVector(const std::string &filename, std::vector <uint8_t> &out);
-    static bool WriteVectorAsFile(const std::string& filename, const std::vector<uint8_t>& in);
+    static void TryReadFileAsVector(const std::string &filename, std::vector <uint8_t> &out);
+    static void TryWriteVectorAsFile(const std::string& filename, const std::vector<uint8_t>& in);
 };
 
 
