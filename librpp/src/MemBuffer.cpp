@@ -31,65 +31,64 @@
 
 namespace rpp
 {
-    void MemBuffer::put(char c)
-    {
-        data_.emplace_back(c);
-    }
+        MemBuffer::MemBuffer(const MemBuffer& buffer) : data_()
+        {
+                append(buffer);
+        }
 
-    void MemBuffer::append(const char *data, int len)
-    {
-        data_.insert(data_.end(), data, data+len);
-    }
+        void MemBuffer::put(uint8_t c)
+        {
+                data_.emplace_back(c);
+        }
 
-    void MemBuffer::append_zero()
-    {
-        data_.emplace_back(0);
-    }
+        void MemBuffer::append(const uint8_t *data, size_t len)
+        {
+                data_.insert(data_.end(), data, data+len);
+        }
 
-    void MemBuffer::append_string(const char *string)
-    {
-        const int KB_32 = (32 * 1024);
-        size_t lens = strnlen(string, KB_32);
-        if (lens == KB_32)
-            r_warn("MemBuffer::append_str() string truncated to 32kb");
-        data_.insert(data_.end(), string, string+lens);
-    }
+        void MemBuffer::append(const MemBuffer& buffer)
+        {
+                data_.insert(data_.end(), buffer.data().begin(), buffer.data().end());
+        }
 
-    void MemBuffer::printf(const char *format, ...)
-    {
-        va_list ap;
-        va_start(ap, format);
-        std::string formatted_string;
-        StringUtils::string_vprintf(formatted_string, format, ap);
-        va_end(ap);
-        data_.insert(data_.end(), formatted_string.data(), formatted_string.data()+formatted_string.length());
-    }
+        void MemBuffer::append_string(const char *string)
+        {
+                const int KB_32 = (32 * 1024);
+                size_t lens = strnlen(string, KB_32);
+                if (lens == KB_32)
+                        r_warn("MemBuffer::append_str() string truncated to 32kb");
+                data_.insert(data_.end(), (uint8_t *) string, (uint8_t *) string+lens);
+        }
 
-    std::vector<char>&
-    MemBuffer::data()
-    {
-        return data_;
-    }
+        void MemBuffer::printf(const char *format, ...)
+        {
+                va_list ap;
+                va_start(ap, format);
+                std::string formatted_string;
+                StringUtils::string_vprintf(formatted_string, format, ap);
+                va_end(ap);
+                data_.insert(data_.end(), formatted_string.data(),
+                             formatted_string.data()+formatted_string.length());
+        }
 
-    std::string
-    MemBuffer::string()
-    {
-        std::string data_string(data_.data(), data_.size());
-        return data_string;
-    }
+        const std::vector<uint8_t>& MemBuffer::data() const
+        {
+                return data_;
+        }
 
-    void MemBuffer::clear()
-    {
-        data_.clear();
-    }
+        std::string MemBuffer::tostring()
+        {
+                std::string data_string((const char *) data_.data(), size());
+                return data_string;
+        }
 
-    size_t MemBuffer::size()
-    {
-        return data_.size();
-    }
+        void MemBuffer::clear()
+        {
+                data_.clear();
+        }
 
-    std::mutex& MemBuffer::mutex()
-    {
-        return mutex_;
-    }
+        size_t MemBuffer::size()
+        {
+                return data_.size();
+        }
 }
