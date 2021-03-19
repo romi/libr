@@ -21,7 +21,7 @@
   along with this program.  If not, see
   <http://www.gnu.org/licenses/>.
 
- */
+*/
 #ifndef R_MEMBUFFER_H
 #define R_MEMBUFFER_H
 #include <mutex>
@@ -29,32 +29,28 @@
 
 namespace rpp
 {
-    class MemBuffer
-    {
-    public:
-        MemBuffer() : data_(), mutex_()
-        {}
-        virtual ~MemBuffer() = default;
-        void put(char c);
-        void append(const char *data, int len);
-        void append_zero();
-        void append_string(const char *string);
-        void printf(const char* format, ...);
-        std::vector<char>& data();
-        std::string string();
-        void clear();
-        size_t size();
-        std::mutex& mutex();
+        class MemBuffer
+        {
+        public:
+                MemBuffer() : data_()
+                        {}
+                MemBuffer(const MemBuffer& buffer);
+                virtual ~MemBuffer() = default;
+        
+                void put(uint8_t c);
+                void append(const uint8_t *data, size_t len);
+                void append(const MemBuffer& buffer);
+                void append_string(const char *string);
+                void printf(const char* format, ...);
+        
+                const std::vector<uint8_t>& data() const;        
+                std::string tostring();
+                size_t size();        
+                void clear();
 
-
-    private:
-        std::vector<char> data_;
-        std::mutex mutex_;
-    };
+        private:
+                std::vector<uint8_t> data_;
+        };
 }
-
-//// Use with caution!
-//void membuf_set_len(membuf_t *b, int len);
-
 
 #endif // _R_MEMBUF_H_

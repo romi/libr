@@ -30,6 +30,7 @@
 #include <exception>
 #include <vector>
 #include <string>
+#include <MemBuffer.h>
 #include "StringUtils.h"
 #include "json.h"
 #include "log.h"
@@ -150,6 +151,18 @@ public:
                 int err;
                 char errmsg[128];
                 json_object_t obj = json_parse_ext(s, &err, errmsg, 128);
+                if (err != 0)
+                        throw JSONParseError(errmsg);
+                JsonCpp json(obj);
+                json_unref(obj);
+                return json;
+        }
+
+        static JsonCpp parse(rpp::MemBuffer& buffer) {
+                int err;
+                char errmsg[128];
+                std::string text = buffer.tostring();
+                json_object_t obj = json_parse_ext(text.c_str(), &err, errmsg, 128);
                 if (err != 0)
                         throw JSONParseError(errmsg);
                 JsonCpp json(obj);
