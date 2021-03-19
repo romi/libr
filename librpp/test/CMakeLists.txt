@@ -6,7 +6,7 @@ set(SRCS_RPP
         src/StringUtils_tests.cpp
         src/json_cpp_tests.cpp
         src/FileUtils_tests.cpp
-        mocks/Linux-Mock.cpp)
+        mocks/mock_linux.h)
 
 add_executable( rpp_unit_tests
                 ${SRCS_RPP})

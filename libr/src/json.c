@@ -510,8 +510,8 @@ static int32_t hashtable_set(hashtable_t *hashtable, const char* key, json_objec
 		} 
 	}
 
-        char buffer[256];
-        json_tostring(value, buffer, sizeof(buffer));
+//        char buffer[256];
+//        json_tostring(value, buffer, sizeof(buffer));
         //printf("hash node %s - %s\n", key, buffer);
 
 	return 0;
