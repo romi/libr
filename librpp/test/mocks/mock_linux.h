@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 namespace rpp {
         class LinuxMock : public ILinux {
         public:
@@ -17,6 +19,9 @@ namespace rpp {
                 MOCK_METHOD0(fork, pid_t(void));
                 MOCK_METHOD2(kill, int (pid_t pid, int sig));
                 MOCK_METHOD1(system, int(const char *command));
+                MOCK_METHOD1(secure_getenv, char*(const char* name));
+                MOCK_METHOD0(getuid, uid_t());
+                MOCK_METHOD1(getpwuid, passwd*(uid_t uid));
                 MOCK_METHOD2(fopen, FILE * ( const char *filepath, const char *mode ));
                 MOCK_METHOD1(fclose, int (FILE *fp));
                 MOCK_METHOD1(opendir, DIR* (const char *path));
@@ -45,3 +50,4 @@ namespace rpp {
                                               socklen_t *addrlen));
         };
 }
+#pragma GCC diagnostic pop

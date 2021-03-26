@@ -4,6 +4,9 @@ project(libr)
 set(libr_VERSION_MAJOR 0)
 set(libr_VERSION_MINOR 1)
 
+#MESSAGE("libr CXX Flags = ${CMAKE_CXX_FLAGS}")
+#MESSAGE("libr C Flags = ${CMAKE_C_FLAGS}")
+
 set(SOURCES
   src/r.c 
   src/mem.c 
@@ -29,7 +32,6 @@ target_include_directories(r
           "${CMAKE_CURRENT_SOURCE_DIR}/include/r"
         )
 
-#target_link_libraries(r pthread m)
 target_link_libraries(r pthread)
 
 # Always build the mocks library.

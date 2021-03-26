@@ -83,6 +83,5 @@ endif()
 ######################################
 
 include(${CMAKE_MODULES_DIRECTORY}/RomiProjectBuildOptions.cmake)
-
 add_subdirectory(libr)
 add_subdirectory(librpp)

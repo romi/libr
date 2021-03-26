@@ -57,6 +57,19 @@ namespace  rpp
                 return ::system(command);
         }
 
+        char* Linux::secure_getenv(const char* name)
+        {
+                return ::secure_getenv(name);
+        }
+
+        uid_t Linux::getuid() {
+                    return ::getuid();
+        }
+
+        passwd *Linux::getpwuid(uid_t uid) {
+                    return ::getpwuid(uid);
+        }
+
         DIR * Linux::opendir(const char * directory)
         {
                 return ::opendir( directory );
@@ -157,5 +170,6 @@ namespace  rpp
         {
                 return ::getsockname(sockfd, addr, addrlen);
         }
+
 }
 

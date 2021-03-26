@@ -3,7 +3,9 @@
 
 #include "gtest/gtest.h"
 #include "StringUtils.h"
+#include "mock_linux.h"
 
+using namespace testing;
 
 class file_utils_tests : public ::testing::Test
 {
@@ -67,4 +69,66 @@ TEST_F(file_utils_tests, read_vector_as_uint8_throws_on_fail)
         // Act
         // Assert
         ASSERT_THROW(FileUtils::TryReadFileAsVector(filename, input), std::istream::failure);
+}
+
+TEST_F(file_utils_tests, get_home_dir_get_env_succeeds_returns_homedir)
+{
+        // Arrange
+        rpp::LinuxMock mock_linux;
+        std::string expected("/home");
+        EXPECT_CALL(mock_linux, secure_getenv)
+                        .WillOnce(Return((char*)expected.c_str()));
+        // Act
+        auto actual = FileUtils::TryGetHomeDirectory(mock_linux);
+
+        // Assert
+        ASSERT_EQ(actual, expected);
+}
+
+TEST_F(file_utils_tests, get_home_dir_get_env_fails_getpuuid_succeeds_returns_homedir)
+{
+        // Arrange
+        rpp::LinuxMock mock_linux;
+        std::string expected("/home");
+        struct passwd password{};
+        password.pw_dir = (char*)expected.c_str();
+
+        EXPECT_CALL(mock_linux, secure_getenv)
+                        .WillOnce(Return(nullptr));
+        EXPECT_CALL(mock_linux, getuid)
+                        .WillOnce(Return(0));
+        EXPECT_CALL(mock_linux, getpwuid)
+                        .WillOnce(Return(&password));
+        // Act
+        auto actual = FileUtils::TryGetHomeDirectory(mock_linux);
+
+        // Assert
+        ASSERT_EQ(actual, expected);
+}
+
+TEST_F(file_utils_tests, get_home_dir_get_env_fails_getpuuid_fails_throws_exception)
+{
+        // Arrange
+        rpp::LinuxMock mock_linux;
+        struct passwd password{};
+        password.pw_dir = nullptr;
+        bool exception_thrown = false;
+
+        EXPECT_CALL(mock_linux, secure_getenv)
+                        .WillOnce(Return(nullptr));
+        EXPECT_CALL(mock_linux, getuid)
+                        .WillOnce(Return(0));
+        EXPECT_CALL(mock_linux, getpwuid)
+                        .WillOnce(Return(&password));
+        // Act
+        try {
+                FileUtils::TryGetHomeDirectory(mock_linux);
+        }
+        catch (std::exception& e)
+        {
+                exception_thrown = true;
+        }
+
+        // Assert
+        ASSERT_TRUE(exception_thrown);
 }

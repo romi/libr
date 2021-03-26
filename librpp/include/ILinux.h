@@ -8,14 +8,15 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
-#include <stdarg.h>
-#include <signal.h>
+#include <cstdarg>
+#include <csignal>
 #include <dirent.h>
-#include <stdio.h>
+#include <cstdio>
 
 #include <cstdlib>
 #include <fcntl.h>
 #include <unistd.h>
+#include <pwd.h>
 
 
 namespace rpp {
@@ -44,6 +45,12 @@ namespace rpp {
         virtual int kill(pid_t pid, int sig) = 0;
 
         virtual int system(const char *command) = 0;
+
+        virtual char* secure_getenv(const char* name) = 0;
+
+        virtual uid_t getuid () = 0;
+
+        virtual passwd *getpwuid (uid_t uid) = 0;
 
         virtual FILE *fopen(const char *filename, const char *mode) = 0;
 

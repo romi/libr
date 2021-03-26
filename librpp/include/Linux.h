@@ -3,7 +3,6 @@
 
 #include "ILinux.h"
 
-
 namespace  rpp {
 
     class Linux : public ILinux {
@@ -31,6 +30,12 @@ namespace  rpp {
         int kill(pid_t pid, int sig) override;
 
         int system(const char *command) override;
+
+        char* secure_getenv(const char* name) override;
+
+        uid_t getuid () override;
+
+        passwd *getpwuid (uid_t uid) override;
 
         FILE *fopen(const char *filename, const char *mode) override;
 

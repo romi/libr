@@ -6,10 +6,10 @@
 #include <sstream>
 #include <vector>
 #include <iterator>
-
-#include <string.h>
-
+#include <cstring>
 #include <filesystem>
+
+#include "ILinux.h"
 namespace fs = std::filesystem;
 
 #define FILE_UTILS_EXCEPTION_LOG(...) \
@@ -20,6 +20,7 @@ class FileUtils
 public:
     static void TryReadFileAsVector(const std::string &filename, std::vector <uint8_t> &out);
     static void TryWriteVectorAsFile(const std::string& filename, const std::vector<uint8_t>& in);
+    static std::string TryGetHomeDirectory(rpp::ILinux& linux);
 };
 
 

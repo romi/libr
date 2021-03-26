@@ -1,3 +1,6 @@
+#include <pwd.h>
+#include <unistd.h>
+#include <ILinux.h>
 #include "FileUtils.h"
 
 void FileUtils::TryReadFileAsVector(const std::string &filename, std::vector <uint8_t> &out) {
@@ -24,5 +27,23 @@ void FileUtils::TryWriteVectorAsFile(const std::string& filename, const std::vec
                 FILE_UTILS_EXCEPTION_LOG( "\"" << filename.c_str() << "\"" << " " << ex.what())
                 throw;
         }
+}
 
+std::string FileUtils::TryGetHomeDirectory(rpp::ILinux& linux)
+{
+        try{
+                char* homedir = nullptr;
+                homedir = linux.secure_getenv("HOME");
+                if (homedir == nullptr)
+                {
+                        homedir = linux.getpwuid(linux.getuid())->pw_dir;
+                        if(!homedir)
+                                throw std::runtime_error("getpwuid() failed.");
+                }
+                return std::string(homedir);
+        }
+        catch (const std::exception& ex) {
+                FILE_UTILS_EXCEPTION_LOG( "\"" << "failed to get home dir" << "\"" << " " << ex.what())
+                throw;
+        }
 }
