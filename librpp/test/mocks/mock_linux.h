@@ -6,7 +6,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Weffc++"
 namespace rpp {
-        class LinuxMock : public ILinux {
+        class MockLinux : public ILinux {
         public:
                 MOCK_METHOD2(open, int(const char *pathname, int flags));
                 MOCK_METHOD1(close, int(int fd));

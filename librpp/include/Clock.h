@@ -31,10 +31,10 @@ namespace rpp {
         class Clock : public IClock
         {
         public:
-                Clock() {}
-                virtual ~Clock() = default;
+                Clock() = default;
+                ~Clock() override = default;
                 double time() override;
-                void sleep(double seconds) override;
+                std::string time_compact_string() override;
         };
 }
 

@@ -74,7 +74,7 @@ TEST_F(file_utils_tests, read_vector_as_uint8_throws_on_fail)
 TEST_F(file_utils_tests, get_home_dir_get_env_succeeds_returns_homedir)
 {
         // Arrange
-        rpp::LinuxMock mock_linux;
+        rpp::MockLinux mock_linux;
         std::string expected("/home");
         EXPECT_CALL(mock_linux, secure_getenv)
                         .WillOnce(Return((char*)expected.c_str()));
@@ -88,7 +88,7 @@ TEST_F(file_utils_tests, get_home_dir_get_env_succeeds_returns_homedir)
 TEST_F(file_utils_tests, get_home_dir_get_env_fails_getpuuid_succeeds_returns_homedir)
 {
         // Arrange
-        rpp::LinuxMock mock_linux;
+        rpp::MockLinux mock_linux;
         std::string expected("/home");
         struct passwd password{};
         password.pw_dir = (char*)expected.c_str();
@@ -109,7 +109,7 @@ TEST_F(file_utils_tests, get_home_dir_get_env_fails_getpuuid_succeeds_returns_ho
 TEST_F(file_utils_tests, get_home_dir_get_env_fails_getpuuid_fails_throws_exception)
 {
         // Arrange
-        rpp::LinuxMock mock_linux;
+        rpp::MockLinux mock_linux;
         struct passwd password{};
         password.pw_dir = nullptr;
         bool exception_thrown = false;

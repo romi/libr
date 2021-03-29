@@ -25,15 +25,18 @@
 #include "Clock.h"
 
 namespace rpp {
-        
+
+
         double Clock::time()
         {
                 return clock_time();
         }
-                
-        void Clock::sleep(double seconds)
+
+        std::string Clock::time_compact_string()
         {
-                clock_sleep(seconds);
+                const int timesize = 64;
+                char time[timesize];
+                return std::string (clock_datetime_compact(time, timesize));
         }
 }
 

@@ -21,11 +21,30 @@ add_test(
     COMMAND rpp_unit_tests
 )
 
+set(SRCS_RPP_CLOCK
+        src/tests_main.cpp
+        src/Clock_tests.cpp
+        )
+
+add_executable( rpp_clock_unit_tests
+        ${SRCS_RPP_CLOCK})
+
+target_link_libraries( rpp_clock_unit_tests
+        gtest
+        gmock
+        rpp
+        rppmocks
+        rmocks)
+
+add_test(
+        NAME rpp_clock_unit_tests
+        COMMAND rpp_clock_unit_tests
+)
+
 if(BUILD_COVERAGE)
     SETUP_TARGET_FOR_COVERAGE_LCOV(
             NAME rpp_unit_tests_coverage
-            EXECUTABLE ctest -V ${n_cores} -R "rpp_unit"
-#            EXCLUDE '*wrapper*' "src/Linux.cpp" "include/Linux.h" "include/ILinux.h"
+            EXECUTABLE ctest -V ${n_cores} -R "rpp_"
             EXCLUDE '*wrapper*' "src/Linux.cpp" "include/*.h"
             DEPENDENCIES rpp_unit_tests)
 endif()

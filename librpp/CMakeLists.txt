@@ -20,9 +20,9 @@ set(SOURCES
         include/FileUtils.h
         include/IClock.h
         include/Clock.h
-        src/IClock.cpp
         src/Clock.cpp
-        )
+        include/ClockAccessor.h
+        src/ClockAccessor.cpp)
 
 include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 

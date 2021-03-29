@@ -24,20 +24,18 @@
 #ifndef _LIBR_I_CLOCK_H_
 #define _LIBR_I_CLOCK_H_
 
+#include <string>
 namespace rpp {
 
-        class IClock;
+    class IClock {
+    public:
+        IClock() = default;
 
-        void set_system_clock(IClock& clock);
-        IClock& system_clock();
-        
-        class IClock
-        {
-        public:
-                virtual ~IClock() = default;
-                virtual double time() = 0;
-                virtual void sleep(double seconds) = 0;
-        };
+        virtual ~IClock() = default;
+
+        virtual double time() = 0;
+        virtual std::string time_compact_string() = 0;
+    };
 }
 
 #endif // _LIBR_I_CLOCK_H_
