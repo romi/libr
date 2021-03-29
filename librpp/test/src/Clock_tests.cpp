@@ -46,13 +46,13 @@ TEST_F(clock_tests, clock_accessor_returs_clock)
         std::string expected_string("expected");
         EXPECT_CALL(*mockClock, time)
                         .WillOnce(Return(expected));
-        EXPECT_CALL(*mockClock, time_compact_string)
+        EXPECT_CALL(*mockClock, datetime_compact_string)
                         .WillOnce(Return(expected_string));
 
         // Act
         auto clock = rpp::ClockAccessor::GetInstance();
         auto actual = clock->time();
-        auto actual_string = clock->time_compact_string();
+        auto actual_string = clock->datetime_compact_string();
 
         // Assert
         ASSERT_EQ(actual, expected);
@@ -81,7 +81,7 @@ TEST_F(clock_tests, clock_nowcpmpactstring_returns_time)
         clock_datetime_compact_fake.return_val = const_cast<char*>(expected.c_str());
 
         // Act
-        auto actual = clock.time_compact_string();
+        auto actual = clock.datetime_compact_string();
 
         // Assert
         ASSERT_EQ(actual, expected);

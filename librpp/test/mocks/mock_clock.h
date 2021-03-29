@@ -9,7 +9,7 @@ namespace rpp {
         class MockClock : public IClock {
         public:
                 MOCK_METHOD0(time, double());
-                MOCK_METHOD0(time_compact_string, std::string());
+                MOCK_METHOD0(datetime_compact_string, std::string());
         };
 }
 #pragma GCC diagnostic pop

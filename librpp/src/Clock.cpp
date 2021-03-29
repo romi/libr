@@ -32,7 +32,7 @@ namespace rpp {
                 return clock_time();
         }
 
-        std::string Clock::time_compact_string()
+        std::string Clock::datetime_compact_string()
         {
                 const int timesize = 64;
                 char time[timesize];

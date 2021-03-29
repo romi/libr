@@ -34,7 +34,7 @@ namespace rpp {
                 Clock() = default;
                 ~Clock() override = default;
                 double time() override;
-                std::string time_compact_string() override;
+                std::string datetime_compact_string() override;
         };
 }
 

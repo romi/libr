@@ -34,7 +34,7 @@ namespace rpp {
         virtual ~IClock() = default;
 
         virtual double time() = 0;
-        virtual std::string time_compact_string() = 0;
+        virtual std::string datetime_compact_string() = 0;
     };
 }
 
