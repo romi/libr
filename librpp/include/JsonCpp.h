@@ -235,9 +235,9 @@ public:
 //                return buffer;
 //        }
                 
-        void tostring(std::string &s) {
+        void tostring(std::string &s, int32_t jsonFlags) {
                 std::string serialised;
-                json_serialise(_obj, 0, JsonCpp::_tostring, reinterpret_cast<void*>(&serialised));
+                json_serialise(_obj, jsonFlags, JsonCpp::_tostring, reinterpret_cast<void*>(&serialised));
                 s = serialised;
         }
                 

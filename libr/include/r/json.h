@@ -112,6 +112,7 @@ int32_t json_object_setbool(json_object_t object, const char* key, int value);
 // serialisation
 
 enum {
+        k_json_compact = 0,
         k_json_pretty = 1
 };
 
