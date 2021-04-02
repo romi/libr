@@ -64,12 +64,49 @@ TEST_F(file_utils_tests, read_vector_as_uint8_throws_on_fail)
         std::vector<uint8_t> input{};
         const char *filename = "/root/fail/uint8.vec";
 
-        remove(filename);
-
         // Act
         // Assert
         ASSERT_THROW(FileUtils::TryReadFileAsVector(filename, input), std::istream::failure);
 }
+
+TEST_F(file_utils_tests, write_string_succeeds)
+{
+        // Arrange
+        std::string output("This is a string");
+        std::string input{};
+        const char *filename = "string.txt";
+
+        remove(filename);
+
+        // Act
+        ASSERT_NO_THROW(FileUtils::TryWriteStringAsFile(filename, output));
+        ASSERT_NO_THROW(input = FileUtils::TryReadFileAsString(filename));
+
+        //Assert
+        ASSERT_EQ(output,input);
+}
+
+TEST_F(file_utils_tests, write_string_throws_on_fail)
+{
+        // Arrange
+        std::string output("This is a string");
+        const char *filename = "/root/fail/string.txt";
+
+        // Act
+        ASSERT_THROW(FileUtils::TryWriteStringAsFile(filename, output), std::ostream::failure);
+}
+
+TEST_F(file_utils_tests, read_string_throws_on_fail)
+{
+        // Arrange
+        std::string output("This is a string");
+        const char *filename = "string.txt";
+        remove(filename);
+
+        // Act
+        ASSERT_THROW(FileUtils::TryReadFileAsString(filename),std::ostream::failure );
+}
+
 
 TEST_F(file_utils_tests, get_home_dir_get_env_succeeds_returns_homedir)
 {

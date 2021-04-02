@@ -60,6 +60,15 @@ public:
         }
 };
 
+class JSONFileError : public JSONError
+{
+public:
+    explicit JSONFileError(const char *filename) : JSONError() {
+            _what = "Invalid filename: ";
+            _what += filename;
+    }
+};
+
 class JSONKeyError : public JSONError
 {
 public:
@@ -181,7 +190,7 @@ public:
                 return obj;
         }
                 
-        JsonCpp() : _obj(json_null())
+        JsonCpp() : _obj(json_object_create())
         {
         }
                 
@@ -234,7 +243,12 @@ public:
 //                json_tostring(_obj, buffer, len);
 //                return buffer;
 //        }
-                
+        void save(const std::string& filename, int32_t flags) {
+            auto err = json_tofile(_obj, flags, filename.c_str());
+            if (err != 0)
+                    throw JSONFileError(filename.c_str());
+    }
+
         void tostring(std::string &s, int32_t jsonFlags) {
                 std::string serialised;
                 json_serialise(_obj, jsonFlags, JsonCpp::_tostring, reinterpret_cast<void*>(&serialised));
