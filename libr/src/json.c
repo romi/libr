@@ -1009,8 +1009,7 @@ int32_t json_serialise_hashtable_sorted(json_serialise_t* serialise,
                 r = json_serialise_key_value_pair(serialise, keys[i], value,
                                                   last, fun, userdata);
                 if (r !=0)
-                        return r;
-                        
+                        break;
         }
         
         JSON_FREE(keys);
