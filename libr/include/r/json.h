@@ -111,19 +111,24 @@ int32_t json_object_setbool(json_object_t object, const char* key, int value);
 
 // serialisation
 
+/* The k_json_sort_keys flag can be combined with either
+ * k_json_compact or k_json_pretty:
+ *
+ *     json_serialise(..., k_json_pretty | k_json_sort_keys, ...);
+ */ 
 enum {
         k_json_compact = 0,
-        k_json_pretty = 1
+        k_json_pretty = 1,
+        k_json_sort_keys = 2
 };
 
 int32_t json_serialise(json_object_t object, 
                        int32_t flags, 
                        json_writer_t fun, 
                        void* userdata);
-int32_t json_tostring(json_object_t object, char* buffer, int32_t buflen);
-int32_t json_tostring_pretty(json_object_t object, char* buffer, int32_t buflen);
-void json_print(json_object_t object, int32_t flags);
 
+int32_t json_tostring(json_object_t object, int32_t flags, char* buffer, int32_t buflen);
+void json_print(json_object_t object, int32_t flags);
 int32_t json_tofile(json_object_t object, int32_t flags, const char* path);
 int32_t json_tofilep(json_object_t object, int32_t flags, FILE* fp);
 
