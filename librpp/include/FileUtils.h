@@ -20,6 +20,8 @@ class FileUtils
 public:
     static void TryReadFileAsVector(const std::string &filename, std::vector <uint8_t> &out);
     static void TryWriteVectorAsFile(const std::string& filename, const std::vector<uint8_t>& in);
+    static std::string TryReadFileAsString(const std::string& filePath);
+    static void TryWriteStringAsFile(const std::string& filename, const std::string& output);
     static fs::path TryGetHomeDirectory(rpp::ILinux& linux);
 };
 

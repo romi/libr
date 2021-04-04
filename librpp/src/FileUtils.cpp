@@ -27,6 +27,40 @@ void FileUtils::TryWriteVectorAsFile(const std::string& filename, const std::vec
         }
 }
 
+std::string FileUtils::TryReadFileAsString(const std::string& filename)
+{
+        std::string out;
+        try
+        {
+                std::ifstream in(filename);
+                in.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+                std::copy((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>(),
+                          std::back_inserter(out));
+        }
+        catch (const std::exception& ex)
+        {
+                FILE_UTILS_EXCEPTION_LOG( "\"" << filename.c_str() << "\"" << " " << ex.what())
+                throw;
+        }
+
+        return(out);
+}
+
+void FileUtils::TryWriteStringAsFile(const std::string& filename, const std::string& output)
+{
+        try
+        {
+                std::ofstream out(filename);
+                out.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+                std::copy(output.begin(), output.end(), std::ostream_iterator<char>(out));
+        }
+        catch (const std::exception& ex)
+        {
+                FILE_UTILS_EXCEPTION_LOG( "\"" << filename.c_str() << "\"" << " " << ex.what())
+                throw;
+        }
+}
+
 fs::path FileUtils::TryGetHomeDirectory(rpp::ILinux& linux)
 {
         try{
