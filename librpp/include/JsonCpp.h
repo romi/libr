@@ -107,45 +107,40 @@ protected:
         }
                         
         static void assure_boolean(json_object_t value, const char *key = nullptr) {
-                (void) key;
                 if (!json_istrue(value) && !json_isfalse(value))
-                        throw std::runtime_error("boolean");
+                        throw JSONTypeError("boolean", key);
         }
                         
         static void assure_number(json_object_t value, const char *key = nullptr) {
-                (void) key;
                 if (!json_isnumber(value))
-                        throw std::runtime_error("number");
+                        throw JSONTypeError("number", key);
         }
                         
         static void assure_string(json_object_t value, const char *key = nullptr) {
-                (void) key;
                 if (!json_isstring(value))
-                        throw std::runtime_error("string");
+                        throw JSONTypeError("string", key);
         }
                         
         static void assure_array(json_object_t value, const char *key = nullptr) {
-                (void) key;
                 if (!json_isarray(value))
-                        throw std::runtime_error("array");
+                        throw JSONTypeError("array", key);
         }
                         
         static void assure_object(json_object_t value, const char *key = nullptr) {
-                (void) key;
                 if (!json_isobject(value))
-                        throw std::runtime_error("object");
+                        throw JSONTypeError("object", key);
         }
                         
         void assure_object_and_key(const char *key) {
                 assure_object(_obj);
                 if (!has(key))
-                        throw std::runtime_error(key);
+                        throw JSONKeyError(key);
         }
                         
         void assure_array_and_index(size_t index) {
                 assure_array(_obj);
                 if (index >= json_array_length(_obj))
-                        throw std::runtime_error("index");
+                        throw JSONIndexError(index);
         }
         
 public:
@@ -155,7 +150,7 @@ public:
                 char errmsg[128];
                 json_object_t obj = json_load(filename, &err, errmsg, 128);
                 if (err != 0)
-                        throw std::runtime_error(errmsg);
+                        throw JSONParseError(errmsg);
                 JsonCpp json(obj);
                 json_unref(obj);
                 return json;
@@ -166,7 +161,7 @@ public:
                 char errmsg[128];
                 json_object_t obj = json_parse_ext(s, &err, errmsg, 128);
                 if (err != 0)
-                        throw std::runtime_error(errmsg);
+                        throw JSONParseError(errmsg);
                 JsonCpp json(obj);
                 json_unref(obj);
                 return json;
@@ -178,7 +173,7 @@ public:
                 std::string text = buffer.tostring();
                 json_object_t obj = json_parse_ext(text.c_str(), &err, errmsg, 128);
                 if (err != 0)
-                        throw std::runtime_error(errmsg);
+                        throw JSONParseError(errmsg);
                 JsonCpp json(obj);
                 json_unref(obj);
                 return json;
@@ -205,7 +200,7 @@ public:
                 char errmsg[128];
                 _obj = json_parse_ext(s, &err, errmsg, 128);
                 if (err != 0)
-                        throw std::runtime_error(errmsg);
+                        throw JSONParseError(errmsg);
         }
                 
         explicit JsonCpp(json_object_t obj) : _obj(obj)
