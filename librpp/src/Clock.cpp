@@ -38,5 +38,9 @@ namespace rpp {
                 char time[timesize];
                 return std::string (clock_datetime_compact(time, timesize));
         }
+
+    uint64_t Clock::timestamp() {
+            return clock_timestamp();
+    }
 }
 

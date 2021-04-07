@@ -1,9 +1,11 @@
 // http://www.martinbroadhurst.com/how-to-trim-a-stdstring.html
-
-
 #include <string>
 #include <vector>
 #include <cstdarg>
+
+#ifndef __RRPP_STRING_UTILS_H
+#define __RRPP_STRING_UTILS_H
+
 
 namespace StringUtils
 {
@@ -28,5 +30,7 @@ namespace StringUtils
 #pragma GCC diagnostic pop
     }
 }
+
+#endif
 
 

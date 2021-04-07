@@ -10,6 +10,7 @@ namespace rpp {
         public:
                 MOCK_METHOD0(time, double());
                 MOCK_METHOD0(datetime_compact_string, std::string());
+                MOCK_METHOD0(timestamp, uint64_t ());
         };
 }
 #pragma GCC diagnostic pop

@@ -32,7 +32,7 @@ protected:
 
     void TearDown() override
     {
-            // Stop the memory leak since the global is static.
+            // stop the memory leak since the global is static.
             rpp::ClockAccessor::SetInstance(nullptr);
     }
     std::shared_ptr<rpp::MockClock> mockClock;
@@ -82,6 +82,20 @@ TEST_F(clock_tests, clock_nowcpmpactstring_returns_time)
 
         // Act
         auto actual = clock.datetime_compact_string();
+
+        // Assert
+        ASSERT_EQ(actual, expected);
+}
+
+TEST_F(clock_tests, clock_timestamp_returns_timestamp)
+{
+        // Arrange
+        uint64_t expected = 0x0102030405060708;
+        rpp::Clock clock;
+        clock_timestamp_fake.return_val = expected;
+
+        // Act
+        auto actual = clock.timestamp();
 
         // Assert
         ASSERT_EQ(actual, expected);

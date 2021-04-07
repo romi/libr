@@ -35,6 +35,7 @@ namespace rpp {
 
         virtual double time() = 0;
         virtual std::string datetime_compact_string() = 0;
+        virtual uint64_t timestamp() = 0;
     };
 }
 
