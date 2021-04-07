@@ -2,7 +2,7 @@
 #define ROMI_ROVER_BUILD_AND_TEST_CLOCKACCESSOR_H
 
 #include <memory>
-#include "IClock.h"
+#include "Clock.h"
 
 namespace rpp {
 
@@ -10,6 +10,8 @@ namespace rpp {
             public:
                 static const std::shared_ptr< IClock >& GetInstance()
                 {
+                        if (g_clock == nullptr)
+                                g_clock = std::make_shared<rpp::Clock>();
                         return g_clock;
                 }
 

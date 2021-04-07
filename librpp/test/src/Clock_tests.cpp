@@ -26,8 +26,6 @@ protected:
             RESET_FAKE(clock_timestamp);
             RESET_FAKE(clock_time);
             RESET_FAKE(clock_datetime_compact);
-            mockClock = std::make_shared<rpp::MockClock>();
-            rpp::ClockAccessor::SetInstance(mockClock);
     }
 
     void TearDown() override
@@ -39,9 +37,30 @@ protected:
 
 };
 
+TEST_F(clock_tests, clock_accessor_unset_returns_valid_clock)
+{
+        // Arrange;
+        double expected_time(12345678.910);
+        std::string expected_date_time_compact("20-01-2001");
+        clock_time_fake.return_val = expected_time;
+        clock_datetime_compact_fake.return_val = const_cast<char*>(expected_date_time_compact.c_str());
+
+        // Act
+        auto clock = rpp::ClockAccessor::GetInstance();
+        auto actual = clock->time();
+        auto actual_string = clock->datetime_compact_string();
+
+        // Assert
+        ASSERT_EQ(actual, expected_time);
+        ASSERT_EQ(actual_string, expected_date_time_compact);
+}
+
 TEST_F(clock_tests, clock_accessor_returs_clock)
 {
         // Arrange
+        mockClock = std::make_shared<rpp::MockClock>();
+        rpp::ClockAccessor::SetInstance(mockClock);
+
         double expected(0.123);
         std::string expected_string("expected");
         EXPECT_CALL(*mockClock, time)
@@ -62,6 +81,8 @@ TEST_F(clock_tests, clock_accessor_returs_clock)
 TEST_F(clock_tests, clock_now_returns_time)
 {
         // Arrange
+        mockClock = std::make_shared<rpp::MockClock>();
+        rpp::ClockAccessor::SetInstance(mockClock);
         double expected = 0.123;
         rpp::Clock clock;
         clock_time_fake.return_val = expected;
@@ -76,6 +97,8 @@ TEST_F(clock_tests, clock_now_returns_time)
 TEST_F(clock_tests, clock_nowcpmpactstring_returns_time)
 {
         // Arrange
+        mockClock = std::make_shared<rpp::MockClock>();
+        rpp::ClockAccessor::SetInstance(mockClock);
         std::string expected("expected_time");
         rpp::Clock clock;
         clock_datetime_compact_fake.return_val = const_cast<char*>(expected.c_str());
@@ -90,6 +113,8 @@ TEST_F(clock_tests, clock_nowcpmpactstring_returns_time)
 TEST_F(clock_tests, clock_timestamp_returns_timestamp)
 {
         // Arrange
+        mockClock = std::make_shared<rpp::MockClock>();
+        rpp::ClockAccessor::SetInstance(mockClock);
         uint64_t expected = 0x0102030405060708;
         rpp::Clock clock;
         clock_timestamp_fake.return_val = expected;
