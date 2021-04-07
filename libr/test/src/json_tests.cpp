@@ -593,7 +593,7 @@ TEST_F(json_tests, json_array_set_valid_index_returns_index)
 
     char buffer[256];
 
-    json_tostring(obj, buffer, 256);
+    json_tostring(obj, k_json_compact, buffer, 256);
     std::string actual_string(buffer);
 
     json_unref(obj);
@@ -647,7 +647,7 @@ TEST_F(json_tests, json_array_set_maximum_sets_maximum)
     auto actual = json_array_set(obj, numberobj, index);
 
     char buffer[256];
-    json_tostring(obj, buffer, 256);
+    json_tostring(obj, k_json_compact, buffer, 256);
     std::string actual_string(buffer);
 
     json_unref(obj);
@@ -674,7 +674,7 @@ TEST_F(json_tests, json_array_set_over_maximum_leaves_array_unchanged)
     auto actual = json_array_set(obj, numberobj, index);
 
     char buffer[256];
-    json_tostring(obj, buffer, 256);
+    json_tostring(obj, k_json_compact, buffer, 256);
     std::string actual_string(buffer);
 
     json_unref(obj);
@@ -702,7 +702,7 @@ TEST_F(json_tests, json_array_set_negative_leaves_array_unchanged)
     auto actual = json_array_set(obj, numberobj, index);
 
     char buffer[256];
-    json_tostring(obj, buffer, 256);
+    json_tostring(obj, k_json_compact, buffer, 256);
     std::string actual_string(buffer);
 
     json_unref(obj);
@@ -802,7 +802,7 @@ TEST_F(json_tests, json_setstr_sets_string)
     std::string added_chars(actual_chars);
 
     char buffer[256];
-    json_tostring(obj, buffer, 256);
+    json_tostring(obj, k_json_compact, buffer, 256);
     std::string actual_string(buffer);
 
     json_unref(obj);
@@ -1481,6 +1481,31 @@ TEST_F(json_tests, json_print_object_pretty_indents_objects_COVERAGE)
         // Assert
         //ToDo: Need a test.
 
+}
+
+TEST_F(json_tests, json_serialize_sorts_keys)
+{
+    // Arrange
+    json_object_t obj = json_object_create();
+    json_object_setstr(obj, "a", "first");
+    json_object_setstr(obj, "b", "second");
+    json_object_setstr(obj, "d", "third");
+    json_object_setstr(obj, "da", "fourth");
+    json_object_setstr(obj, "e", "fifth");
+
+                                                                                       
+    // Act
+    char output[1024];
+    int32_t err = json_tostring(obj, k_json_compact | k_json_sort_keys, output, 1024);
+    
+    json_unref(obj);
+
+    // Assert
+    const char *expected = ("{\"a\":\"first\",\"b\":\"second\",\"d\":\"third\","
+                            "\"da\":\"fourth\",\"e\":\"fifth\"}");
+    
+    ASSERT_EQ(err, 0);
+    ASSERT_STREQ(output, expected);
 }
 
 // ToDo: Why does this break address sanitizer?
