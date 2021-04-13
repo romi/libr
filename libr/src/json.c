@@ -1366,7 +1366,7 @@ static inline json_parser_state_t pop_state(json_parser_t* parser)
 {
         if (parser->state_stack_top < 0) {
                 json_parser_set_error(parser, k_stack_overflow, "Stack overflow");
-                return k_stack_overflow;
+                return k_state_error;
         }
   	return parser->state_stack[parser->state_stack_top--];
 }
