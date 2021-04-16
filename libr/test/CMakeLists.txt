@@ -12,16 +12,6 @@ set(SRCS_OS
         mocks/os_wrapper.mock.h
         mocks/os_wrapper.mock.c)
 
-set(SRCS_FS
-        src/tests_main.cpp
-        src/fs_posix_tests.cpp
-        src/utils_tests.cpp
-        src/wrapper_tests_coverage.cpp
-        support/test_file_utils.h
-        support/test_file_utils.cpp
-        mocks/log.mock.h
-        mocks/log.mock.c)
-
 set(SRCS_COMMON
         src/tests_main.cpp
         src/list_tests.cpp
@@ -89,14 +79,6 @@ target_link_libraries( r_unit_tests_os
                     gmock
                     r)
 
-add_executable( r_unit_tests_fs
-        ${SRCS_FS})
-
-target_link_libraries( r_unit_tests_fs
-        gtest
-        gmock
-        r
-        stdc++fs)
 
 add_executable( r_unit_tests_log_json
         ${SRCS_LOG_JSON})
@@ -134,11 +116,6 @@ target_include_directories(r_unit_tests_os
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
 
-target_include_directories(r_unit_tests_fs
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/mocks
-        ${CMAKE_CURRENT_SOURCE_DIR}/support)
-
 target_include_directories(r_unit_tests_log_json
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
@@ -164,10 +141,6 @@ add_test(
         COMMAND r_unit_tests_os
 )
 
-add_test(
-        NAME r_unit_tests_fs
-        COMMAND r_unit_tests_fs
-)
 
 add_test(NAME r_unit_tests_log_json
         COMMAND r_unit_tests_log_json

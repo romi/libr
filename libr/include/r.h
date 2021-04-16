@@ -31,7 +31,6 @@ extern "C" {
 
 #include <r/mem.h>
 #include <r/thread.h>
-#include <r/fs_posix.h>
 #include <r/clock_posix.h>
 #include <r/membuf.h>
 #include <r/list.h>

@@ -10,8 +10,8 @@ set(libr_VERSION_MINOR 1)
 set(SOURCES
   src/r.c 
   src/mem.c 
-  src/thread_pthread.c 
-  src/fs_posix.c 
+  src/thread_pthread.c
+#  src/fs_posix.c
   src/clock_posix.c
   src/membuf.c
   src/list.c 
