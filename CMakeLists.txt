@@ -1,10 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 project(romi_libr)
 
-set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
-set(CMAKE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
+MESSAGE("libr CXX Flags = ${CMAKE_CXX_FLAGS}")
+MESSAGE("libr C Flags = ${CMAKE_C_FLAGS}")
+
+set(romi-libr_VERSION_MAJOR 0)
+set(romi-libr_VERSION_MINOR 1)
 
 ############################################################
+
+set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
+set(CMAKE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
