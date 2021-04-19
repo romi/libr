@@ -1,4 +1,4 @@
-#include <experimental/filesystem>
+#include <filesystem>
 #include <string>
 #include "gtest/gtest.h"
 #include "test_file_utils.h"
@@ -15,7 +15,7 @@ extern "C" {
 FAKE_VALUE_FUNC(int, clock_gettime_wrapper, clockid_t, struct timespec *)
 FAKE_VALUE_FUNC(struct tm * , localtime_r_wrapper, const time_t *, struct tm *)
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 class log_tests : public ::testing::Test
 {

@@ -1,5 +1,5 @@
 #include <string>
-#include <experimental/filesystem>
+#include <filesystem>
 
 #include <zconf.h>
 #include "gtest/gtest.h"
@@ -12,7 +12,7 @@ extern "C" {
 
 extern std::string full_exe_path;
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 
 static std::string getexepath()
