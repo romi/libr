@@ -33,7 +33,7 @@ target_include_directories(rpp
           "${CMAKE_CURRENT_SOURCE_DIR}/include"
         )
 
-target_link_libraries(rpp rppmocks r)
+target_link_libraries(rpp rppmocks r stdc++fs)
 
 # Always build the mocks library.
 add_subdirectory(test/mocks)

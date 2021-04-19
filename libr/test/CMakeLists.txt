@@ -86,7 +86,8 @@ add_executable( r_unit_tests_log_json
 target_link_libraries( r_unit_tests_log_json
         gtest
         gmock
-        r)
+        r
+        stdc++fs)
 
 add_executable( r_unit_tests_thread
                 ${SRCS_THREAD})
@@ -102,7 +103,8 @@ add_executable( r_unit_tests_serial
 target_link_libraries( r_unit_tests_serial
         gtest
         gmock
-        r)
+        r
+        stdc++fs)
 
 target_include_directories(r_unit_tests_common
         PRIVATE
