@@ -247,11 +247,12 @@ public:
             auto err = json_tofile(_obj, flags, filename.c_str());
             if (err != 0)
                     throw JSONFileError(filename.c_str());
-    }
+        }
 
         void tostring(std::string &s, int32_t jsonFlags) {
                 std::string serialised;
-                json_serialise(_obj, jsonFlags, JsonCpp::_tostring, reinterpret_cast<void*>(&serialised));
+                json_serialise(_obj, jsonFlags, JsonCpp::_tostring,
+                               reinterpret_cast<void*>(&serialised));
                 s = serialised;
         }
                 
@@ -289,7 +290,7 @@ public:
                 return get(key);
         }
 
-            double num(const std::string& key) {
+        double num(const std::string& key) {
                 assure_object_and_key(key.c_str());
                 json_object_t value = json_object_get(_obj, key.c_str());
                 assure_number(value, key.c_str());
@@ -376,7 +377,7 @@ public:
                 return json_number_value(_obj);
         }
 
-    // Should really be explicit
+        // Should really be explicit
         explicit operator double () {
                 return num();
         }
@@ -385,7 +386,8 @@ public:
                 assure_string(_obj);
                 return json_string_value(_obj);
         }
-    // Should really be explicit
+        
+        // Should really be explicit
         explicit operator const char *() {
                 return str();
         }
