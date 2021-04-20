@@ -249,7 +249,7 @@ public:
                     throw JSONFileError(filename.c_str());
         }
 
-        void tostring(std::string &s, int32_t jsonFlags) {
+        void tostring(std::string &s, int32_t jsonFlags = k_json_compact) {
                 std::string serialised;
                 json_serialise(_obj, jsonFlags, JsonCpp::_tostring,
                                reinterpret_cast<void*>(&serialised));
