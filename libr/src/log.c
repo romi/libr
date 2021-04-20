@@ -38,6 +38,8 @@ static mutex_t *_mutex = NULL;
 static log_writer_t _log_writer = NULL;
 static void *_log_write_data = NULL;
 
+static char log_buffer[ONE_KB_BUFFER];
+
 int r_log_init()
 {
     _mutex = new_mutex();
@@ -222,61 +224,56 @@ static int log_printf(char* buffer, size_t bufflen, const char* format, va_list 
 
 void r_err(const char* format, ...)
 {
-        char buffer[ONE_KB_BUFFER];
         va_list ap;
         va_start(ap, format);
-        log_printf(buffer, ONE_KB_BUFFER, format, ap);
+        log_printf(log_buffer, ONE_KB_BUFFER, format, ap);
         va_end(ap);
 
-        log_(R_ERROR, buffer);
+        log_(R_ERROR, log_buffer);
 }
 
 void r_warn(const char* format, ...)
 {
-        char _buffer[ONE_KB_BUFFER];
         va_list ap;
         if (_log_level > R_WARNING)
                 return;
         va_start(ap, format);
-        log_printf(_buffer, ONE_KB_BUFFER, format, ap);
+        log_printf(log_buffer, ONE_KB_BUFFER, format, ap);
         va_end(ap);
 
-        log_(R_WARNING, _buffer);
+        log_(R_WARNING, log_buffer);
 }
 
 void r_info(const char* format, ...)
 {
-        char buffer[ONE_KB_BUFFER];
         va_list ap;
         if (_log_level > R_INFO)
                 return;
         va_start(ap, format);
-        log_printf(buffer, ONE_KB_BUFFER, format, ap);
+        log_printf(log_buffer, ONE_KB_BUFFER, format, ap);
         va_end(ap);
 
-        log_(R_INFO, buffer);
+        log_(R_INFO, log_buffer);
 }
 
 void r_debug(const char* format, ...)
 {
-        char buffer[ONE_KB_BUFFER];
         va_list ap;
         if (_log_level > R_DEBUG) 
                 return;
         va_start(ap, format);
-        log_printf(buffer, ONE_KB_BUFFER, format, ap);
+        log_printf(log_buffer, ONE_KB_BUFFER, format, ap);
         va_end(ap);
 
-        log_(R_DEBUG, buffer);
+        log_(R_DEBUG, log_buffer);
 }
 
 void r_panic(const char* format, ...)
 {
-    char buffer[ONE_KB_BUFFER];
     va_list ap;
     va_start(ap, format);
-    log_printf(buffer, ONE_KB_BUFFER, format, ap);
+    log_printf(log_buffer, ONE_KB_BUFFER, format, ap);
     va_end(ap);
 
-    log_(R_PANIC, buffer);
+    log_(R_PANIC, log_buffer);
 }
