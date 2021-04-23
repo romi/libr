@@ -33,8 +33,7 @@ target_link_libraries( rpp_clock_unit_tests
         gtest
         gmock
         rpp
-        rppmocks
-        rmocks)
+        rppmocks)
 
 add_test(
         NAME rpp_clock_unit_tests

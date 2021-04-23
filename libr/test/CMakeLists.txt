@@ -15,14 +15,13 @@ set(SRCS_OS
 set(SRCS_COMMON
         src/tests_main.cpp
         src/list_tests.cpp
-        src/clock_posix_tests.cpp
         src/membuf_tests.cpp
         mocks/log.mock.h
         mocks/log.mock.c
         mocks/mem.mock.h
         mocks/mem.mock.c
-        mocks/mutex.mock.h
-        mocks/mutex.mock.c
+        mocks/r_mutex.mock.h
+        mocks/r_mutex.mock.c
         mocks/os_wrapper.mock.h
         mocks/os_wrapper.mock.c)
 
@@ -35,7 +34,7 @@ set(SRCS_LOG_JSON
 
 set(SRCS_THREAD
         src/tests_main.cpp
-        src/thread_pthread_tests.cpp
+        src/r_mutex_tests.cpp
         mocks/pthread.condition.mock.h
         mocks/pthread.condition.mock.c
         mocks/log.mock.h
@@ -54,8 +53,8 @@ set(SRCS_SERIAL
         src/serial_posix_tests.cpp
         mocks/log.mock.h
         mocks/log.mock.c
-        mocks/mutex.mock.h
-        mocks/mutex.mock.c
+        mocks/r_mutex.mock.h
+        mocks/r_mutex.mock.c
         mocks/os_wrapper.mock.h
         mocks/os_wrapper.mock.c
         mocks/system.mock.h
@@ -141,7 +140,6 @@ add_test(
         COMMAND r_unit_tests_os
 )
 
-
 add_test(NAME r_unit_tests_log_json
         COMMAND r_unit_tests_log_json
         )
@@ -161,7 +159,7 @@ if(BUILD_COVERAGE)
             NAME r_unit_tests_coverage
             EXECUTABLE ctest -V ${n_cores} -R "r_unit"
             EXCLUDE '*wrapper*'
-            DEPENDENCIES r_unit_tests_common r_unit_tests_os r_unit_tests_fs r_unit_tests_log_json r_unit_tests_thread r_unit_tests_serial)
+            DEPENDENCIES r_unit_tests_log_json)
 endif()
 
 SET(JSON_INPUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/json_data)

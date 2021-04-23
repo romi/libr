@@ -22,37 +22,22 @@
   <http://www.gnu.org/licenses/>.
 
  */
-#ifndef _R_CLOCK_H_
-#define _R_CLOCK_H_
-
-#include <stdint.h>
+#ifndef _R_THREAD_H_
+#define _R_THREAD_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MICROSECONDS_IN_SECOND  1000000
-#define NANOSECONDS_IN_SECOND  1000000000
+typedef struct _mutex_t mutex_t;
 
-// Micro-seconds since UNIX epoch
-uint64_t clock_timestamp();
+mutex_t *new_mutex();
+void delete_mutex(mutex_t *mutex);
+void mutex_lock(mutex_t *mutex);
+void mutex_unlock(mutex_t *mutex);
 
-// Seconds since UNIX epoch
-double clock_time();
-
-// Return date-time as string in the form of "2018-11-14 17:52:38"
-char *clock_datetime(char *buf, size_t len, char sep1, char sep2, char sep3);
-// Millisecond resolution.
-char *clock_log_datetime(char *buf, size_t len, char sep1, char sep2, char sep3);
-
-// Return date-time as string in the form of "20181114-175238", which
-// is more adapted for filenames
-char *clock_datetime_compact(char *buf, size_t len);
-
-void clock_sleep(double seconds);
-        
 #ifdef __cplusplus
 }
 #endif
 
-#endif // _R_CLOCK_H_
+#endif // _R_THREAD_H_

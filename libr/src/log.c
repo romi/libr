@@ -40,6 +40,27 @@ static void *_log_write_data = NULL;
 
 static char log_buffer[ONE_KB_BUFFER];
 
+char *clock_log_datetime(char *buf, size_t len, char sep1, char sep2, char sep3)
+{
+        struct tm r;
+        struct timeval tv;
+        struct timespec ts;
+        clock_gettime_wrapper(CLOCK_REALTIME, &ts);
+
+        tv.tv_sec = ts.tv_sec;
+    tv.tv_usec =ts.tv_nsec / 1000;
+
+        localtime_r_wrapper(&tv.tv_sec, &r);
+
+        long milliseconds = tv.tv_usec/1000;
+
+        snprintf(buf, len, "%04d%c%02d%c%02d%c%02d%c%02d%c%02d.%03ld",
+                 1900 + r.tm_year, sep1, 1 + r.tm_mon, sep1, r.tm_mday,
+                 sep2,
+                 r.tm_hour, sep3, r.tm_min, sep3, r.tm_sec, milliseconds);
+        return buf;
+}
+
 int r_log_init()
 {
     _mutex = new_mutex();

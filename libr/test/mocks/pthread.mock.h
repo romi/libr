@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 #include "fff.h"
-#include "thread.h"
+#include "r_mutex.h"
 
 #ifdef __cplusplus
 extern "C" {

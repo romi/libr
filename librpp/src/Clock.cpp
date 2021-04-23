@@ -21,26 +21,40 @@
   <http://www.gnu.org/licenses/>.
 
  */
-#include <r.h>
+
+#include <iomanip>
+#include <chrono>
+#include <thread>
 #include "Clock.h"
 
 namespace rpp {
 
-
+        const int MILLISECONDS_IN_SECOND = 1000;
         double Clock::time()
         {
-                return clock_time();
+                using namespace std::chrono;
+                milliseconds millisecs = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+                return static_cast<double>(millisecs.count()) / MILLISECONDS_IN_SECOND;
         }
 
         std::string Clock::datetime_compact_string()
         {
-                const int timesize = 64;
-                char time[timesize];
-                return std::string (clock_datetime_compact(time, timesize));
+                std::time_t now =  std::time(nullptr);
+                std::stringstream ss;
+                ss << std::put_time(std::localtime(&now), "%Y%m%d-%H%M%S");
+                return ss.str();
         }
 
     uint64_t Clock::timestamp() {
-            return clock_timestamp();
+                auto duration = std::chrono::high_resolution_clock::now().time_since_epoch();
+                auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+                return static_cast<uint64_t>(ns.count());
     }
+
+    // TBD: Move this out of clock
+    void Clock::sleep(double seconds) {
+                long sleep_duration = long (seconds * MILLISECONDS_IN_SECOND);
+                std::this_thread::sleep_for(std::chrono::milliseconds (sleep_duration));
+        }
 }
 

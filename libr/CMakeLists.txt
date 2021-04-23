@@ -8,11 +8,8 @@ set(libr_VERSION_MINOR 1)
 #MESSAGE("libr C Flags = ${CMAKE_C_FLAGS}")
 
 set(SOURCES
-  src/r.c 
-  src/mem.c 
-  src/thread_pthread.c
-#  src/fs_posix.c
-  src/clock_posix.c
+  src/mem.c
+  src/r_mutex.c
   src/membuf.c
   src/list.c 
   src/log.c 

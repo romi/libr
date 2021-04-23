@@ -10,7 +10,7 @@
 extern "C" {
 #include "log.mock.h"
 #include "mem.mock.h"
-#include "mutex.mock.h"
+#include "r_mutex.mock.h"
 }
 
 
@@ -54,17 +54,6 @@ protected:
 
     _membuf_t membuffer;
 };
-
-TEST_F(membuf_tests, r_init_init__cleanup_COVERAGE)
-{
-    // Arrange
-    // Act
-    int actual = r_init(nullptr, nullptr);
-    r_cleanup();
-    // Assert
-    ASSERT_EQ(actual, 0);
-}
-
 
 TEST_F(membuf_tests, new_membuf_when_new_succeeds_creates_mutex_returns_buffer)
 {

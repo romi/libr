@@ -9,8 +9,7 @@ set(SOURCES
         log.mock.c
         json.mock.h
         json.mock.c
-        clock_posix.mock.h
-        clock_posix.mock.c)
+        )
 
 #set(SOURCES
 #        fcntl.mock.h

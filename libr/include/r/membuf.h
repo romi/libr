@@ -27,7 +27,7 @@
 
 #include <stdarg.h>
 #include "json.h"
-#include "thread.h"
+#include "r_mutex.h"
 
 #ifdef __cplusplus
 extern "C" {

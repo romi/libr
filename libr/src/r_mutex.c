@@ -22,16 +22,35 @@
   <http://www.gnu.org/licenses/>.
 
  */
+#include <pthread.h>
 #include "r.h"
 
-int r_init(int *argc, out_of_memory_handler_t handler)
+struct _mutex_t
 {
-        return mem_init(argc, handler);
+        pthread_mutex_t mutex;
+};
+
+mutex_t *new_mutex()
+{
+        mutex_t *mutex = r_new(mutex_t);
+        pthread_mutex_init(&mutex->mutex, NULL);
+        return mutex;
 }
 
-void r_cleanup()
+void delete_mutex(mutex_t *mutex)
 {
-        mem_cleanup();
+        if (mutex) {
+                pthread_mutex_destroy(&mutex->mutex);
+                r_delete(mutex);
+        }
 }
 
+void mutex_lock(mutex_t *mutex)
+{
+        pthread_mutex_lock(&mutex->mutex);
+}
 
+void mutex_unlock(mutex_t *mutex)
+{
+        pthread_mutex_unlock(&mutex->mutex);
+}

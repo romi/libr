@@ -9,7 +9,7 @@ extern "C" {
 #include "log.mock.h"
 #include "mem.mock.h"
 #include "membuf.mock.h"
-#include "mutex.mock.h"
+#include "r_mutex.mock.h"
 #include "os_wrapper.mock.h"
 #include "system.mock.h"
 #include "termios.mock.h"

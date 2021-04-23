@@ -1,8 +1,8 @@
-#ifndef ROMI_ROVER_BUILD_AND_TEST_MUTEX_MOCK_H
-#define ROMI_ROVER_BUILD_AND_TEST_MUTEX_MOCK_H
+#ifndef ROMI_ROVER_BUILD_AND_TEST_R_MUTEX_MOCK_H
+#define ROMI_ROVER_BUILD_AND_TEST_R_MUTEX_MOCK_H
 
 #include "fff.h"
-#include "thread.h"
+#include "r_mutex.h"
 
 DECLARE_FAKE_VALUE_FUNC0(mutex_t *, new_mutex)
 DECLARE_FAKE_VOID_FUNC(delete_mutex, mutex_t* )
@@ -10,4 +10,4 @@ DECLARE_FAKE_VOID_FUNC(mutex_lock, mutex_t* )
 DECLARE_FAKE_VOID_FUNC(mutex_unlock, mutex_t* )
 
 
-#endif //ROMI_ROVER_BUILD_AND_TEST_MUTEX_MOCK_H
+#endif //ROMI_ROVER_BUILD_AND_TEST_R_MUTEX_MOCK_H

@@ -36,6 +36,8 @@ namespace rpp {
                 double time() override;
                 std::string datetime_compact_string() override;
                 uint64_t timestamp() override;
+            // TBD: Move this out of clock
+                void sleep(double seconds) override;
         };
 }
 
