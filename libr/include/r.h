@@ -32,7 +32,6 @@ extern "C" {
 #include <r/mem.h>
 #include <r/r_mutex.h>
 #include <r/membuf.h>
-#include <r/list.h>
 #include <r/log.h>
 #include <r/util.h>
 #include <r/json.h>

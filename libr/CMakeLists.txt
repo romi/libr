@@ -11,7 +11,6 @@ set(SOURCES
   src/mem.c
   src/r_mutex.c
   src/membuf.c
-  src/list.c 
   src/log.c 
   src/util.c
   src/json.c
