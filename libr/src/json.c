@@ -996,24 +996,26 @@ int32_t json_serialise_hashtable_sorted(json_serialise_t* serialise,
                                         void* userdata)
 {
         int32_t r = 0;
-        char** keys = JSON_NEW_ARRAY(char*, hashtable->num_nodes);
-        json_hashtable_keys(hashtable, keys);
 
-        qsort(keys, hashtable->num_nodes, sizeof(char*), keycmp);
+        if (hashtable->num_nodes > 0) {
+                char** keys = JSON_NEW_ARRAY(char*, hashtable->num_nodes);
+                json_hashtable_keys(hashtable, keys);
+
+                qsort(keys, hashtable->num_nodes, sizeof(char*), keycmp);
         
-        for (uint32_t i = 0; i < hashtable->num_nodes; i++) {
+                for (uint32_t i = 0; i < hashtable->num_nodes; i++) {
 
-                int last = (i == hashtable->num_nodes - 1);
-                json_object_t value = hashtable_get(hashtable, keys[i]);
+                        int last = (i == hashtable->num_nodes - 1);
+                        json_object_t value = hashtable_get(hashtable, keys[i]);
 
-                r = json_serialise_key_value_pair(serialise, keys[i], value,
-                                                  last, fun, userdata);
-                if (r !=0)
-                        break;
+                        r = json_serialise_key_value_pair(serialise, keys[i], value,
+                                                          last, fun, userdata);
+                        if (r !=0)
+                                break;
+                }
+        
+                JSON_FREE(keys);
         }
-        
-        JSON_FREE(keys);
-
         return r;
 }
 
