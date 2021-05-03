@@ -47,20 +47,6 @@ set(SRCS_THREAD
         mocks/pthread.mock.h
         mocks/pthread.mock.c)
 
-set(SRCS_SERIAL
-        src/tests_main.cpp
-        src/serial_posix_tests.cpp
-        mocks/log.mock.h
-        mocks/log.mock.c
-        mocks/r_mutex.mock.h
-        mocks/r_mutex.mock.c
-        mocks/os_wrapper.mock.h
-        mocks/os_wrapper.mock.c
-        mocks/system.mock.h
-        mocks/system.mock.c
-        mocks/termios.mock.h
-        mocks/termios.mock.c)
-
 add_executable( r_unit_tests_common
                 ${SRCS_COMMON})
 
@@ -95,15 +81,6 @@ target_link_libraries( r_unit_tests_thread
         gmock
         r)
 
-add_executable( r_unit_tests_serial
-        ${SRCS_SERIAL})
-
-target_link_libraries( r_unit_tests_serial
-        gtest
-        gmock
-        r
-        stdc++fs)
-
 target_include_directories(r_unit_tests_common
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
@@ -120,11 +97,6 @@ target_include_directories(r_unit_tests_log_json
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
 
 target_include_directories(r_unit_tests_thread
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/mocks
-        ${CMAKE_CURRENT_SOURCE_DIR}/support)
-
-target_include_directories(r_unit_tests_serial
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/mocks
         ${CMAKE_CURRENT_SOURCE_DIR}/support)
@@ -146,11 +118,6 @@ add_test(NAME r_unit_tests_log_json
 add_test(
         NAME r_unit_tests_thread
         COMMAND r_unit_tests_thread
-)
-
-add_test(
-        NAME r_unit_tests_serial
-        COMMAND r_unit_tests_serial
 )
 
 if(BUILD_COVERAGE)

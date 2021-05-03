@@ -35,7 +35,6 @@ extern "C" {
 #include <r/log.h>
 #include <r/util.h>
 #include <r/json.h>
-#include <r/serial_posix.h>
 #include <r/os_wrapper.h>
 
 /**

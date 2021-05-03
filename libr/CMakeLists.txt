@@ -14,7 +14,6 @@ set(SOURCES
   src/log.c 
   src/util.c
   src/json.c
-  src/serial_posix.c
   src/os_wrapper.c
   include/r/os_wrapper.h)
 
