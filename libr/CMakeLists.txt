@@ -3,7 +3,7 @@ project(libr)
 
 ############################################################
 
-set_build_defaults()
+set_romi_build_defaults()
 output_compile_flags()
 
 ############################################################

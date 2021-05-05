@@ -6,7 +6,7 @@ project(romi_libr)
 set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 set(CMAKE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 include(${CMAKE_MODULES_DIRECTORY}/RomiFunctions.cmake)
-set_build_defaults()
+set_romi_build_defaults()
 output_compile_flags()
 
 ############################################################
