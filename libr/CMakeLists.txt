@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
-
 project(libr)
+
+############################################################
+
+set_build_defaults()
+output_compile_flags()
+
+############################################################
+
 set(libr_VERSION_MAJOR 0)
 set(libr_VERSION_MINOR 1)
-
-#MESSAGE("libr CXX Flags = ${CMAKE_CXX_FLAGS}")
-#MESSAGE("libr C Flags = ${CMAKE_C_FLAGS}")
 
 set(SOURCES
   src/mem.c

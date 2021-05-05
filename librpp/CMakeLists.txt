@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
 project(librpp)
 
+############################################################
+
+set_build_defaults()
+output_compile_flags()
+
+############################################################
+
 set(librpp_VERSION_MAJOR 0)
 set(librpp_VERSION_MINOR 1)
-
-#MESSAGE("librpp CXX Flags = ${CMAKE_CXX_FLAGS}")
-#MESSAGE("librpp C Flags = ${CMAKE_C_FLAGS}")
 
 set(SOURCES
         include/JsonCpp.h

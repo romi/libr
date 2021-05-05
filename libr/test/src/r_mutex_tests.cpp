@@ -77,7 +77,7 @@ TEST_F(thread_pthread_tests, new_mutex_returns_mutex)
 TEST_F(thread_pthread_tests, delete_mutex_deletes_mutex)
 {
     // Arrange
-    pthread_mutex_t pthread_mutex;
+    pthread_mutex_t pthread_mutex{};
     mutex_t mutex_data;
     mutex_data.mutex = pthread_mutex;
 

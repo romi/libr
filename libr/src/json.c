@@ -847,9 +847,9 @@ int32_t json_number_serialize(json_object_t object,
 {
         char buf[64];
         if (floor(object->value.number) == object->value.number) 
-                snprintf(buf, 128, "%.0lf", floor(object->value.number));
+                snprintf(buf, sizeof(buf), "%.0lf", floor(object->value.number));
         else 
-                snprintf(buf, 128, "%f", object->value.number);
+                snprintf(buf, sizeof(buf), "%f", object->value.number);
 		
         return json_write(fun, userdata, buf);
 }
