@@ -16,8 +16,8 @@ output_compile_flags()
 
 ############################################################
 
-set(romi-libr_VERSION_MAJOR 0)
-set(romi-libr_VERSION_MINOR 1)
+set(${PROJECT_NAME}_VERSION_MAJOR 0)
+set(${PROJECT_NAME}_VERSION_MINOR 1)
 
 ############################################################
 
