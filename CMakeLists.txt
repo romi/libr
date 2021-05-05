@@ -5,8 +5,13 @@ project(romi_libr)
 
 set(CMAKE_MODULES_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 set(CMAKE_THIRDPARTY_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
+
+############################################################
+
 include(${CMAKE_MODULES_DIRECTORY}/RomiFunctions.cmake)
-set_romi_build_defaults()
+set(PI_BUILD FALSE)
+set_romi_build_defaults(PI_BUILD)
+message("${PROJECT_NAME} PI_BUILD = ${PI_BUILD}")
 output_compile_flags()
 
 ############################################################
@@ -41,7 +46,7 @@ if(BUILD_TESTS)
   enable_testing()
 
   if (NOT DEFINED googletest_SOURCE_DIR)
-      MESSAGE("LIBR downloading google test.")
+      MESSAGE("${PROJECT_NAME} downloading google test.")
       if (CMAKE_VERSION VERSION_LESS 3.2)
         set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
       else()
