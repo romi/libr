@@ -6,22 +6,23 @@
 
 namespace rpp {
 
-    class ClockAccessor{
+    class ClockAccessor
+    {
             public:
-                static const std::shared_ptr< IClock >& GetInstance()
+                static const std::shared_ptr<IClock>& GetInstance()
                 {
                         if (g_clock == nullptr)
                                 g_clock = std::make_shared<rpp::Clock>();
                         return g_clock;
                 }
 
-                static void SetInstance(const std::shared_ptr< IClock >& globalClock)
+                static void SetInstance(const std::shared_ptr<IClock>& globalClock)
                 {
                       g_clock = globalClock;
                 }
 
             private:
-                static std::shared_ptr <IClock> g_clock;
+                static std::shared_ptr<IClock> g_clock;
     };
 }
 
