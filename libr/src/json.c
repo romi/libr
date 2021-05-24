@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <locale.h>
 #include "r/mem.h"
 #include "r/log.h"
 #include "r/json.h"
@@ -833,7 +834,14 @@ int32_t json_serialise(json_object_t object,
         serialise.pretty = flags & k_json_pretty;
         serialise.sorted = flags & k_json_sort_keys;
         serialise.indent = 0;
-        return json_serialise_text(&serialise, object, fun, userdata);
+
+//        const char *old_locale = setlocale(LC_ALL, NULL);
+        setlocale(LC_NUMERIC, "C.UTF-8");
+
+        int32_t retval = json_serialise_text(&serialise, object, fun, userdata);
+
+//        setlocale(LC_NUMERIC, old_locale);
+        return retval;
 }
 
 static int32_t json_write(json_writer_t fun, void* userdata, const char* s)
