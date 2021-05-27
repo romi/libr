@@ -74,6 +74,8 @@ TEST_F(clock_tests, clock_accessor_unset_returns_valid_clock_time_is_good)
         // Act
         auto clock = rpp::ClockAccessor::GetInstance();
         auto actual_string = clock->datetime_compact_string();
+        // Remove the last 4 characters for comparison as the old function did not support ms.
+        actual_string.erase (actual_string.end()-4, actual_string.end());
 
         char time[64] = {0};
         std::string oldstyle = old_clock_datetime_compact(time,64);
@@ -123,12 +125,35 @@ TEST_F(clock_tests, clock_now_compactstring_returns_time_matches_old_function)
 
         // Act
         auto actual = clock.datetime_compact_string();
+        // Remove the last 4 characters for comparison as the old function did not support ms.
+        actual.erase (actual.end()-4, actual.end());
+
         char time[64] = {0};
         std::string oldstyle = old_clock_datetime_compact(time,64);
 
         // Assert
         // Second granulatiry so they should match
         ASSERT_EQ(actual, oldstyle);
+}
+
+TEST_F(clock_tests, clock_now_compactstring_returns_ms)
+{
+    // Arrange
+    rpp::Clock clock;
+
+    // Act
+    auto actual = clock.datetime_compact_string();
+    // Remove the last 4 characters for comparison as the old function did not support ms.
+    actual.erase (actual.begin(), actual.end()-4);
+
+    char time[64] = {0};
+    std::string oldstyle = old_clock_datetime_compact(time,64);
+
+    // Assert on the format
+    ASSERT_EQ(actual[0], '.');
+    ASSERT_NE(isdigit(actual[1]), 0);
+    ASSERT_NE(isdigit(actual[2]), 0);
+    ASSERT_NE(isdigit(actual[3]), 0);
 }
 
 TEST_F(clock_tests, clock_timestamp_returns_timestamp)

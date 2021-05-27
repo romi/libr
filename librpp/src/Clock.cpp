@@ -39,10 +39,15 @@ namespace rpp {
 
         std::string Clock::datetime_compact_string()
         {
-                std::time_t now =  std::time(nullptr);
-                std::stringstream ss;
-                ss << std::put_time(std::localtime(&now), "%Y%m%d-%H%M%S");
-                return ss.str();
+            using namespace std::chrono;
+            auto now = system_clock::now();
+            auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+            auto now_time_t = system_clock::to_time_t(now);
+
+            std::stringstream ss;
+            ss << std::put_time(std::localtime(&now_time_t), "%Y%m%d-%H%M%S");
+            ss << '.' << std::setfill('0') << std::setw(3) << ms.count();
+            return ss.str();
         }
 
     uint64_t Clock::timestamp() {
