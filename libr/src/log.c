@@ -25,6 +25,7 @@
 #define _DEFAULT_SOURCE
 #include <string.h>
 #include <stdarg.h>
+#include <pthread.h>
 #include "r.h"
 
 #define ONE_KB_BUFFER (1024)
@@ -226,7 +227,7 @@ static void log_(int level, const char* s)
         default: type = "??"; break;
         }
 
-        rprintf(buffer, sizeof(buffer), "[%s] [%s] [%s] %s", time, type, name, s);
+        rprintf(buffer, sizeof(buffer), "%s, %s, %s, 0x%x, %s", time, type, name, pthread_self(), s);
         r_log_write(buffer);
 
         if (level == R_PANIC && _log_file != stdout) {
