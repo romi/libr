@@ -29,7 +29,7 @@
 #include "r.h"
 
 #define ONE_KB_BUFFER (1024)
-#define LOG_INFO_SIZE (36) // Time, Type, Name
+#define LOG_INFO_SIZE (48) // Time, Type, Name, thread_id
 
 static int _log_level = R_DEBUG;
 static FILE* _log_file = NULL;

@@ -10,10 +10,13 @@ extern "C" {
 #include "os_wrapper.h"
 #include <ctime>
 #include <sys/time.h>
+#include <pthread.h>
 }
 
 FAKE_VALUE_FUNC(int, clock_gettime_wrapper, clockid_t, struct timespec *)
 FAKE_VALUE_FUNC(struct tm * , localtime_r_wrapper, const time_t *, struct tm *)
+
+FAKE_VALUE_FUNC0(pthread_t, pthread_self)
 
 namespace fs = std::filesystem;
 
@@ -29,7 +32,7 @@ protected:
     {
         RESET_FAKE(clock_gettime_wrapper);
         RESET_FAKE(localtime_r_wrapper);
-
+        RESET_FAKE(pthread_self);
         RemoveLogDirectory();
 
         if (!fs::is_directory(logDirectory.c_str()))
@@ -47,6 +50,7 @@ protected:
         log_app_name = "?";
 
         CreateChangingLogFile(logfilepath);
+        pthread_self_fake.return_val = fake_thread_id;
     }
 
     void TearDown() override
@@ -62,11 +66,11 @@ protected:
         }
     }
 
-    std::string CreateLogEntry(const std::string& time, const std::string& type, const std::string& name, const std::string& log)
+    std::string CreateLogEntry(const std::string& time, const std::string& type, const std::string& name, const std::string& log, pthread_t thread_id)
     {
-        size_t size = (size_t)std::snprintf(nullptr, 0, "[%s] [%s] [%s] %s\n", time.c_str(), type.c_str(), name.c_str(), log.c_str());
+        size_t size = (size_t)std::snprintf(nullptr, 0, "%s, %s, %s, 0x%lx, %s\n", time.c_str(), type.c_str(), name.c_str(), thread_id, log.c_str());
         std::string logEntry(size, '\0');
-        std::sprintf(&logEntry[0], "[%s] [%s] [%s] %s\n", time.c_str(), type.c_str(), name.c_str(), log.c_str());
+        std::sprintf(&logEntry[0], "%s, %s, %s, 0x%lx, %s\n", time.c_str(), type.c_str(), name.c_str(), thread_id, log.c_str());
         return logEntry;
     }
 
@@ -113,6 +117,7 @@ protected:
     const std::string panic_type = "!!";
     const std::string unknown_type = "Unknown";
     const std::string log_started = "Log started ----------------------------------------";
+    const pthread_t fake_thread_id = 0x1000;
     std::string log_time;
     std::string log_app_name;
     std::string changing_log_file_entry;
@@ -131,10 +136,10 @@ int    log_tests::fake_time_return_value;
 TEST_F(log_tests, log_set_file_opens_log_file_writes_to_std_out)
 {
     // Arrange
-    int init = r_log_init();
-    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_started);
-    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_file_entry);
 
+    int init = r_log_init();
+    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
+    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_file_entry, fake_thread_id);
     testing::internal::CaptureStdout();
 
     // Act
@@ -201,8 +206,8 @@ TEST_F(log_tests, log_set_file_with_hyphen_does_not_open_file_opens_stdout)
     std::string logfilepath = "-";
     std::string changing_log_entry = CreateChangingLogFile(logfilepath);
 
-    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry);
-    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started);
+    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
 
     testing::internal::CaptureStdout();
 
@@ -226,9 +231,9 @@ TEST_F(log_tests, log_set_file_again_opens_log_file_again)
     std::string changing_log_entry = CreateChangingLogFile(secondlogfilepath);
 
     int init = r_log_init();
-    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_started);
-    expected_log += CreateLogEntry(log_time, info_type, log_app_name, changing_log_file_entry);
-    std::string expected_secondlog = CreateLogEntry(log_time, info_type, log_app_name, log_started);
+    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
+    expected_log += CreateLogEntry(log_time, info_type, log_app_name, changing_log_file_entry, fake_thread_id);
+    std::string expected_secondlog = CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
 
     // Act
     auto actual = r_log_set_file(logfilepath.c_str());
@@ -254,7 +259,7 @@ TEST_F(log_tests, log_set_app_sets_app_field)
     // Arrange
     log_app_name = "test_app";
     int init = r_log_init();
-    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_started);
+    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
 
     // Act
     r_log_set_app(log_app_name.c_str());
@@ -277,7 +282,7 @@ TEST_F(log_tests, log_set_app_sets_app_field_again)
     std::string expected_app_name = "new_test_app";
     log_app_name = "test_app";
     int init = r_log_init();
-    std::string expected_log = CreateLogEntry(log_time, info_type, expected_app_name, log_started);
+    std::string expected_log = CreateLogEntry(log_time, info_type, expected_app_name, log_started, fake_thread_id);
 
     // Act
     r_log_set_app(log_app_name.c_str());
@@ -437,7 +442,7 @@ TEST_F(log_tests, log_set_writer_when_writer_set_logs_to_writer)
     // Arrange
     int init = r_log_init();
     std::string log_entry = "last log entry";
-    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_entry);
+    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_entry, fake_thread_id);
 
     log_writer_t callback = log_writer_callback;
 
@@ -457,11 +462,11 @@ TEST_F(log_tests, log_panic_when_file_set_logs_to_stdout_and_file)
     // Arrange
     std::string panic_string("PANIC!!");
     int init = r_log_init();
-    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_started);
-    expected_log += CreateLogEntry(log_time, panic_type, log_app_name, panic_string);
+    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
+    expected_log += CreateLogEntry(log_time, panic_type, log_app_name, panic_string, fake_thread_id);
 
-    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_file_entry);
-    expected_stdoutput += CreateLogEntry(log_time, panic_type, log_app_name, panic_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_file_entry, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, panic_type, log_app_name, panic_string, fake_thread_id);
 
     testing::internal::CaptureStdout();
 
@@ -486,11 +491,11 @@ TEST_F(log_tests, log_panic_no_init_when_file_set_logs_to_stdout_and_file)
 {
     // Arrange
     std::string panic_string("PANIC!!");
-    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_started);
-    expected_log += CreateLogEntry(log_time, panic_type, log_app_name, panic_string);
+    std::string expected_log = CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
+    expected_log += CreateLogEntry(log_time, panic_type, log_app_name, panic_string, fake_thread_id);
 
-    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_file_entry);
-    expected_stdoutput += CreateLogEntry(log_time, panic_type, log_app_name, panic_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_file_entry, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, panic_type, log_app_name, panic_string, fake_thread_id);
 
     testing::internal::CaptureStdout();
 
@@ -514,7 +519,7 @@ TEST_F(log_tests, log_panic_no_init_logs_to_stdout)
 {
     // Arrange
     std::string panic_string("PANIC!!");
-    std::string expected_stdoutput = CreateLogEntry(log_time, panic_type, log_app_name, panic_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, panic_type, log_app_name, panic_string, fake_thread_id);
     testing::internal::CaptureStdout();
 
     // Act
@@ -534,9 +539,9 @@ TEST_F(log_tests, log_panic_when_no_file_set_logs_to_stdout_once_only)
     std::string logfilepath = "-";
     std::string changing_log_entry = CreateChangingLogFile(logfilepath);
 
-    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry);
-    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started);
-    expected_stdoutput += CreateLogEntry(log_time, panic_type, log_app_name, panic_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, panic_type, log_app_name, panic_string, fake_thread_id);
 
     testing::internal::CaptureStdout();
 
@@ -561,9 +566,9 @@ TEST_F(log_tests, log_error_logs_error)
     std::string logfilepath = "-";
     std::string changing_log_entry = CreateChangingLogFile(logfilepath);
 
-    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry);
-    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started);
-    expected_stdoutput += CreateLogEntry(log_time, error_type, log_app_name, error_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, error_type, log_app_name, error_string, fake_thread_id);
 
     testing::internal::CaptureStdout();
 
@@ -584,7 +589,7 @@ TEST_F(log_tests, log_error_no_init_logs_to_stdout)
 {
     // Arrange
     std::string error_string("PANIC!!");
-    std::string expected_stdoutput = CreateLogEntry(log_time, error_type, log_app_name, error_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, error_type, log_app_name, error_string, fake_thread_id);
     testing::internal::CaptureStdout();
 
     // Act
@@ -604,9 +609,9 @@ TEST_F(log_tests, log_warning_logs_warning)
     std::string logfilepath = "-";
     std::string changing_log_entry = CreateChangingLogFile(logfilepath);
 
-    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry);
-    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started);
-    expected_stdoutput += CreateLogEntry(log_time, warning_type, log_app_name, warning_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, warning_type, log_app_name, warning_string, fake_thread_id);
 
     testing::internal::CaptureStdout();
 
@@ -627,7 +632,7 @@ TEST_F(log_tests, log_warning_no_init_logs_to_stdout)
 {
     // Arrange
     std::string warning_string("PANIC!!");
-    std::string expected_stdoutput = CreateLogEntry(log_time, warning_type, log_app_name, warning_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, warning_type, log_app_name, warning_string, fake_thread_id);
     testing::internal::CaptureStdout();
 
     // Act
@@ -664,9 +669,9 @@ TEST_F(log_tests, log_info_logs_info)
     std::string logfilepath = "-";
     std::string changing_log_entry = CreateChangingLogFile(logfilepath);
 
-    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry);
-    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started);
-    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, info_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, info_string, fake_thread_id);
 
     testing::internal::CaptureStdout();
 
@@ -687,7 +692,7 @@ TEST_F(log_tests, log_info_no_init_logs_to_stdout)
 {
     // Arrange
     std::string info_string("PANIC!!");
-    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, info_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, info_string, fake_thread_id);
     testing::internal::CaptureStdout();
 
     // Act
@@ -724,9 +729,9 @@ TEST_F(log_tests, log_debug_logs_debug)
     std::string logfilepath = "-";
     std::string changing_log_entry = CreateChangingLogFile(logfilepath);
 
-    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry);
-    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started);
-    expected_stdoutput += CreateLogEntry(log_time, debug_type, log_app_name, debug_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, info_type, log_app_name, changing_log_entry, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, info_type, log_app_name, log_started, fake_thread_id);
+    expected_stdoutput += CreateLogEntry(log_time, debug_type, log_app_name, debug_string, fake_thread_id);
 
     testing::internal::CaptureStdout();
 
@@ -747,7 +752,7 @@ TEST_F(log_tests, log_debug_no_init_logs_to_stdout)
 {
     // Arrange
     std::string debug_string("PANIC!!");
-    std::string expected_stdoutput = CreateLogEntry(log_time, debug_type, log_app_name, debug_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, debug_type, log_app_name, debug_string, fake_thread_id);
     testing::internal::CaptureStdout();
 
     // Act
@@ -785,7 +790,7 @@ TEST_F(log_tests, log_1k_buffer_logs_1k_buffer_plus_log_stamp)
     buffer[buffsize-1] = 0;
 
     std::string debug_string(buffer);
-    std::string expected_stdoutput = CreateLogEntry(log_time, panic_type, log_app_name, debug_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, panic_type, log_app_name, debug_string, fake_thread_id);
 
     testing::internal::CaptureStdout();
 
@@ -812,7 +817,7 @@ TEST_F(log_tests, log_greater_than_1k_buffer_logs_1k_buffer_plus_log_stamp)
     bigbuffer[bigbuffsize-1] = 0;
 
     std::string debug_string(buffer);
-    std::string expected_stdoutput = CreateLogEntry(log_time, panic_type, log_app_name, debug_string);
+    std::string expected_stdoutput = CreateLogEntry(log_time, panic_type, log_app_name, debug_string, fake_thread_id);
 
     testing::internal::CaptureStdout();
 
