@@ -73,7 +73,7 @@ class JSONKeyError : public JSONError
 {
 public:
         explicit JSONKeyError(const char *key) : JSONError() {
-                _what = "Invalid key: ";
+                _what = "Couldn't find key: ";
                 _what += key;
         }
 };
