@@ -32,9 +32,9 @@ namespace rpp
         class MemBuffer
         {
         public:
-                MemBuffer() : data_()
-                        {}
+                MemBuffer() : data_(){};
                 MemBuffer(const MemBuffer& buffer);
+                MemBuffer& operator=(const MemBuffer& from);
                 virtual ~MemBuffer() = default;
         
                 void put(uint8_t c);
@@ -43,7 +43,7 @@ namespace rpp
                 void append_string(const char *string);
                 void printf(const char* format, ...);
         
-                const std::vector<uint8_t>& data() const;        
+                [[nodiscard]] const std::vector<uint8_t>& data() const;
                 std::string tostring();
                 size_t size();        
                 void clear();

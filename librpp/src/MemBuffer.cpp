@@ -36,6 +36,12 @@ namespace rpp
                 append(buffer);
         }
 
+        MemBuffer &MemBuffer::operator=(const MemBuffer &from) {
+                    clear();
+                    append(from);
+                    return *this;
+        }
+
         void MemBuffer::put(uint8_t c)
         {
                 data_.emplace_back(c);
@@ -91,4 +97,5 @@ namespace rpp
         {
                 return data_.size();
         }
+
 }
