@@ -24,7 +24,9 @@
 */
 #ifndef R_MEMBUFFER_H
 #define R_MEMBUFFER_H
-#include <mutex>
+
+#include <stdint.h>
+#include <string>
 #include <vector>
 
 namespace rpp
@@ -32,7 +34,7 @@ namespace rpp
         class MemBuffer
         {
         public:
-                MemBuffer() : data_(){};
+                MemBuffer() : data_() {}
                 MemBuffer(const MemBuffer& buffer);
                 MemBuffer& operator=(const MemBuffer& from);
                 virtual ~MemBuffer() = default;
@@ -53,4 +55,4 @@ namespace rpp
         };
 }
 
-#endif // _R_MEMBUF_H_
+#endif // R_MEMBUFFER_H
