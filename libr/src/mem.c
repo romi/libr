@@ -26,106 +26,9 @@
 #include "r.h"
 
 #define ONE_MB (1024*1024)
-//#define MEM_DIAGNOSTICS
 
 static out_of_memory_handler_t _out_of_memory_handler = NULL;
 
-#if defined MEM_DIAGNOSTICS
-#define SGC_USE_THREADS 1
-#include <sgc.h>
-
-int mem_init(int *argc, out_of_memory_handler_t handler)
-{
-	if (sgc_init(argc, 0) != 0) {
-                r_err("Failed the initialise the SGC memory heap");
-                return -1;
-        }
-        _out_of_memory_handler = handler;
-        return 0;
-}
-
-static int print_memory_leak(int op, void* ptr,
-                             unsigned char type,
-                             int counter, int size)
-{
-        if (op == 3) {
-                printf("Memory leak: counter=%d, size=%d\n", counter, size);
-        } 
-        return 1;
-}
-
-void mem_cleanup()
-{
-        r_info("Scanning for memory leaks");
-        sgc_search_memory_leaks(print_memory_leak);
-        sgc_cleanup();
-}
-
-void *safe_malloc(size_t size, int zero)
-{
-        if (size == 0) {
-                r_warn("safe_malloc: size == 0");
-                return NULL;
-        }
-        
-        void *ptr = sgc_new_object(size, SGC_ZERO, 0);
-
-        if (ptr == NULL && _out_of_memory_handler != NULL) {
-                // Free some memory
-                _out_of_memory_handler();
-        
-                // Second attempt
-                ptr = sgc_new_object(size, SGC_ZERO, 0);
-        }
-
-        if (ptr == NULL) {
-                r_panic("safe_malloc: out of memory");
-                exit_wrapper(1);
-        }
-
-        return ptr;
-}
-
-void safe_free(void *ptr)
-{
-        if (ptr == NULL)
-                r_warn("safe_free: ptr == NULL");
-        else
-                sgc_free_object(ptr);
-}
-
-void *safe_calloc(size_t nmemb, size_t size)
-{
-        return sgc_new_object(nmemb * size, SGC_ZERO, 0);
-}
-
-void *safe_realloc(void *ptr, size_t size)
-{
-        if (size == 0)
-                // Not an error
-                r_warn("safe_realloc: size == 0"); 
-
-        ptr = sgc_resize_object(ptr, size, 0, 0);
-        
-        if (size > 0
-            && ptr == NULL
-            && _out_of_memory_handler != NULL) {
-                // Free some memory
-                _out_of_memory_handler();
-        
-                // Second attempt
-                ptr = sgc_resize_object(ptr, size, 0, 0);
-        }
-
-        if (size > 0 && ptr == NULL) {
-                r_panic("safe_realloc: out of memory");
-                exit_wrapper(1);
-        }
-        
-        return ptr;
-}
-
-#else
 
 int mem_init(int *argc __attribute__((unused)), out_of_memory_handler_t handler)
 {
@@ -200,8 +103,6 @@ void *safe_realloc(void *ptr, size_t size)
         
         return ptr;
 }
-
-#endif // MEM_DIAGNOSTICS
 
 char *safe_strdup(const char *s)
 {
