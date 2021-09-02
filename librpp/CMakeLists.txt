@@ -21,6 +21,9 @@ set(SOURCES
         include/ILinux.h
         include/Linux.h
         src/Linux.cpp
+        include/ILogger.h
+        include/Logger.h
+        src/Logger.cpp
         src/FileUtils.cpp
         include/FileUtils.h
         include/IClock.h
