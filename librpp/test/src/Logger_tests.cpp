@@ -59,6 +59,7 @@ TEST_F(Logger_tests, move_log_suceeds_when_logger_not_initialised)
     std::string test_string ("TESTSTRING");
     std::string LogText{};
 
+    r_log_cleanup();
     const char *currentpath = r_log_get_file();
 
     // Act
