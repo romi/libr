@@ -42,6 +42,10 @@ namespace rpp
                     return *this;
         }
 
+        bool MemBuffer::operator==(const MemBuffer &rval) {
+            return (data_ == rval.data());
+        }
+
         void MemBuffer::put(uint8_t c)
         {
                 data_.emplace_back(c);
@@ -97,5 +101,4 @@ namespace rpp
         {
                 return data_.size();
         }
-
 }

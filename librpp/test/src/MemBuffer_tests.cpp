@@ -33,6 +33,57 @@ TEST_F(MemBuffer_tests, can_construct)
         ASSERT_EQ(buffer.size(), 0);
 }
 
+TEST_F(MemBuffer_tests, can_copy_construct)
+{
+    // Arrange
+    rpp::MemBuffer MemBufferOrig;
+    std::string expected("teststring");
+    MemBufferOrig.append_string(expected.c_str());
+
+    rpp::MemBuffer MemBufferCopy(MemBufferOrig);
+
+    // Act
+    auto actual = MemBufferCopy.tostring();
+
+    //Assert
+    ASSERT_EQ(actual, expected);
+}
+
+TEST_F(MemBuffer_tests, equals_operator_correct_when_equal)
+{
+    // Arrange
+    bool expected = true;
+    std::string data("teststring");
+    rpp::MemBuffer MemBufferL;
+    rpp::MemBuffer MemBufferR;
+    MemBufferL.append_string(data.c_str());
+    MemBufferR.append_string(data.c_str());
+
+    // Act
+
+    auto actual = (MemBufferL == MemBufferR);
+
+    //Assert
+    ASSERT_EQ(actual, expected);
+}
+
+TEST_F(MemBuffer_tests, equals_operator_correct_when_not_equal)
+{
+    // Arrange
+    bool expected = false;
+    std::string data("teststring");
+    rpp::MemBuffer MemBufferL;
+    rpp::MemBuffer MemBufferR;
+    MemBufferL.append_string(data.c_str());
+
+    // Act
+
+    auto actual = (MemBufferL == MemBufferR);
+
+    //Assert
+    ASSERT_EQ(actual, expected);
+}
+
 TEST_F(MemBuffer_tests, put_appends_char)
 {
         // Arrange
@@ -45,53 +96,52 @@ TEST_F(MemBuffer_tests, put_appends_char)
         MemBuffer.put('s');
         MemBuffer.put('t');
 
-        auto actual = MemBuffer.data();
+
+        auto buffer = MemBuffer.data();
+        std::string actual(buffer.begin(), buffer.end());
 
         //Assert
-        ASSERT_EQ(actual[0], 't');
-        ASSERT_EQ(actual[1], 'e');
-        ASSERT_EQ(actual[2], 's');
-        ASSERT_EQ(actual[3], 't');
+        ASSERT_EQ(actual, expected);
 }
 
-// TEST_F(MemBuffer_tests, append_appends_chars)
-// {
-//         // Arrange
-//         rpp::MemBuffer MemBuffer;
-//         const int bufflen = 4;
-//         uint8_t buff[bufflen] = { 't', 'e', 's', 't'};
+ TEST_F(MemBuffer_tests, append_appends_chars)
+ {
+         // Arrange
+         rpp::MemBuffer MemBuffer;
+         const int bufflen = 4;
+         uint8_t buff[bufflen] = { 't', 'e', 's', 't'};
 
-//         // Act
-//         MemBuffer.append(buff, bufflen);
+         // Act
+         MemBuffer.append(buff, bufflen);
 
-//         auto actual = MemBuffer.data();
+         auto actual = MemBuffer.data();
 
-//         //Assert
-//         ASSERT_EQ(actual[0], 't');
-//         ASSERT_EQ(actual[1], 'e');
-//         ASSERT_EQ(actual[2], 's');
-//         ASSERT_EQ(actual[3], 't');
-// }
+         //Assert
+         ASSERT_EQ(actual[0], 't');
+         ASSERT_EQ(actual[1], 'e');
+         ASSERT_EQ(actual[2], 's');
+         ASSERT_EQ(actual[3], 't');
+ }
 
-// TEST_F(MemBuffer_tests, append_appends_len_chars)
-// {
-//         // Arrange
-//         rpp::MemBuffer MemBuffer;
-//         const int bufflen = 4;
-//         uint8_t buff[bufflen+1] = { 't', 'e', 's', 't', 's'};
+ TEST_F(MemBuffer_tests, append_appends_len_chars)
+ {
+         // Arrange
+         rpp::MemBuffer MemBuffer;
+         const int bufflen = 4;
+         uint8_t buff[bufflen+1] = { 't', 'e', 's', 't', 's'};
 
-//         // Act
-//         MemBuffer.append(buff, bufflen);
+         // Act
+         MemBuffer.append(buff, bufflen);
 
-//         auto actual = MemBuffer.data();
+         auto actual = MemBuffer.data();
 
-//         //Assert
-//         ASSERT_EQ(actual.size(), bufflen);
-//         ASSERT_EQ(actual[0], 't');
-//         ASSERT_EQ(actual[1], 'e');
-//         ASSERT_EQ(actual[2], 's');
-//         ASSERT_EQ(actual[3], 't');
-// }
+         //Assert
+         ASSERT_EQ(actual.size(), bufflen);
+         ASSERT_EQ(actual[0], 't');
+         ASSERT_EQ(actual[1], 'e');
+         ASSERT_EQ(actual[2], 's');
+         ASSERT_EQ(actual[3], 't');
+ }
 
 TEST_F(MemBuffer_tests, append_string_appends_string)
 {

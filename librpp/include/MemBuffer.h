@@ -37,6 +37,7 @@ namespace rpp
                 MemBuffer() : data_() {}
                 MemBuffer(const MemBuffer& buffer);
                 MemBuffer& operator=(const MemBuffer& from);
+                bool operator==(const MemBuffer& rval);
                 virtual ~MemBuffer() = default;
         
                 void put(uint8_t c);
