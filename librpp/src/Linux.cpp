@@ -70,6 +70,10 @@ namespace  rpp
                     return ::getpwuid(uid);
         }
 
+        ssize_t Linux::getrandom(void *buf, size_t buflen, unsigned int flags) {
+            return ::getrandom(buf, buflen, flags);
+        }
+
         DIR * Linux::opendir(const char * directory)
         {
                 return ::opendir( directory );
@@ -170,6 +174,7 @@ namespace  rpp
         {
                 return ::getsockname(sockfd, addr, addrlen);
         }
+
 
 }
 

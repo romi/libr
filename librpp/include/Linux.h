@@ -37,6 +37,8 @@ namespace  rpp {
 
         passwd *getpwuid (uid_t uid) override;
 
+        ssize_t getrandom(void *buf, size_t buflen, unsigned int flags) override;
+
         FILE *fopen(const char *filename, const char *mode) override;
 
         int fclose(FILE *fp) override;
@@ -57,26 +59,26 @@ namespace  rpp {
         
         ssize_t read(int fd, void *buf, size_t count) override;
 
-        int socket(int domain, int type, int protocol);
+        int socket(int domain, int type, int protocol) override;
 
-        int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+        int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) override;
 
-        int shutdown(int sockfd, int how);
+        int shutdown(int sockfd, int how) override;
         
-        ssize_t recv(int sockfd, void *buf, size_t len, int flags);
+        ssize_t recv(int sockfd, void *buf, size_t len, int flags) override;
 
-        ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+        ssize_t send(int sockfd, const void *buf, size_t len, int flags) override;
         
-        int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+        int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) override;
 
-        int listen(int sockfd, int backlog);
+        int listen(int sockfd, int backlog) override;
 
-        int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+        int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) override;
 
         int setsockopt(int sockfd, int level, int optname,
-                       const void *optval, socklen_t optlen);
+                       const void *optval, socklen_t optlen) override;
 
-        int getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+        int getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen) override;
     };
 
 }

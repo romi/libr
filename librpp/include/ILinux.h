@@ -7,6 +7,7 @@
 #include <sys/poll.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/random.h>
 
 #include <cstdarg>
 #include <csignal>
@@ -23,7 +24,7 @@ namespace rpp {
 
     class ILinux {
     public:
-        virtual ~ILinux() {};
+        virtual ~ILinux() = default;
 
         virtual int open(const char *pathname, int flags) = 0;
 
@@ -40,7 +41,7 @@ namespace rpp {
         virtual int execve(const char *filename, char *const argv[],
                            char *const envp[]) = 0;
 
-        virtual pid_t fork(void) = 0;
+        virtual pid_t fork() = 0;
 
         virtual int kill(pid_t pid, int sig) = 0;
 
@@ -51,6 +52,8 @@ namespace rpp {
         virtual uid_t getuid () = 0;
 
         virtual passwd *getpwuid (uid_t uid) = 0;
+
+        virtual ssize_t getrandom(void *buf, size_t buflen, unsigned int flags) = 0;
 
         virtual FILE *fopen(const char *filename, const char *mode) = 0;
 
