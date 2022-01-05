@@ -22,6 +22,7 @@ namespace rpp {
                 MOCK_METHOD1(secure_getenv, char*(const char* name));
                 MOCK_METHOD0(getuid, uid_t());
                 MOCK_METHOD1(getpwuid, passwd*(uid_t uid));
+                MOCK_METHOD3(getrandom, ssize_t(void *, size_t, unsigned int));
                 MOCK_METHOD2(fopen, FILE * ( const char *filepath, const char *mode ));
                 MOCK_METHOD1(fclose, int (FILE *fp));
                 MOCK_METHOD1(opendir, DIR* (const char *path));
