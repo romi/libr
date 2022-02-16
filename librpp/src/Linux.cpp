@@ -1,5 +1,5 @@
 #include "Linux.h"
-
+// LCOV_EXCL_START
 namespace  rpp
 {
 
@@ -174,7 +174,6 @@ namespace  rpp
         {
                 return ::getsockname(sockfd, addr, addrlen);
         }
-
-
 }
+// LCOV_EXCL_END
 
