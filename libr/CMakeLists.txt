@@ -13,7 +13,7 @@ set(libr_VERSION_MINOR 1)
 set(SOURCES
   src/mem.c
   src/r_mutex.c
-  src/membuf.c
+#  src/membuf.c
   src/log.c 
   src/util.c
   src/json.c

@@ -2,9 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 set(SRCS_RPP
         src/tests_main.cpp
-        src/MemBuffer_tests.cpp
         src/StringUtils_tests.cpp
-        src/json_cpp_tests.cpp
+#        src/json_cpp_tests.cpp
         src/FileUtils_tests.cpp
         src/Logger_tests.cpp
         mocks/mock_linux.h)

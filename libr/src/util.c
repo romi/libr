@@ -24,7 +24,7 @@
  */
 #include <stdio.h>
 #include <unistd.h>
-#include "r.h"
+#include <stdarg.h>
 
 char *rprintf(char *buffer, size_t buflen, const char *format, ...)
 {

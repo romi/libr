@@ -1,7 +1,7 @@
 #include <string>
 
 #include "gtest/gtest.h"
-#include "JsonCpp.h"
+#include "json.hpp"
 
 
 class json_cpp_tests : public ::testing::TestWithParam< std::string >
