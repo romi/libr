@@ -14,7 +14,6 @@ set(SRCS_OS
 
 set(SRCS_COMMON
         src/tests_main.cpp
-        src/membuf_tests.cpp
         mocks/log.mock.h
         mocks/log.mock.c
         mocks/mem.mock.h
