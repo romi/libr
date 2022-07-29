@@ -1,4 +1,5 @@
 #include <string>
+#include <cstdio>
 #include "Logger.h"
 #include "FileUtils.h"
 
@@ -15,7 +16,7 @@ using ::testing::HasSubstr;
 class Logger_tests : public ::testing::Test
 {
 protected:
-    Logger_tests() : mockClock(), mockLogWriterFactory(), mockLogWriter(){
+    Logger_tests() : filename_("log.txt"), mockClock(), mockLogWriterFactory(), mockLogWriter(){
     }
 
     ~Logger_tests() override = default;
@@ -30,8 +31,9 @@ protected:
     {
         // stop perceived memory leak since the global is static.
         rpp::ClockAccessor::SetInstance(nullptr);
+        remove(filename_.c_str());
     }
-
+    std::string filename_;
     std::shared_ptr<rpp::MockClock> mockClock;
     std::shared_ptr<rpp::MockLogWriterFactory> mockLogWriterFactory;
     std::shared_ptr<rpp::MockLogWriter> mockLogWriter;
@@ -138,6 +140,67 @@ TEST_F(Logger_tests, logger_outputs_correct_level_ERROR)
     ASSERT_THAT(actual_stdoutput, HasSubstr(expected_string));
 }
 
+TEST_F(Logger_tests, logger_outputs_r_err)
+{
+    // Arrange
+    std::string expected_string = "EE";
+    EXPECT_CALL(*mockClock, datetime_compact_string)
+            .WillOnce(Return("DTS"));
+    testing::internal::CaptureStdout();
+    // Act
+    r_err("Test format %s", "string");
+
+    // Assert
+    std::string actual_stdoutput = testing::internal::GetCapturedStdout();
+    ASSERT_THAT(actual_stdoutput, HasSubstr(expected_string));
+}
+
+TEST_F(Logger_tests, logger_outputs_r_dbg)
+{
+    // Arrange
+    std::string expected_string = "DD";
+    EXPECT_CALL(*mockClock, datetime_compact_string)
+            .WillOnce(Return("DTS"));
+    testing::internal::CaptureStdout();
+    // Act
+    r_debug("Test format %s", "string");
+
+    // Assert
+    std::string actual_stdoutput = testing::internal::GetCapturedStdout();
+    ASSERT_THAT(actual_stdoutput, HasSubstr(expected_string));
+}
+
+TEST_F(Logger_tests, logger_outputs_r_info)
+{
+    // Arrange
+    std::string expected_string = "II";
+    EXPECT_CALL(*mockClock, datetime_compact_string)
+            .WillOnce(Return("DTS"));
+    testing::internal::CaptureStdout();
+    // Act
+    r_info("Test format %s", "string");
+
+    // Assert
+    std::string actual_stdoutput = testing::internal::GetCapturedStdout();
+    ASSERT_THAT(actual_stdoutput, HasSubstr(expected_string));
+}
+
+TEST_F(Logger_tests, logger_outputs_r_warn)
+{
+    // Arrange
+    std::string expected_string = "WW";
+    EXPECT_CALL(*mockClock, datetime_compact_string)
+            .WillOnce(Return("DTS"));
+    testing::internal::CaptureStdout();
+    // Act
+    r_warn("Test format %s", "string");
+
+    // Assert
+    std::string actual_stdoutput = testing::internal::GetCapturedStdout();
+    ASSERT_THAT(actual_stdoutput, HasSubstr(expected_string));
+}
+
+
 TEST_F(Logger_tests, logger_sets_application_name)
 {
     // Arrange
@@ -154,6 +217,20 @@ TEST_F(Logger_tests, logger_sets_application_name)
     // Assert
     std::string actual_stdoutput = testing::internal::GetCapturedStdout();
     ASSERT_THAT(actual_stdoutput, HasSubstr(expected_string));
+}
+
+TEST_F(Logger_tests, logger_log_to_file_logs)
+{
+    // Arrange
+    std::string expected_string = "ApplicationName";
+    EXPECT_CALL(*mockClock, datetime_compact_string)
+            .WillRepeatedly(Return("DTS"));
+    // Act
+    log_set_application(expected_string);
+    log_set_file("log.txt");
+    r_info("Logging to file.");
+    // Assert
+    ASSERT_TRUE(exists(std::filesystem::path("log.txt")));
 }
 
 TEST_F(Logger_tests, move_log_suceeds_when_logger_initialised)

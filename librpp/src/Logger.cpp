@@ -53,10 +53,17 @@ namespace rpp
         }
     }
 
-    void Logger::log(log_level level, const std::string_view& message) {
-       std::scoped_lock lock(log_mutex_);
-       std::stringstream logger_stream;
-       std::string log_level = log_level_names_[level];
+    // This can't be a variadic template due to wanting in in the interface base class so we use the old ... notation.
+    void Logger::log(log_level level, const char* format, ...) {
+        std::scoped_lock lock(log_mutex_);
+        std::stringstream logger_stream;
+        std::string log_level = log_level_names_[level];
+
+        std::string message;
+        va_list argptr;
+        va_start(argptr, format);
+        StringUtils::string_vprintf(message, format, argptr);
+        va_end(argptr);
 
        logger_stream << rpp::ClockAccessor::GetInstance()->datetime_compact_string() << ", "
        << log_level << ", " << application_name_  << ", 0x" << std::hex << pthread_self() << std::dec << ", "
@@ -69,9 +76,9 @@ namespace rpp
         return filename_;
     }
 
-    void Logger::log_to_file(const std::string_view log_path)
+    void Logger::log_to_file(const std::string &log_path)
     {
-        r_info("Changing log to '%s'", log_path);
+        log(log_level::INFO, "Changing log to '%s'", log_path.c_str());
         logWriter_->close();
         logWriter_ = logWriterFactory_->create_file_writer();
         logWriter_->open(log_path);
@@ -83,7 +90,9 @@ namespace rpp
 
     void Logger::log_to_console()
     {
-        r_info("Changing log to console");
+        log(log_level::INFO, "Changing log to console");
+        logWriter_->close();
+        logWriter_ = logWriterFactory_->create_console_writer();
     }
 
 } // namespace
@@ -105,7 +114,7 @@ void log_set_application(std::string_view application_name)
     rpp::Logger::Instance()->set_application_name(application_name);
 }
 
-int log_set_file(const std::string_view& path)
+int log_set_file(const std::string &path)
 {
     rpp::Logger::Instance()->log_to_file(path);
     return 0;
