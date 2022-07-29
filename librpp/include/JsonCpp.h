@@ -33,7 +33,7 @@
 #include <MemBuffer.h>
 #include "StringUtils.h"
 #include "json.h"
-#include "log.h"
+#include "../../libr/include/r/log.h"
 
 class JSONError : public std::exception
 {

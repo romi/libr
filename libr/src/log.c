@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <pthread.h>
-#include "r.h"
+#include "log.h"
 
 #define ONE_KB_BUFFER (1024)
 #define LOG_INFO_SIZE (48) // Time, Type, Name, thread_id

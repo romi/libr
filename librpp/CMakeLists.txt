@@ -19,9 +19,12 @@ set(SOURCES
         include/ILinux.h
         include/Linux.h
         src/Linux.cpp
+        include/ILogWriter.h
+        include/LogWriter.h
         include/ILogger.h
         include/Logger.h
         src/Logger.cpp
+        src/LogWriter.cpp
         src/FileUtils.cpp
         include/FileUtils.h
         include/IClock.h
@@ -39,7 +42,7 @@ target_include_directories(rpp
           "${CMAKE_CURRENT_SOURCE_DIR}/include"
         )
 
-target_link_libraries(rpp rppmocks r stdc++fs)
+target_link_libraries(rpp rppmocks stdc++fs)
 
 # Always build the mocks library.
 add_subdirectory(test/mocks)

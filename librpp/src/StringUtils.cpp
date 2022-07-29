@@ -40,4 +40,27 @@ namespace StringUtils
         va_end(ap_copy);
         instring = output.data();
     }
+
+    char *rprintf(char *buffer, size_t buflen, const char *format, ...)
+    {
+        int len;
+        va_list ap;
+
+        va_start(ap, format);
+        len = vsnprintf(nullptr, 0, format, ap);
+        va_end(ap);
+
+        if (len < 0 || buflen < (size_t)len+1)
+            return nullptr;
+
+        va_start(ap, format);
+        len = vsnprintf(buffer, buflen, format, ap);
+        va_end(ap);
+
+        if (len < 0)
+            return nullptr;
+
+        return buffer;
+    }
+
 }

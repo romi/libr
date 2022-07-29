@@ -3,7 +3,7 @@
 #include "gtest/gtest.h"
 #include "test_file_utils.h"
 
-#include "log.h"
+#include "../../include/r/log.h"
 
 extern "C" {
 #include "fff.h"

@@ -17,6 +17,8 @@ namespace StringUtils
     void string_printf(std::string& instring, const char* format, ...);
     void string_vprintf(std::string& instring, const char* format, va_list ap);
 
+    char *rprintf(char *buffer, size_t len, const char *format, ...);
+
 
     template <typename ...Args>
     std::string string_format(const std::string& format, Args && ...args)

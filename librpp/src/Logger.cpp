@@ -1,31 +1,123 @@
 #include <iostream>
+#include <mutex>
 #include "Logger.h"
+#include "LogWriter.h"
+#include "ClockAccessor.h"
 
 namespace rpp
 {
+    std::mutex Logger::log_mutex_;
+    std::string Logger::filename_;
+    std::shared_ptr<ILogger> Logger::logger_;
+
+     std::shared_ptr<ILogger> Logger::Instance() {
+        {
+            std::scoped_lock lock(log_mutex_);
+            if (logger_ == nullptr) {
+                logger_ = std::shared_ptr<rpp::Logger>(new Logger(std::make_shared<LogWriterFactory>()));
+            }
+        }
+        return logger_;
+    }
+
+    Logger::Logger(const std::shared_ptr<ILogWriterFactory>& logWriterFactory) : application_name_("??"),
+        log_level_names_(), logWriterFactory_(logWriterFactory), logWriter_()
+    {
+         logWriter_ = logWriterFactory->create_console_writer();
+        log_level_names_[log_level::DEBUG] = "DD";
+        log_level_names_[log_level::INFO] = "II";
+        log_level_names_[log_level::WARNING] = "WW";
+        log_level_names_[log_level::ERROR] = "EE";
+    }
+
     void Logger::MoveLog(std::filesystem::path newpath) {
 
-        std::filesystem::path current;
-        std::string filename{};
+        std::filesystem::path current_log_path;
+        std::string new_filename = "log.txt";
 
-        if (r_log_get_file() != nullptr)
-        {
-            current = r_log_get_file();
-            filename = current.filename();
+        if (!filename_.empty()){
+            current_log_path = filename_;
+            new_filename = current_log_path.filename();
         }
-        else
-            filename = "log.txt";
-
-        newpath /= filename;
+        newpath /= new_filename;
 
         try {
-            r_log_cleanup();
-            if (!current.empty())
-                std::filesystem::rename(current, newpath);
-            r_log_init();
-            r_log_set_file(newpath.c_str());
+            std::scoped_lock lock(log_mutex_);
+            log_cleanup();
+            if (!current_log_path.empty())
+                std::filesystem::rename(current_log_path, newpath);
+            log_init();
+            log_set_file(newpath.string());
         } catch (std::filesystem::filesystem_error& e) {
             std::cout << e.what() << '\n';
         }
     }
+
+    void Logger::log(log_level level, const std::string_view& message) {
+       std::scoped_lock lock(log_mutex_);
+       std::stringstream logger_stream;
+       std::string log_level = log_level_names_[level];
+
+       logger_stream << rpp::ClockAccessor::GetInstance()->datetime_compact_string() << ", "
+       << log_level << ", " << application_name_  << ", 0x" << std::hex << pthread_self() << std::dec << ", "
+       << message << std::endl;
+
+       logWriter_->write(logger_stream.str());
+    }
+
+    std::string Logger::get_log_file_path() {
+        return filename_;
+    }
+
+    void Logger::log_to_file(const std::string_view log_path)
+    {
+        r_info("Changing log to '%s'", log_path);
+        logWriter_->close();
+        logWriter_ = logWriterFactory_->create_file_writer();
+        logWriter_->open(log_path);
+    }
+
+    void Logger::set_application_name(std::string_view application_name) {
+        application_name_ = application_name;
+    }
+
+    void Logger::log_to_console()
+    {
+        r_info("Changing log to console");
+    }
+
+} // namespace
+
+// TBD - to remove..
+int log_init()
+{
+    return 0;
+}
+
+// TBD - to remove..
+void log_cleanup()
+{
+    rpp::Logger::Instance()->log_to_console();
+}
+
+void log_set_application(std::string_view application_name)
+{
+    rpp::Logger::Instance()->set_application_name(application_name);
+}
+
+int log_set_file(const std::string_view& path)
+{
+    rpp::Logger::Instance()->log_to_file(path);
+    return 0;
+
+}
+
+std::string log_get_file()
+{
+    return rpp::Logger::Instance()->get_log_file_path();
+}
+
+void log_set_console()
+{
+    rpp::Logger::Instance()->log_to_console();
 }

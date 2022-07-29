@@ -4,6 +4,8 @@ project(rppmocks)
 set(SOURCES
         mock_linux.h
         mock_clock.h
+        mock_logwriter.h
+        mock_logwriterfactory.h
 )
 
 add_library(rppmocks SHARED ${SOURCES})
