@@ -6,7 +6,7 @@
 
 namespace rpp
 {
-    std::mutex Logger::log_mutex_;
+    std::recursive_mutex Logger::log_mutex_;
     std::string Logger::filename_;
     std::shared_ptr<ILogger> Logger::logger_;
 
@@ -21,9 +21,8 @@ namespace rpp
     }
 
     Logger::Logger(const std::shared_ptr<ILogWriterFactory>& logWriterFactory) : application_name_("??"),
-        log_level_names_(), logWriterFactory_(logWriterFactory), logWriter_()
-    {
-         logWriter_ = logWriterFactory->create_console_writer();
+        log_level_names_(), logWriterFactory_(logWriterFactory), logWriter_(){
+        logWriter_ = logWriterFactory->create_console_writer();
         log_level_names_[log_level::DEBUG] = "DD";
         log_level_names_[log_level::INFO] = "II";
         log_level_names_[log_level::WARNING] = "WW";
@@ -31,7 +30,7 @@ namespace rpp
     }
 
     void Logger::MoveLog(std::filesystem::path newpath) {
-
+        std::scoped_lock lock(log_mutex_);
         std::filesystem::path current_log_path;
         std::string new_filename = "log.txt";
 
@@ -42,20 +41,19 @@ namespace rpp
         newpath /= new_filename;
 
         try {
-            std::scoped_lock lock(log_mutex_);
             log_cleanup();
-            if (!current_log_path.empty())
-                std::filesystem::rename(current_log_path, newpath);
-            log_init();
+            {
+                if (!current_log_path.empty())
+                    std::filesystem::rename(current_log_path, newpath);
+            }
             log_set_file(newpath.string());
         } catch (std::filesystem::filesystem_error& e) {
             std::cout << e.what() << '\n';
         }
     }
 
-    // This can't be a variadic template due to wanting in in the interface base class so we use the old ... notation.
+    // This can't be a variadic template due to wanting ii in the interface base class, so we use the old ... notation.
     void Logger::log(log_level level, const char* format, ...) {
-        std::scoped_lock lock(log_mutex_);
         std::stringstream logger_stream;
         std::string log_level = log_level_names_[level];
 
@@ -65,11 +63,13 @@ namespace rpp
         StringUtils::string_vprintf(message, format, argptr);
         va_end(argptr);
 
-       logger_stream << rpp::ClockAccessor::GetInstance()->datetime_compact_string() << ", "
-       << log_level << ", " << application_name_  << ", 0x" << std::hex << pthread_self() << std::dec << ", "
-       << message << std::endl;
-
-       logWriter_->write(logger_stream.str());
+        logger_stream << rpp::ClockAccessor::GetInstance()->datetime_compact_string() << ", "
+        << log_level << ", " << application_name_  << ", 0x" << std::hex << pthread_self() << std::dec << ", "
+        << message << std::endl;
+        {
+            std::scoped_lock lock(log_mutex_);
+            logWriter_->write(logger_stream.str());
+        }
     }
 
     std::string Logger::get_log_file_path() {
@@ -78,6 +78,8 @@ namespace rpp
 
     void Logger::log_to_file(const std::string &log_path)
     {
+        std::scoped_lock lock(log_mutex_);
+        filename_ = log_path;
         log(log_level::INFO, "Changing log to '%s'", log_path.c_str());
         logWriter_->close();
         logWriter_ = logWriterFactory_->create_file_writer();
@@ -85,11 +87,13 @@ namespace rpp
     }
 
     void Logger::set_application_name(std::string_view application_name) {
+        std::scoped_lock lock(log_mutex_);
         application_name_ = application_name;
     }
 
-    void Logger::log_to_console()
-    {
+    void Logger::log_to_console(){
+        std::scoped_lock lock(log_mutex_);
+        filename_ = "";
         log(log_level::INFO, "Changing log to console");
         logWriter_->close();
         logWriter_ = logWriterFactory_->create_console_writer();

@@ -15,7 +15,7 @@ namespace rpp {
 
     void FileLogWriter::open(const std::string_view file_name) {
         close();
-        write_stream.open( std::filesystem::path(file_name), std::ios_base::binary|std::ios_base::out );
+        write_stream.open( std::filesystem::path(file_name), std::ios_base::binary|std::ios_base::out|std::ios_base::app );
     }
 
     void FileLogWriter::close() {
@@ -29,7 +29,6 @@ namespace rpp {
     }
 
     FileLogWriter::~FileLogWriter() {
-        close();
     }
 
 }

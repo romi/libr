@@ -16,7 +16,7 @@ namespace rpp
     private:
         static std::string filename_;
         std::string application_name_;
-        static std::mutex log_mutex_;
+        static std::recursive_mutex log_mutex_;
         static std::shared_ptr<ILogger> logger_;
         std::map<log_level, std::string> log_level_names_;
         const std::shared_ptr<ILogWriterFactory> logWriterFactory_;

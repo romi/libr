@@ -31,7 +31,7 @@ protected:
     {
         // stop perceived memory leak since the global is static.
         rpp::ClockAccessor::SetInstance(nullptr);
-        remove(filename_.c_str());
+//        remove(filename_.c_str());
     }
     std::string filename_;
     std::shared_ptr<rpp::MockClock> mockClock;
@@ -229,6 +229,8 @@ TEST_F(Logger_tests, logger_log_to_file_logs)
     log_set_application(expected_string);
     log_set_file("log.txt");
     r_info("Logging to file.");
+    log_set_file("log.txt");
+    r_info("Logging to file again.");
     // Assert
     ASSERT_TRUE(exists(std::filesystem::path("log.txt")));
 }
@@ -236,6 +238,8 @@ TEST_F(Logger_tests, logger_log_to_file_logs)
 TEST_F(Logger_tests, move_log_suceeds_when_logger_initialised)
 {
     // Arrange
+    EXPECT_CALL(*mockClock, datetime_compact_string)
+            .WillRepeatedly(Return("DTS"));
     std::string original_log_path("./log.txt");
     std::filesystem::path new_log_path("/tmp");
     std::string test_string ("TESTSTRING");
@@ -262,6 +266,8 @@ TEST_F(Logger_tests, move_log_suceeds_when_logger_initialised)
 TEST_F(Logger_tests, move_log_suceeds_when_logger_not_initialised)
 {
     // Arrange
+    EXPECT_CALL(*mockClock, datetime_compact_string)
+            .WillRepeatedly(Return("DTS"));
     std::string original_log_path("./log.txt");
     std::string new_log_path("/tmp");
     std::string test_string ("TESTSTRING");
