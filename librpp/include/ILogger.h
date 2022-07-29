@@ -23,6 +23,7 @@ namespace rpp
         virtual void set_application_name(std::string_view application_name) = 0;
         virtual void log_to_file(const std::string &log_path) = 0;
         virtual void log_to_console() = 0;
+        virtual void move_log(std::filesystem::path newpath) = 0;
     };
 }
 #endif //ROMI_ROVER_BUILD_AND_TEST_ILOGGER_H

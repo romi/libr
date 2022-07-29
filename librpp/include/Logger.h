@@ -30,7 +30,7 @@ namespace rpp
         Logger(Logger &other) = delete;
         void operator=(const Logger &) = delete;
         static std::shared_ptr<ILogger> Instance();
-        static void MoveLog(std::filesystem::path newpath);
+        void move_log(std::filesystem::path newpath) override;
         void log(log_level level, const char* format, ...) override;
         std::string get_log_file_path() override;
         void set_application_name(std::string_view application_name) override;
@@ -44,11 +44,10 @@ namespace rpp
 int log_init();
 void log_cleanup();
 void log_set_application(std::string_view application_name);
-
 int log_set_file(const std::string &path);
 std::string log_get_file();
-
 void log_set_console();
+void log_move(std::filesystem::path newpath);
 
 template <typename ...Args>
 void r_err(const std::string format, Args && ...args) {

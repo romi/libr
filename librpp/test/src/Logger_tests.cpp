@@ -1,5 +1,4 @@
 #include <string>
-#include <cstdio>
 #include "Logger.h"
 #include "FileUtils.h"
 
@@ -39,7 +38,7 @@ protected:
     std::shared_ptr<rpp::MockLogWriter> mockLogWriter;
 };
 
-// TBD: Needs more tests when logger is mpved to C++ and mocked.
+// TBD: Needs more tests when logger is moved to C++ and mocked.
 // Test exception throwing.
 TEST_F(Logger_tests, constructor_sets_output_to_console)
 {
@@ -235,23 +234,25 @@ TEST_F(Logger_tests, logger_log_to_file_logs)
     ASSERT_TRUE(exists(std::filesystem::path("log.txt")));
 }
 
-TEST_F(Logger_tests, move_log_suceeds_when_logger_initialised)
+TEST_F(Logger_tests, move_log_succeeds_when_logger_initialised)
 {
     // Arrange
     EXPECT_CALL(*mockClock, datetime_compact_string)
             .WillRepeatedly(Return("DTS"));
     std::string original_log_path("./log.txt");
     std::filesystem::path new_log_path("/tmp");
-    std::string test_string ("TESTSTRING");
+    std::string test_log1 ("Log1");
+    std::string test_log2 ("Log2");
     std::string LogText{};
 
     log_init();
-    log_set_file(original_log_path.c_str());
+    log_set_file(original_log_path);
+    r_info(test_log1);
     std::filesystem::path currentpath(log_get_file());
 
     // Act
-    rpp::Logger::MoveLog(new_log_path);
-    r_info(test_string.c_str());
+    log_move(new_log_path);
+    r_info(test_log2);
     std::filesystem::path movedpath(log_get_file());
 
     //Assert
@@ -259,7 +260,8 @@ TEST_F(Logger_tests, move_log_suceeds_when_logger_initialised)
     ASSERT_TRUE(std::filesystem::exists(movedpath));
     ASSERT_FALSE(std::filesystem::exists(currentpath));
     ASSERT_NO_THROW(LogText = FileUtils::TryReadFileAsString(movedpath));
-    ASSERT_NE(LogText.find(test_string), std::string::npos);
+    ASSERT_NE(LogText.find(test_log1), std::string::npos);
+    ASSERT_NE(LogText.find(test_log2), std::string::npos);
 }
 
 
@@ -277,8 +279,8 @@ TEST_F(Logger_tests, move_log_suceeds_when_logger_not_initialised)
     auto currentpath = log_get_file();
 
     // Act
-    rpp::Logger::MoveLog(new_log_path);
-    r_info(test_string.c_str());
+    log_move(new_log_path);
+    r_info(test_string);
     std::filesystem::path movedpath(log_get_file());
 
     //Assert

@@ -29,7 +29,7 @@ namespace rpp
         log_level_names_[log_level::ERROR] = "EE";
     }
 
-    void Logger::MoveLog(std::filesystem::path newpath) {
+    void Logger::move_log(std::filesystem::path newpath) {
         std::scoped_lock lock(log_mutex_);
         std::filesystem::path current_log_path;
         std::string new_filename = "log.txt";
@@ -41,7 +41,7 @@ namespace rpp
         newpath /= new_filename;
 
         try {
-            log_cleanup();
+            logWriter_->close();
             {
                 if (!current_log_path.empty())
                     std::filesystem::rename(current_log_path, newpath);
@@ -122,7 +122,6 @@ int log_set_file(const std::string &path)
 {
     rpp::Logger::Instance()->log_to_file(path);
     return 0;
-
 }
 
 std::string log_get_file()
@@ -133,4 +132,9 @@ std::string log_get_file()
 void log_set_console()
 {
     rpp::Logger::Instance()->log_to_console();
+}
+
+void log_move(std::filesystem::path newpath)
+{
+    rpp::Logger::Instance()->move_log(newpath);
 }
