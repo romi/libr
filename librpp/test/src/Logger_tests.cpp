@@ -30,7 +30,7 @@ protected:
     {
         // stop perceived memory leak since the global is static.
         rpp::ClockAccessor::SetInstance(nullptr);
-//        remove(filename_.c_str());
+        remove(filename_.c_str());
     }
     std::string filename_;
     std::shared_ptr<rpp::MockClock> mockClock;

@@ -52,11 +52,12 @@ namespace rpp
         }
     }
 
-    // This can't be a variadic template due to wanting ii in the interface base class, so we use the old ... notation.
+    // This can't be a variadic template due to wanting it in the interface base class, so we use the old ... notation.
     void Logger::log(log_level level, const char* format, ...) {
         std::stringstream logger_stream;
         std::string log_level = log_level_names_[level];
 
+//        std::forward<...>()...)
         std::string message;
         va_list argptr;
         va_start(argptr, format);

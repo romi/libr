@@ -37,6 +37,7 @@ namespace rpp
 
         void log_to_file(const std::string &log_path) override;
         void log_to_console() override;
+
     };
 }
 // Outside of namespace for now as we are replacing c functions.
