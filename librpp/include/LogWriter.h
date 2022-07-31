@@ -27,7 +27,7 @@ namespace rpp
         std::ofstream write_stream;
     public:
         FileLogWriter();
-        ~FileLogWriter() override;
+        ~FileLogWriter() override = default;
         void open(std::string_view file_name) override;
         void close() override;
         void write(const std::string& message) override;

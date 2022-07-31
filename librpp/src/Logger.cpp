@@ -48,7 +48,9 @@ namespace rpp
             }
             log_set_file(newpath.string());
         } catch (std::filesystem::filesystem_error& e) {
-            std::cout << e.what() << '\n';
+            std::cout << "move_log() failed to move " << current_log_path << " to " << newpath << std::endl;
+            std::cout << e.what() << std::endl;
+            throw;
         }
     }
 
@@ -57,7 +59,6 @@ namespace rpp
         std::stringstream logger_stream;
         std::string log_level = log_level_names_[level];
 
-//        std::forward<...>()...)
         std::string message;
         va_list argptr;
         va_start(argptr, format);

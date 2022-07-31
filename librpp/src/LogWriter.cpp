@@ -28,7 +28,4 @@ namespace rpp {
         write_stream << message << std::flush;
     }
 
-    FileLogWriter::~FileLogWriter() {
-    }
-
 }
