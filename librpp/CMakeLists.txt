@@ -13,7 +13,6 @@ set(librpp_VERSION_MINOR 1)
 set(SOURCES
         include/IThreadsafeQueue.h
         include/ThreadsafeQueue.h
-#        include/JsonCpp.h
         include/StringUtils.h
         src/StringUtils.cpp
         include/ILinux.h
