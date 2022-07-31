@@ -416,3 +416,35 @@ TEST_F(Logger_tests, logger_deadlock_test_logs_correct_number)
     // Assert
 
 }
+
+TEST_F(Logger_tests, logger_moves_log_while_logging)
+{
+    // Arrange
+    create_test_log_instance();
+    int n_logs = 2000;
+    int n_threads = 3;
+    int n_call_to_log_in_log_to_file_fn = 1;
+    EXPECT_CALL(*mockClock, datetime_compact_string)
+            .WillRepeatedly(Return(expected_DTC));
+    EXPECT_CALL(*mockLogWriter, write(_)).
+            Times(n_threads * n_logs + n_call_to_log_in_log_to_file_fn);
+    EXPECT_CALL(*mockLogWriter, close())
+            .Times(2);
+    EXPECT_CALL(*mockLogWriterFactory, create_file_writer())
+            .WillOnce(Return(mockLogWriter));
+    EXPECT_CALL(*mockLogWriter, open(_));
+
+
+    // Act
+    std::thread t1{ logging_thread, n_logs };
+    std::thread t2{ logging_thread, n_logs };
+    std::thread t3{ logging_thread, n_logs };
+
+    log_move("log.txt");
+
+    t1.join();
+    t2.join();
+    t3.join();
+    // Assert
+
+}
