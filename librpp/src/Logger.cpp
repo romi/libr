@@ -100,6 +100,7 @@ namespace rpp
         logWriter_ = logWriterFactory_->create_console_writer();
     }
 
+
 } // namespace
 
 // TBD - to remove..

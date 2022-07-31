@@ -34,9 +34,12 @@ namespace rpp
         void log(log_level level, const char* format, ...) override;
         std::string get_log_file_path() override;
         void set_application_name(std::string_view application_name) override;
-
         void log_to_file(const std::string &log_path) override;
         void log_to_console() override;
+    public:
+        // The only real way to test a singleton with Dependency injection. Best of all evils.
+        friend void set_instance(const std::shared_ptr<ILogWriterFactory>& factory);
+        friend void clear_instance();
 
     };
 }

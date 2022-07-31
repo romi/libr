@@ -11,6 +11,18 @@
 
 using namespace testing;
 using ::testing::HasSubstr;
+using testing::Invoke;
+
+namespace rpp {
+    void set_instance(const std::shared_ptr<rpp::ILogWriterFactory>& factory) {
+        rpp::Logger::logger_ = std::shared_ptr<rpp::Logger>(new Logger(factory));
+    }
+
+    void clear_instance() {
+        rpp::Logger::logger_ = nullptr;
+    }
+
+}
 
 class Logger_tests : public ::testing::Test
 {
@@ -23,6 +35,8 @@ protected:
     void SetUp() override
     {
         mockClock = std::make_shared<rpp::MockClock>();
+        mockLogWriterFactory = std::make_shared<rpp::MockLogWriterFactory>();
+        mockLogWriter = std::make_shared<rpp::MockLogWriter>();
         rpp::ClockAccessor::SetInstance(mockClock);
     }
 
@@ -32,14 +46,44 @@ protected:
         rpp::ClockAccessor::SetInstance(nullptr);
         remove(filename_.c_str());
     }
+
+
     std::string filename_;
     std::shared_ptr<rpp::MockClock> mockClock;
     std::shared_ptr<rpp::MockLogWriterFactory> mockLogWriterFactory;
     std::shared_ptr<rpp::MockLogWriter> mockLogWriter;
+
 };
 
 // TBD: Needs more tests when logger is moved to C++ and mocked.
 // Test exception throwing.
+
+TEST_F(Logger_tests, constructor_creates_log_writer_factory)
+{
+    // Arrange
+    auto expected = "LogMessage";
+    std::string actual;
+    EXPECT_CALL(*mockLogWriterFactory, create_console_writer())
+            .WillOnce(Return(mockLogWriter));
+    std::string expected_string = "DTC";
+    EXPECT_CALL(*mockClock, datetime_compact_string)
+            .WillOnce(Return(expected_string));
+    EXPECT_CALL(*mockLogWriter, write(_))
+            .WillRepeatedly(Invoke([&actual](const std::string& logged_message) {
+                actual += logged_message;
+                return true;
+            }));
+    rpp::set_instance(mockLogWriterFactory);
+
+    auto logger = rpp::Logger::Instance();
+    // Act
+    logger->log(rpp::log_level::DEBUG, expected);
+
+    // Assert
+    ASSERT_THAT(actual, HasSubstr(expected));
+    rpp::clear_instance();
+}
+
 TEST_F(Logger_tests, constructor_sets_output_to_console)
 {
     // Arrange
