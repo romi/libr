@@ -1,4 +1,5 @@
 #include <string>
+#include <thread>
 #include "Logger.h"
 #include "FileUtils.h"
 
@@ -384,4 +385,34 @@ TEST_F(Logger_tests, move_log_suceeds_when_logger_initialised_to_console)
     ASSERT_NE(LogText.find(test_log2), std::string::npos);
     log_cleanup();
     remove(movedpath.c_str());
+}
+
+void logging_thread( long number_logs ) {
+    for (long i = 0; i < number_logs; i++) {
+        r_info("logging_thread() logging %d of %d", i, number_logs);
+    }
+}
+
+TEST_F(Logger_tests, logger_deadlock_test_logs_correct_number)
+{
+    // Arrange
+    create_test_log_instance();
+    int n_logs = 2000;
+    int n_threads = 3;
+
+    EXPECT_CALL(*mockClock, datetime_compact_string)
+            .WillRepeatedly(Return(expected_DTC));
+
+    EXPECT_CALL(*mockLogWriter, write(_)).
+            Times(n_threads*n_logs);
+    // Act
+    std::thread t1{ logging_thread, n_logs };
+    std::thread t2{ logging_thread, n_logs };
+    std::thread t3{ logging_thread, n_logs };
+
+    t1.join();
+    t2.join();
+    t3.join();
+    // Assert
+
 }
